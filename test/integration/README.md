@@ -10,6 +10,7 @@ communication. In the common case, one
 
 For the simplest variant of this, one could do the following.
 
+{% raw %}
 ```c++
 // start Envoy, set up the fake upstreams.
 initialize();
@@ -36,6 +37,7 @@ EXPECT_TRUE(response_->complete());
 EXPECT_STREQ("200", response_->headers().Status()->value().c_str());
 EXPECT_EQ(0U, response_->body().size());
 ```
+{% endraw %}
 
 Once you have the basic end-to-end test, it is fairly straight forward to modify it to test more
 interesting corner cases. There are existing tests which send requests with bodies, have
@@ -199,4 +201,3 @@ which is then "unparented". The solution here is to explicitly allow Envoy
 reconnects before closing the connection, using
 
 `my_ds_upstream_->set_allow_unexpected_disconnects(true);`
-
