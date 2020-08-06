@@ -73,7 +73,7 @@ Terminal 2
 
 **Step 3: Test Envoy's CORS capabilities**
 
-You can now open a browser to view your frontend service at ``localhost:8000``.
+You can now open a browser to view your frontend service at http://localhost:8000.
 
 Results of the cross-origin request will be shown on the page under *Request Results*.
 Your browser's CORS enforcement logs can be found in the console.
