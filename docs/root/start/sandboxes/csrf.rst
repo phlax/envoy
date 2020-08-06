@@ -109,7 +109,7 @@ set the CSRF enforcement to enabled the request will go through successfully.
 When Envoy runs, it can listen to ``admin`` requests if a port is configured. In
 the example configs, the backend admin is bound to port ``8001``.
 
-If you go to ``localhost:8001/stats`` you will be able to view
+If you go to http://localhost:8001/stats you will be able to view
 all of the Envoy stats for the backend. You should see the CORS stats for
 invalid and valid origins increment as you make requests from the frontend cluster.
 
