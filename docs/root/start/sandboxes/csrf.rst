@@ -91,7 +91,7 @@ To demonstrate same-site requests open the frontend service for ``samesite`` at 
 and enter the IP address of the ``samesite`` machine as the destination.
 
 Results of the cross-site request will be shown on the page under *Request Results*.
-Your browser's CSRF enforcement logs can be found in the browser console and in the
+Your browser's ``CSRF`` enforcement logs can be found in the browser console and in the
 network tab.
 
 For example:
@@ -101,7 +101,7 @@ For example:
   Failed to load resource: the server responded with a status of 403 (Forbidden)
 
 If you change the destination to be the same as one displaying the website and
-set the CSRF enforcement to enabled the request will go through successfully.
+set the ``CSRF`` enforcement to enabled the request will go through successfully.
 
 **Step 5: Check stats of backend via admin**
 
