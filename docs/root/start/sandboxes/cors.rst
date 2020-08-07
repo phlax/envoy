@@ -49,7 +49,7 @@ or
 
 **Step 3: Start all of our containers**
 
-Switch to the ``frontend`` directory in the ``cors`` example, and start the daemons:
+Switch to the ``frontend`` directory in the ``cors`` example, and start the containers:
 
 .. code-block:: console
 
@@ -64,12 +64,13 @@ Switch to the ``frontend`` directory in the ``cors`` example, and start the daem
   frontend_front-envoy_1        /docker-entrypoint.sh /bin ... Up      10000/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8001->8001/tcp
   frontend_frontend-service_1   /bin/sh -c /usr/local/bin/ ... Up      10000/tcp, 8000/tcp
 
-Now, switch to the ``backend`` directory in the ``cors`` example, and start the daemons:
+Now, switch to the ``backend`` directory in the ``cors`` example, and start the containers:
 
 .. code-block:: console
 
   $ pwd
   envoy/examples/cors/backend
+  $ docker-compose pull
   $ docker-compose up --build -d
   $ docker-compose ps
 
