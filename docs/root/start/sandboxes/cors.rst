@@ -83,7 +83,8 @@ Now, switch to the ``backend`` directory in the ``cors`` example, and start the 
 You can now open a browser to view your frontend service at http://localhost:8000.
 
 Results of the cross-origin request will be shown on the page under *Request Results*.
-Your browser's CORS enforcement logs can be found in the console.
+
+Your browser's ``CORS`` enforcement logs can be found in the browser console.
 
 For example:
 
@@ -94,11 +95,12 @@ For example:
 
 **Step 5: Check stats of backend via admin**
 
-When Envoy runs, it can listen to ``admin`` requests if a port is configured. In the example
-configs, the backend admin is bound to port ``8003``.
+When Envoy runs, it can listen to ``admin`` requests if a port is configured.
 
-If you go to ``localhost:8003/stats`` you will be able to view
-all of the Envoy stats for the backend. You should see the CORS stats for
+In the example configs, the backend admin is bound to port ``8003``.
+
+If you browse to http://localhost:8003/stats you will be able to view
+all of the Envoy stats for the backend. You should see the ``CORS`` stats for
 invalid and valid origins increment as you make requests from the frontend cluster.
 
 .. code-block:: none
