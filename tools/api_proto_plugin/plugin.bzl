@@ -23,9 +23,6 @@ def _path_ignoring_repository(f):
 def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes):
     # Compute output files from the current proto_library node's dependencies.
 
-    print("API PROTO PLUGIN: %s" % (output_group))
-    print("API PROTO PLUGIN CTX (deps): %s" % (ctx.rule.attr.deps))
-
     transitive_outputs = depset(transitive = [dep.output_groups[output_group] for dep in ctx.rule.attr.deps])
     proto_sources = target[ProtoInfo].direct_sources
 
@@ -66,7 +63,7 @@ def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes):
     args += [src.path for src in target[ProtoInfo].direct_sources]
     env = {}
 
-    # print("Running protoc with args: %s" % args)
+    print("Running protoc with args: %s" % args)
     # print("Running protoc with inputs: %s" % inputs)
     # print("Running protoc with outputs: %s" % outputs)
     # print("Running protoc with mnemonic: %s" % mnemonic)
