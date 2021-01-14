@@ -65,20 +65,32 @@ quic::QuicRstStreamErrorCode envoyResetReasonToQuicRstError(Http::StreamResetRea
   case Http::StreamResetReason::LocalRefusedStreamReset:
     return quic::QUIC_REFUSED_STREAM;
   case Http::StreamResetReason::ConnectionFailure:
+  case Http::StreamResetReason::ConnectionTermination:
     return quic::QUIC_STREAM_CONNECTION_ERROR;
   case Http::StreamResetReason::LocalReset:
     return quic::QUIC_STREAM_CANCELLED;
-  case Http::StreamResetReason::ConnectionTermination:
-    return quic::QUIC_STREAM_NO_ERROR;
   default:
     return quic::QUIC_BAD_APPLICATION_PAYLOAD;
   }
 }
 
-Http::StreamResetReason quicRstErrorToEnvoyResetReason(quic::QuicRstStreamErrorCode rst_err) {
+Http::StreamResetReason quicRstErrorToEnvoyLocalResetReason(quic::QuicRstStreamErrorCode rst_err) {
+  switch (rst_err) {
+  case quic::QUIC_REFUSED_STREAM:
+    return Http::StreamResetReason::LocalRefusedStreamReset;
+  case quic::QUIC_STREAM_CONNECTION_ERROR:
+    return Http::StreamResetReason::ConnectionFailure;
+  default:
+    return Http::StreamResetReason::LocalReset;
+  }
+}
+
+Http::StreamResetReason quicRstErrorToEnvoyRemoteResetReason(quic::QuicRstStreamErrorCode rst_err) {
   switch (rst_err) {
   case quic::QUIC_REFUSED_STREAM:
     return Http::StreamResetReason::RemoteRefusedStreamReset;
+  case quic::QUIC_STREAM_CONNECTION_ERROR:
+    return Http::StreamResetReason::ConnectError;
   default:
     return Http::StreamResetReason::RemoteReset;
   }
@@ -120,7 +132,7 @@ createConnectionSocket(Network::Address::InstanceConstSharedPtr& peer_addr,
   }
   connection_socket->bind(local_addr);
   ASSERT(local_addr->ip());
-  local_addr = connection_socket->localAddress();
+  local_addr = connection_socket->addressProvider().localAddress();
   if (!Network::Socket::applyOptions(connection_socket->options(), *connection_socket,
                                      envoy::config::core::v3::SocketOption::STATE_BOUND)) {
     ENVOY_LOG_MISC(error, "Fail to apply post-bind options");

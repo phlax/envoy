@@ -5,7 +5,6 @@
 #include "envoy/common/exception.h"
 #include "envoy/config/overload/v3/overload.pb.h"
 #include "envoy/config/overload/v3/overload.pb.validate.h"
-#include "envoy/server/overload_manager.h"
 #include "envoy/stats/scope.h"
 
 #include "common/common/fmt.h"
@@ -32,7 +31,7 @@ public:
       const NamedOverloadActionSymbolTable& action_symbol_table,
       const absl::flat_hash_map<OverloadTimerType, Event::ScaledTimerMinimum>& timer_minimums)
       : action_symbol_table_(action_symbol_table), timer_minimums_(timer_minimums),
-        actions_(action_symbol_table.size(), OverloadActionState(0)),
+        actions_(action_symbol_table.size(), OverloadActionState(UnitFloat::min())),
         scaled_timer_action_(action_symbol_table.lookup(OverloadActionNames::get().ReduceTimeouts)),
         scaled_timer_manager_(std::move(scaled_timer_manager)) {}
 
@@ -47,15 +46,25 @@ public:
                                     Event::TimerCb callback) override {
     auto minimum_it = timer_minimums_.find(timer_type);
     const Event::ScaledTimerMinimum minimum =
-        minimum_it != timer_minimums_.end() ? minimum_it->second
-                                            : Event::ScaledTimerMinimum(Event::ScaledMinimum(1.0));
+        minimum_it != timer_minimums_.end()
+            ? minimum_it->second
+            : Event::ScaledTimerMinimum(Event::ScaledMinimum(UnitFloat::max()));
+    return scaled_timer_manager_->createTimer(minimum, std::move(callback));
+  }
+
+  Event::TimerPtr createScaledTimer(Event::ScaledTimerMinimum minimum,
+                                    Event::TimerCb callback) override {
     return scaled_timer_manager_->createTimer(minimum, std::move(callback));
   }
 
   void setState(NamedOverloadActionSymbolTable::Symbol action, OverloadActionState state) {
     actions_[action.index()] = state;
     if (scaled_timer_action_.has_value() && scaled_timer_action_.value() == action) {
-      scaled_timer_manager_->setScaleFactor(1 - state.value());
+      scaled_timer_manager_->setScaleFactor(
+          // The action state is 0 for no overload up to 1 for maximal overload,
+          // but the scale factor for timers is 1 for no scaling and 0 for
+          // maximal scaling, so invert the value to pass in (1-value).
+          state.value().invert());
     }
   }
 
@@ -68,7 +77,7 @@ private:
   const Event::ScaledRangeTimerManagerPtr scaled_timer_manager_;
 };
 
-const OverloadActionState ThreadLocalOverloadStateImpl::always_inactive_{0.0};
+const OverloadActionState ThreadLocalOverloadStateImpl::always_inactive_{UnitFloat::min()};
 
 namespace {
 
@@ -81,6 +90,8 @@ public:
     const OverloadActionState state = actionState();
     state_ =
         value >= threshold_ ? OverloadActionState::saturated() : OverloadActionState::inactive();
+    // This is a floating point comparison, though state_ is always either
+    // saturated or inactive so there's no risk due to floating point precision.
     return state.value() != actionState().value();
   }
 
@@ -109,9 +120,12 @@ public:
     } else if (value >= saturated_threshold_) {
       state_ = OverloadActionState::saturated();
     } else {
-      state_ = OverloadActionState((value - scaling_threshold_) /
-                                   (saturated_threshold_ - scaling_threshold_));
+      state_ = OverloadActionState(
+          UnitFloat((value - scaling_threshold_) / (saturated_threshold_ - scaling_threshold_)));
     }
+    // All values of state_ are produced via this same code path. Even if
+    // old_state and state_ should be approximately equal, there's no harm in
+    // signaling for a small change if they're not float::operator== equal.
     return state_.value() != old_state.value();
   }
 
@@ -143,6 +157,8 @@ OverloadTimerType parseTimerType(
   switch (config_timer_type) {
   case Config::HTTP_DOWNSTREAM_CONNECTION_IDLE:
     return OverloadTimerType::HttpDownstreamIdleConnectionTimeout;
+  case Config::HTTP_DOWNSTREAM_STREAM_IDLE:
+    return OverloadTimerType::HttpDownstreamIdleStreamTimeout;
   default:
     throw EnvoyException(fmt::format("Unknown timer type {}", config_timer_type));
   }
@@ -165,7 +181,7 @@ parseTimerMinimums(const ProtobufWkt::Any& typed_config,
             ? Event::ScaledTimerMinimum(Event::AbsoluteMinimum(std::chrono::milliseconds(
                   DurationUtil::durationToMilliseconds(scale_timer.min_timeout()))))
             : Event::ScaledTimerMinimum(
-                  Event::ScaledMinimum(scale_timer.min_scale().value() / 100.0));
+                  Event::ScaledMinimum(UnitFloat(scale_timer.min_scale().value() / 100.0)));
 
     auto [_, inserted] = timer_map.insert(std::make_pair(timer_type, minimum));
     if (!inserted) {
@@ -251,7 +267,7 @@ bool OverloadAction::updateResourcePressure(const std::string& name, double pres
   }
   const auto trigger_new_state = it->second->actionState();
   active_gauge_.set(trigger_new_state.isSaturated() ? 1 : 0);
-  scale_percent_gauge_.set(trigger_new_state.value() * 100);
+  scale_percent_gauge_.set(trigger_new_state.value().value() * 100);
 
   {
     // Compute the new state as the maximum over all trigger states.

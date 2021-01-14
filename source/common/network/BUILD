@@ -60,8 +60,10 @@ envoy_cc_library(
     hdrs = ["connection_impl_base.h"],
     deps = [
         ":filter_manager_lib",
+        "//include/envoy/common:scope_tracker_interface",
         "//include/envoy/event:dispatcher_interface",
         "//source/common/common:assert_lib",
+        "//source/common/common:dump_state_utils",
     ],
 )
 
@@ -106,8 +108,10 @@ envoy_cc_library(
         ":utility_lib",
         "//include/envoy/event:dispatcher_interface",
         "//include/envoy/event:file_event_interface",
+        "//include/envoy/event:timer_interface",
         "//include/envoy/network:dns_interface",
         "//source/common/common:assert_lib",
+        "//source/common/common:backoff_lib",
         "//source/common/common:linked_object",
         "//source/common/singleton:threadsafe_singleton",
     ],
@@ -230,6 +234,7 @@ envoy_cc_library(
         "//include/envoy/network:socket_interface_interface",
         "//source/common/api:os_sys_calls_lib",
         "//source/common/common:assert_lib",
+        "//source/common/common:dump_state_utils",
         "//source/common/common:utility_lib",
     ],
 )

@@ -153,7 +153,7 @@ void ConnectionHandlerImpl::enableListeners() {
   }
 }
 
-void ConnectionHandlerImpl::setListenerRejectFraction(float reject_fraction) {
+void ConnectionHandlerImpl::setListenerRejectFraction(UnitFloat reject_fraction) {
   listener_reject_fraction_ = reject_fraction;
   for (auto& listener : listeners_) {
     listener.second.listener_->listener()->setRejectFraction(reject_fraction);
@@ -360,9 +360,11 @@ void ConnectionHandlerImpl::ActiveTcpSocket::newConnection() {
   // Check if the socket may need to be redirected to another listener.
   ActiveTcpListenerOptRef new_listener;
 
-  if (hand_off_restored_destination_connections_ && socket_->localAddressRestored()) {
+  if (hand_off_restored_destination_connections_ &&
+      socket_->addressProvider().localAddressRestored()) {
     // Find a listener associated with the original destination address.
-    new_listener = listener_.parent_.findActiveTcpListenerByAddress(*socket_->localAddress());
+    new_listener = listener_.parent_.findActiveTcpListenerByAddress(
+        *socket_->addressProvider().localAddress());
   }
   if (new_listener.has_value()) {
     // Hands off connections redirected by iptables to the listener associated with the
@@ -460,9 +462,6 @@ void ConnectionHandlerImpl::ActiveTcpListener::resumeListening() {
 
 void ConnectionHandlerImpl::ActiveTcpListener::newConnection(
     Network::ConnectionSocketPtr&& socket, std::unique_ptr<StreamInfo::StreamInfo> stream_info) {
-  // Refresh local address in case it was restored by a listener filter like the original_dst
-  // filter.
-  stream_info->setDownstreamLocalAddress(socket->localAddress());
 
   // Find matching filter chain.
   const auto filter_chain = config_->filterChainManager().findFilterChain(*socket);
