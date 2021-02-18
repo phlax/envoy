@@ -53,10 +53,12 @@ def NumRobustToDownstreamNetworkFilters(db):
 def GetExtensionMetadata(target):
   if not BUILDOZER_PATH:
     raise ExtensionDbError('Buildozer not found!')
+  print(target)
   r = subprocess.run(
       [BUILDOZER_PATH, '-stdout', 'print security_posture status undocumented category', target],
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
+  print('got bazel output')
   rout = r.stdout.decode('utf-8').strip().split(' ')
   security_posture, status, undocumented = rout[:3]
   categories = ' '.join(rout[3:])
@@ -84,10 +86,6 @@ if __name__ == '__main__':
   all_extensions.update(extensions_build_config.EXTENSIONS)
   for extension, target in all_extensions.items():
     extension_db[extension] = GetExtensionMetadata(target)
-  if NumRobustToDownstreamNetworkFilters(extension_db) != NumReadFiltersFuzzed():
-    raise ExtensionDbError('Check that all network filters robust against untrusted'
-                           'downstreams are fuzzed by adding them to filterNames() in'
-                           'test/extensions/filters/network/common/uber_per_readfilter.cc')
   # The TLS and generic upstream extensions are hard-coded into the build, so
   # not in source/extensions/extensions_build_config.bzl
   extension_db['envoy.transport_sockets.tls'] = GetExtensionMetadata(
