@@ -27,6 +27,20 @@ stages:
               GCP_SERVICE_ACCOUNT_KEY: $(GcpServiceAccountKey)
             displayName: "Run format pre-checks"
 
+      - job: clang_tidy
+        dependsOn: []
+        pool:
+          vmImage: "ubuntu-18.04"
+        steps:
+          - script: ci/run_envoy_docker.sh 'ci/do_ci.sh bazel.clang_tidy'
+            workingDirectory: $(Build.SourcesDirectory)
+            env:
+              ENVOY_DOCKER_BUILD_DIR: $(Build.StagingDirectory)
+              BAZEL_REMOTE_CACHE: grpcs://remotebuildexecution.googleapis.com
+              BAZEL_REMOTE_INSTANCE: projects/envoy-ci/instances/default_instance
+              GCP_SERVICE_ACCOUNT_KEY: $(GcpServiceAccountKey)
+            displayName: "Run clang_tidy"
+
       - job: format
         dependsOn: ["format_pre"]
         pool:
@@ -206,8 +220,6 @@ stages:
               CI_TARGET: "bazel.api"
             gcc:
               CI_TARGET: "bazel.gcc"
-            clang_tidy:
-              CI_TARGET: "bazel.clang_tidy"
             asan:
               CI_TARGET: "bazel.asan"
             tsan:
