@@ -68,6 +68,9 @@ do
         echo -e "\nMissing \$BUILDIFIER_PATH, skipping code_format/check_format.py\n" >&2
       fi
 
+      echo "  Checking lang-agnostic formatting: $i"
+      "$SCRIPT_DIR"/code_format/glint.sh "$1"
+
       echo "  Checking spelling for $i"
       "$SCRIPT_DIR"/spelling/check_spelling_pedantic.py check $i
       if [[ $? -ne 0 ]]; then
