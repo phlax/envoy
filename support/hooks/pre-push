@@ -65,7 +65,7 @@ do
           exit 1
         fi
       else
-        echo "Missing \$BUILDIFIER_PATH, skipping code_format/check_format.py" 2>&
+        echo "Missing \$BUILDIFIER_PATH, skipping code_format/check_format.py" >&2
       fi
 
       echo "  Checking spelling for $i"
