@@ -28,7 +28,7 @@ def collect_files():
     return matches
 
 
-def validate_format(fix=False):
+def validate_format(fix=False, path=None):
     """Check the format of python files in the tools directory.
 
     Arguments:
@@ -37,7 +37,8 @@ def validate_format(fix=False):
     fixes_required = False
     failed_update_files = set()
     successful_update_files = set()
-    for python_file in collect_files():
+    paths = ([path] if path else collect_files())
+    for python_file in paths:
         reformatted_source, encoding, changed = FormatFile(
             python_file,
             style_config='tools/code_format/.style.yapf',
@@ -70,6 +71,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Tool to format python files.')
     parser.add_argument(
         'action', choices=['check', 'fix'], default='check', help='Fix invalid syntax in files.')
+    parser.add_argument(
+        'path', default='', help='Fix invalid syntax in files.')
     args = parser.parse_args()
-    is_valid = validate_format(args.action == 'fix')
+    is_valid = validate_format(fix=args.action, path=args.path)
     sys.exit(0 if is_valid else 1)

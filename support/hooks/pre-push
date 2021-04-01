@@ -13,85 +13,189 @@ DUMMY_SHA=0000000000000000000000000000000000000000
 
 echo "Running pre-push check; to skip this step use 'push --no-verify'"
 
-while read LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA
-do
-  if [ "$LOCAL_SHA" = $DUMMY_SHA ]
-  then
-    # Branch deleted. Do nothing.
-    exit 0
-  else
-    if [ "$REMOTE_SHA" = $DUMMY_SHA ]
-    then
-      # New branch. Verify the last commit, since this is very likely where the new code is
-      # (though there is no way to know for sure). In the extremely uncommon case in which someone
-      # pushes more than 1 new commit to a branch, CI will enforce full checking.
-      RANGE="$LOCAL_SHA~1..$LOCAL_SHA"
-    else
-      # Updating branch. Verify new commits.
-      RANGE="$REMOTE_SHA..$LOCAL_SHA"
-    fi
+DEBUG="${DEBUG_COMMIT_PUSH:-}"
+FLAKE8_PATH=${FLAKE_PATH:-$(which flake8)}
+SHELLCHECK_PATH=${FLAKE_PATH:-$(which shellcheck)}
 
+# skip message/logic for code_format
+SKIP_CODE_FORMAT="${SKIP_CODE_FORMAT:-}"
+SKIP_CODE_FORMAT_PROBLEM="WARNING: Missing \$BUILDIFIER_PATH or \$CLANG_FORMAT, skipping code_format/check_format.py"
+SKIP_CODE_FORMAT_SOLUTION="See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information"
+
+# skip message/logic for autoformat
+SKIP_PYTHON_AUTOFORMAT="${SKIP_PYTHON_AUTOFORMAT:-}"
+
+# skip message/logic for flake8
+SKIP_FLAKE8="${SKIP_FLAKE8:-}"
+
+# skip message/logic for shellcheck
+SKIP_SHELLCHECK="${SKIP_SHELLCHECK:-}"
+
+# skip logic for protos
+SKIP_PROTOS="${SKIP_PROTOS:-}"
+
+# NOTE: The `tools` directory will be the same relative to the support
+# directory, independent of whether we're in a submodule, so no need to use
+# our `relpath` helper.
+SRC_DIR="$(dirname "$(realpath "$0")")/../../"
+SCRIPT_DIR="${SRC_DIR}/tools"
+
+CHECKS=(
+    "code_format:*"
+    "glint:*"
+    "shellcheck:*"
+    "flake8:*.py"
+    "python_autoformat:*.py"
+    "spelling:*"
+    "protos:*.proto"
+    "repositories:*.bzl")
+
+
+if [[ -f "${SRC_DIR}/.envoypush" ]]; then
+    # allow user to override paths and/or suppress checks and error messages with env vars
+    # shellcheck disable=SC1090
+    . "${SRC_DIR}/.envoypush"
+fi
+
+
+check_dco () {
+    local range="$1" signed_off not_signed_off
     # Verify DCO signoff. We do this before the format checker, since it has
     # some probability of failing spuriously, while this check never should.
     #
     # In general, we can't assume that the commits are signed off by author
     # pushing, so we settle for just checking that there is a signoff at all.
-    SIGNED_OFF=$(git rev-list --no-merges --grep "^Signed-off-by: " "$RANGE")
-    NOT_SIGNED_OFF=$(git rev-list --no-merges "$RANGE" | grep -Fxv "$SIGNED_OFF")
-    if [ -n "$NOT_SIGNED_OFF" ]
-    then
-      echo >&2 "ERROR: The following commits do not have DCO signoff:"
-      while read -r commit; do
-        echo "  $(git log --pretty=oneline --abbrev-commit -n 1 $commit)"
-      done <<< "$NOT_SIGNED_OFF"
-      exit 1
-    fi
-
-    # NOTE: The `tools` directory will be the same relative to the support
-    # directory, independent of whether we're in a submodule, so no need to use
-    # our `relpath` helper.
-    SCRIPT_DIR="$(dirname "$(realpath "$0")")/../../tools"
-
-    # TODO(hausdorff): We should have a more graceful failure story when the
-    # user does not have all the tools set up correctly. This script assumes
-    # `$CLANG_FORMAT` and `$BUILDIFY` are defined, or that the default values it
-    # assumes for these variables correspond to real binaries on the system. If
-    # either of these things aren't true, the check fails.
-    for i in $(git diff --name-only $RANGE --diff-filter=ACMR --ignore-submodules=all 2>&1); do
-      if [[ -n "$BUILDIFIER_PATH" ]]; then
-        echo -ne "  Checking format for $i - "
-        "$SCRIPT_DIR"/code_format/check_format.py check $i
-        if [[ $? -ne 0 ]]; then
-          exit 1
-        fi
-      else
-        echo -e "\nMissing \$BUILDIFIER_PATH, skipping code_format/check_format.py\n" >&2
-      fi
-
-      echo "  Checking spelling for $i"
-      "$SCRIPT_DIR"/spelling/check_spelling_pedantic.py check $i
-      if [[ $? -ne 0 ]]; then
+    signed_off=$(git rev-list --no-merges --grep "^Signed-off-by: " "$range")
+    not_signed_off=$(git rev-list --no-merges "$range" | grep -Fxv "$signed_off")
+    if [ -n "$not_signed_off" ]; then
+        echo >&2 "ERROR: The following commits do not have DCO signoff:"
+        while read -r commit; do
+            echo "  $(git log --pretty=oneline --abbrev-commit -n 1 "$commit")"
+        done <<< "$not_signed_off"
         exit 1
-      fi
-    done
-
-    # TODO(mattklein123): Optimally we would be able to do this on a per-file basis.
-    "$SCRIPT_DIR"/proto_format/proto_format.sh check
-    if [[ $? -ne 0 ]]; then
-      exit 1
     fi
+}
 
-    "$SCRIPT_DIR"/code_format/format_python_tools.sh check
-    if [[ $? -ne 0 ]]; then
-      exit 1
+check_code_format () {
+    local file="$1"
+    if [[ -n "$SKIP_CODE_FORMAT" ]]; then
+        return
     fi
+    [[ -n "$DEBUG" ]] && echo "code_format: ${file}"
+    if [[ -n "$BUILDIFIER_PATH" ]] && [[ -n "$CLANG_FORMAT" ]];  then
+        echo -ne "  Checking format for ${file} - "
+        "$SCRIPT_DIR"/code_format/check_format.py check "$file" || exit 1
+    else
+        echo -e "\n  $SKIP_CODE_FORMAT_PROBLEM\n" >&2
+        echo -e "\n  $SKIP_CODE_FORMAT_SOLUTION\n" >&2
+        SKIP_CODE_FORMAT=yes
+    fi
+}
 
+check_flake8 () {
+    local file="$1"
+    if [[ -n "$SKIP_FLAKE8" ]]; then
+        return
+    fi
+    [[ -n "$DEBUG" ]] && echo "flake8: ${file}"
+    if [[ -n "$FLAKE8_PATH" ]];  then
+        "$FLAKE8_PATH" "$i" || exit 1
+    else
+        echo -e "\n  $FLAKE8_PROBLEM\n" >&2
+        echo -e "\n  $FLAKE8_SOLUTION\n" >&2
+        SKIP_FLAKE8=yes
+    fi
+}
+
+check_protos () {
+    if [[ -n "$SKIP_FLAKE8" ]]; then
+        return
+    fi
+    "$SCRIPT_DIR"/proto_format/proto_format.sh check || exit 1
+    # only run this once
+    SKIP_PROTOS=yes
+}
+
+check_shellcheck () {
+    local file="$1" isshell=
+    if [[ -n "$SKIP_SHELLCHECK" ]]; then
+        return
+    fi
+    if [[ ${file: -3} == ".sh" ]]; then
+        isshell=yes
+    elif grep "^#!/bin/bash" "$file"; then
+        isshell=yes
+    elif grep "^#!/bin/sh" "$file" > /dev/null; then
+        isshell=yes
+    elif grep "^#!/usr/bin/env bash" "$file" > /dev/null; then
+        isshell=yes
+    fi
+    if [[ -z "$isshell" ]]; then
+        return
+    fi
+    [[ -n "$DEBUG" ]] && echo "shellcheck: ${file}"
+    if [[ -n "$SHELLCHECK_PATH" ]];  then
+        "$SHELLCHECK_PATH" -x "$i" || exit 1
+    else
+        echo -e "\n  $SHELLCHECK_PROBLEM\n" >&2
+        echo -e "\n  $SHELLCHECK_SOLUTION\n" >&2
+        SKIP_SHELLCHECK=yes
+    fi
+}
+
+check_glint () {
+    local file="$1"
+    [[ -n "$DEBUG" ]] && echo "glint: ${file}"
+    "$SCRIPT_DIR"/code_format/glint.sh "$1"
+}
+
+
+check_python_autoformat () {
+    local file="$1"
+    if [[ -n "$SKIP_PYTHON_AUTOFORMAT" ]]; then
+        return
+    fi
+    "$SCRIPT_DIR"/code_format/format_python_tools.sh check "$file" || :
+}
+
+check_spelling () {
+    local file="$1"
+    [[ -n "$DEBUG" ]] && echo "spelling: ${file}"
+    "$SCRIPT_DIR"/spelling/check_spelling_pedantic.py check "$file" || exit 1
+}
+
+check_repositories () {
+    local file="$1"
     # Check correctness of repositories definitions.
-    echo "  Checking repositories definitions"
-    if ! "$SCRIPT_DIR"/check_repositories.sh; then
-      exit 1
-    fi
-  fi
-done
+    [[ -n "$DEBUG" ]] && echo "repositories: ${file}"
+    "$SCRIPT_DIR"/check_repositories.sh "$1" || exit 1
+}
 
-exit 0
+
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+    export LOCAL_REF REMOTE_REF
+    if [ "$LOCAL_SHA" = $DUMMY_SHA ];  then
+        # Branch deleted. Do nothing.
+        exit 0
+    else
+        if [ "$REMOTE_SHA" = $DUMMY_SHA ]; then
+            # New branch. Verify the last commit, since this is very likely where the new code is
+            # (though there is no way to know for sure). In the extremely uncommon case in which someone
+            # pushes more than 1 new commit to a branch, CI will enforce full checking.
+            RANGE="$LOCAL_SHA~1..$LOCAL_SHA"
+        else
+            # Updating branch. Verify new commits.
+            RANGE="$REMOTE_SHA..$LOCAL_SHA"
+        fi
+
+        check_dco "$RANGE"
+        for i in $(git diff --name-only "$RANGE" --diff-filter=ACMR --ignore-submodules=all 2>&1); do
+            for checkinfo in "${CHECKS[@]}"; do
+                read -ra check <<< "${checkinfo//:/ }"
+                if echo "$i" | grep -E "${check[1]}"; then
+                    "check_${check[0]}" "$i"
+                fi
+            done
+        done
+    fi
+done
