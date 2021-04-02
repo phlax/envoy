@@ -6,10 +6,13 @@
 
 . tools/shell_utils.sh
 
+COMMAND="$1"
+PATH="${2:-}"
+
 set -e
 
 echo "Running Python format check..."
-python_venv format_python_tools "$1" "$2"
+python_venv format_python_tools "$COMMAND" "$PATH"
 
 echo "Running Python3 flake8 check..."
 python3 -m flake8 --version
