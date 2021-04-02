@@ -16,11 +16,20 @@ echo "Running pre-push check; to skip this step use 'push --no-verify'"
 DEBUG="${DEBUG_COMMIT_PUSH:-yes}"
 FLAKE8_PATH=${FLAKE_PATH:-$(which flake8)}
 SHELLCHECK_PATH=${FLAKE_PATH:-$(which shellcheck)}
-SKIP_CODE_FORMAT=
-SKIP_FLAKE8=
-SKIP_SHELLCHECK=
-SKIP_CODE_PROBLEM="Missing \$BUILDIFIER_PATH or \$CLANG_FORMAT, skipping code_format/check_format.py"
-SKIP_CODE_SOLUTION="See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information"
+
+# skip message/logic for code_format
+SKIP_CODE_FORMAT="${SKIP_CODE_FORMAT:-}"
+SKIP_CODE_FORMAT_PROBLEM="WARNING: Missing \$BUILDIFIER_PATH or \$CLANG_FORMAT, skipping code_format/check_format.py"
+SKIP_CODE_FORMAT_SOLUTION="See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information"
+
+# skip message/logic for flake8
+SKIP_FLAKE8="${SKIP_FLAKE8:-}"
+
+# skip message/logic for shellcheck
+SKIP_SHELLCHECK="${SKIP_SHELLCHECK:-}"
+
+# skip logic for protos
+SKIP_PROTOS="${SKIP_PROTOS:-}"
 
 # NOTE: The `tools` directory will be the same relative to the support
 # directory, independent of whether we're in a submodule, so no need to use
@@ -33,7 +42,14 @@ CHECKS=(
     "shellcheck:*"
     "flake8:*.py"
     "spelling:*"
+    "protos:*.proto"
     "repositories:*.bzl")
+
+
+if [[ -f ".envoypush" ]]; then
+    # allow user to override paths and/or suppress checks and error messages
+    . .envoypush
+fi
 
 check_dco () {
     local range="$1" signed_off not_signed_off
@@ -63,8 +79,8 @@ check_code_format () {
         echo -ne "  Checking format for ${file} - "
         "$SCRIPT_DIR"/code_format/check_format.py check "$file" || exit 1
     else
-        echo -e "\n  $SKIP_CODE_PROBLEM\n" >&2
-        echo -e "\n  $SKIP_CODE_SOLUTION\n" >&2
+        echo -e "\n  $SKIP_CODE_FORMAT_PROBLEM\n" >&2
+        echo -e "\n  $SKIP_CODE_FORMAT_SOLUTION\n" >&2
         SKIP_CODE_FORMAT=yes
     fi
 }
@@ -82,6 +98,15 @@ check_flake8 () {
         echo -e "\n  $FLAKE8_SOLUTION\n" >&2
         SKIP_FLAKE8=yes
     fi
+}
+
+check_protos () {
+    if [[ -n "$SKIP_FLAKE8" ]]; then
+        return
+    fi
+    "$SCRIPT_DIR"/proto_format/proto_format.sh check || exit 1
+    # only run this once
+    SKIP_PROTOS=yes
 }
 
 check_shellcheck () {
@@ -116,9 +141,7 @@ check_repositories () {
     local file="$1"
     # Check correctness of repositories definitions.
     [[ -n "$DEBUG" ]] && echo "repositories: ${file}"
-    if ! "$SCRIPT_DIR"/check_repositories.sh "$1"; then
-        exit 1
-    fi
+    "$SCRIPT_DIR"/check_repositories.sh "$1" || exit 1
 }
 
 
@@ -143,14 +166,10 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
             for checkinfo in "${CHECKS[@]}"; do
                 read -ra check <<< "${checkinfo//:/ }"
                 if echo "$i" | grep -E "${check[1]}"; then
-                    echo "RUNNNNN"
                     "check_${check[0]}" "$i"
                 fi
             done
         done
-
-        # TODO(mattklein123): Optimally we would be able to do this on a per-file basis.
-        "$SCRIPT_DIR"/proto_format/proto_format.sh check || exit 1
 
         # "$SCRIPT_DIR"/code_format/format_python_tools.sh check
     fi
