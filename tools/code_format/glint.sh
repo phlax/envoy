@@ -72,6 +72,7 @@ else
     done
 fi
 
+
 if [[ -n "$ERRORS" ]]; then
     echo >&2
     echo "ERRORS found" >&2
