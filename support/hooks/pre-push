@@ -117,8 +117,20 @@ check_protos () {
 }
 
 check_shellcheck () {
-    local file="$1"
+    local file="$1" isshell=
     if [[ -n "$SKIP_SHELLCHECK" ]]; then
+        return
+    fi
+    if [[ ${file: -3} == ".sh" ]]; then
+        isshell=yes
+    elif grep "^#!/bin/bash" "$file"; then
+        isshell=yes
+    elif grep "^#!/bin/sh" "$file"; then
+        isshell=yes
+    elif grep "^#!/usr/bin/env bash" "$file"; then
+        isshell=yes
+    fi
+    if [[ -z "$isshell" ]]; then
         return
     fi
     [[ -n "$DEBUG" ]] && echo "shellcheck: ${file}"
