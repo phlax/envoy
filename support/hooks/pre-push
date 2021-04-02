@@ -118,7 +118,7 @@ check_shellcheck () {
     fi
     [[ -n "$DEBUG" ]] && echo "shellcheck: ${file}"
     if [[ -n "$SHELLCHECK_PATH" ]];  then
-        "$SHELLCHECK_PATH" "$i" || exit 1
+        "$SHELLCHECK_PATH" -x "$i" || exit 1
     else
         echo -e "\n  $SHELLCHECK_PROBLEM\n" >&2
         echo -e "\n  $SHELLCHECK_SOLUTION\n" >&2
