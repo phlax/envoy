@@ -94,6 +94,7 @@ check_flake8 () {
     fi
     [[ -n "$DEBUG" ]] && echo "flake8: ${file}"
 
+
     if [[ -n "$FLAKE8_PATH" ]];  then
         "$FLAKE8_PATH" "$i" || exit 1
     else
