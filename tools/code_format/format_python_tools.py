@@ -72,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument(
         'action', choices=['check', 'fix'], default='check', help='Fix invalid syntax in files.')
     parser.add_argument(
-        'path', default='', help='Fix invalid syntax in files.')
+        'path', default=None, help='Fix invalid syntax in files.')
     args = parser.parse_args()
     is_valid = validate_format(fix=args.action, path=args.path)
     sys.exit(0 if is_valid else 1)
