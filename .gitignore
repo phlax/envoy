@@ -38,4 +38,3 @@ cmake-build-debug
 /linux
 bazel.output.txt
 *~
-xyz

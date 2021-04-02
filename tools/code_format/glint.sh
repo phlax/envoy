@@ -12,7 +12,7 @@ ERRORS=
 MISSING_NEWLINE=0
 MIXED_TABS_AND_SPACES=0
 TRAILING_WHITESPACE=0
-FILEPATH="${1}"
+FILEPATH="${1:-}"
 
 
 # Checks whether a file has a mixture of indents starting with tabs and spaces
