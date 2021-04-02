@@ -23,7 +23,7 @@ SKIP_CODE_FORMAT_PROBLEM="WARNING: Missing \$BUILDIFIER_PATH or \$CLANG_FORMAT, 
 SKIP_CODE_FORMAT_SOLUTION="See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information"
 
 # skip message/logic for autoformat
-SKIP_AUTOFORMAT="${SKIP_AUTOFORMAT:-}"
+SKIP_PYTHON_AUTOFORMAT="${SKIP_PYTHON_AUTOFORMAT:-}"
 
 # skip message/logic for flake8
 SKIP_FLAKE8="${SKIP_FLAKE8:-}"
@@ -45,6 +45,7 @@ CHECKS=(
     "glint:*"
     "shellcheck:*"
     "flake8:*.py"
+    "python_autoformat:*.py"
     "spelling:*"
     "protos:*.proto"
     "repositories:*.bzl")
@@ -56,14 +57,6 @@ if [[ -f "${SRC_DIR}/.envoypush" ]]; then
     . "${SRC_DIR}/.envoypush"
 fi
 
-
-autoformat () {
-    if [[ -n "$SKIP_AUTOFORMAT" ]]; then
-        return
-    fi
-    # dont error out...
-    "$SCRIPT_DIR"/code_format/format_python_tools.sh check || :
-}
 
 check_dco () {
     local range="$1" signed_off not_signed_off
@@ -145,6 +138,14 @@ check_glint () {
 }
 
 
+check_python_autoformat () {
+    local file="$1"
+    if [[ -n "$SKIP_PYTHON_AUTOFORMAT" ]]; then
+        return
+    fi
+    "$SCRIPT_DIR"/code_format/format_python_tools.sh check "$file" || :
+}
+
 check_spelling () {
     local file="$1"
     [[ -n "$DEBUG" ]] && echo "spelling: ${file}"
@@ -184,6 +185,5 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
                 fi
             done
         done
-        autoformat
     fi
 done
