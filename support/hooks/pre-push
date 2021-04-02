@@ -143,6 +143,7 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
             for checkinfo in "${CHECKS[@]}"; do
                 read -ra check <<< "${checkinfo//:/ }"
                 if echo "$i" | grep -E "${check[1]}"; then
+                    echo "RUNNNNN"
                     "check_${check[0]}" "$i"
                 fi
             done
