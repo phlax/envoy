@@ -64,6 +64,7 @@ run_file_checks () {
 # note: we may want to use python if this grows in complexity
 #
 if [[ -n "$FILEPATH" ]]; then
+    echo "RUN 11111"
     run_file_checks "$FILEPATH"
 else
     for file in $(find_text_files); do

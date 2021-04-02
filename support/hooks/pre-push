@@ -146,7 +146,7 @@ check_shellcheck () {
 check_glint () {
     local file="$1"
     [[ -n "$DEBUG" ]] && echo "glint: ${file}"
-    # "$SCRIPT_DIR"/code_format/glint.sh "$1"
+    "$SCRIPT_DIR"/code_format/glint.sh "$1"
 }
 
 
