@@ -22,6 +22,9 @@ SKIP_CODE_FORMAT="${SKIP_CODE_FORMAT:-}"
 SKIP_CODE_FORMAT_PROBLEM="WARNING: Missing \$BUILDIFIER_PATH or \$CLANG_FORMAT, skipping code_format/check_format.py"
 SKIP_CODE_FORMAT_SOLUTION="See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information"
 
+# skip message/logic for autoformat
+SKIP_AUTOFORMAT="${SKIP_AUTOFORMAT:-}"
+
 # skip message/logic for flake8
 SKIP_FLAKE8="${SKIP_FLAKE8:-}"
 
@@ -52,6 +55,14 @@ if [[ -f "${SRC_DIR}/.envoypush" ]]; then
     # shellcheck disable=SC1090
     . "${SRC_DIR}/.envoypush"
 fi
+
+
+autoformat () {
+    if [[ -n "$SKIP_AUTOFORMAT" ]]; then
+        return
+    fi
+    "$SCRIPT_DIR"/code_format/format_python_tools.sh check || exit 1
+}
 
 check_dco () {
     local range="$1" signed_off not_signed_off
@@ -93,8 +104,6 @@ check_flake8 () {
         return
     fi
     [[ -n "$DEBUG" ]] && echo "flake8: ${file}"
-
-
     if [[ -n "$FLAKE8_PATH" ]];  then
         "$FLAKE8_PATH" "$i" || exit 1
     else
@@ -174,7 +183,6 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
                 fi
             done
         done
-
-        # "$SCRIPT_DIR"/code_format/format_python_tools.sh check
+        autoformat
     fi
 done
