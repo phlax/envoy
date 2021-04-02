@@ -208,7 +208,7 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
         for i in $(git diff --name-only "$RANGE" --diff-filter=ACMR --ignore-submodules=all 2>&1); do
             for checkinfo in "${CHECKS[@]}"; do
                 read -ra check <<< "${checkinfo//:/ }"
-                if echo "$i" | grep -E "${check[1]}"; then
+                if echo "$i" | grep -E "${check[1]}" > /dev/null; then
                     "check_${check[0]}" "$i"
                 fi
             done
