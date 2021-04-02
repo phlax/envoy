@@ -13,7 +13,7 @@ DUMMY_SHA=0000000000000000000000000000000000000000
 
 echo "Running pre-push check; to skip this step use 'push --no-verify'"
 
-DEBUG="${DEBUG_COMMIT_PUSH:-yes}"
+DEBUG="${DEBUG_COMMIT_PUSH:-}"
 FLAKE8_PATH=${FLAKE_PATH:-$(which flake8)}
 SHELLCHECK_PATH=${FLAKE_PATH:-$(which shellcheck)}
 
