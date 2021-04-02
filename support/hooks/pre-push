@@ -48,8 +48,7 @@ CHECKS=(
 
 
 if [[ -f "${SRC_DIR}/.envoypush" ]]; then
-    # allow user to override paths and/or suppress checks and error messages
-    # shellcheck source=.envoypush
+    # allow user to override paths and/or suppress checks and error messages with env vars
     . "${SRC_DIR}/.envoypush"
 fi
 
