@@ -125,9 +125,9 @@ check_shellcheck () {
         isshell=yes
     elif grep "^#!/bin/bash" "$file"; then
         isshell=yes
-    elif grep "^#!/bin/sh" "$file"; then
+    elif grep "^#!/bin/sh" "$file" > /dev/null; then
         isshell=yes
-    elif grep "^#!/usr/bin/env bash" "$file"; then
+    elif grep "^#!/usr/bin/env bash" "$file" > /dev/null; then
         isshell=yes
     fi
     if [[ -z "$isshell" ]]; then
