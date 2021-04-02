@@ -34,7 +34,8 @@ SKIP_PROTOS="${SKIP_PROTOS:-}"
 # NOTE: The `tools` directory will be the same relative to the support
 # directory, independent of whether we're in a submodule, so no need to use
 # our `relpath` helper.
-SCRIPT_DIR="$(dirname "$(realpath "$0")")/../../tools"
+SRC_DIR="$(dirname "$(realpath "$0")")/../../"
+SCRIPT_DIR="${SRC_DIR}/tools"
 
 CHECKS=(
     "code_format:*"
@@ -46,9 +47,9 @@ CHECKS=(
     "repositories:*.bzl")
 
 
-if [[ -f ".envoypush" ]]; then
+if [[ -f "${SRC_DIR}/.envoypush" ]]; then
     # allow user to override paths and/or suppress checks and error messages
-    . .envoypush
+    . "${SRC_DIR}/.envoypush"
 fi
 
 check_dco () {
