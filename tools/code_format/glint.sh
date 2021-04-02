@@ -70,7 +70,7 @@ else
     for file in $(find_text_files); do
         run_file_checks "$FILEPATH"
     done
-done
+fi
 
 if [[ -n "$ERRORS" ]]; then
     echo >&2
