@@ -68,7 +68,7 @@ if [[ -n "$FILEPATH" ]]; then
     run_file_checks "$FILEPATH"
 else
     for file in $(find_text_files); do
-        run_file_checks "$FILEPATH"
+        run_file_checks "$file"
     done
 fi
 
