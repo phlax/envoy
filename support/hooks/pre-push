@@ -14,15 +14,18 @@ DUMMY_SHA=0000000000000000000000000000000000000000
 # Set non-empty value to quieten push hook
 SKIP_PUSH_MESSAGE="${SKIP_PUSH_MESSAGE:-}"
 
-# Link to README in the repo
-# TODO(phlax): Update to main
+# Link to READMEs etc
+DCO_URL=https://github.com/envoyproxy/envoy/blob/main/CONTRIBUTING.md#dco-sign-your-work
 README_URL=https://github.com/envoyproxy/envoy/blob/main/support/hooks/README.md
+BAZEL_README_URL=https://github.com/envoyproxy/envoy/blob/main/bazel/README.md
+SHELLCHECK_INSTALL_URL=https://github.com/koalaman/shellcheck#installing
 
 PUSH_MESSAGE=(
     "Running pre-push checks"
     "* You can skip this step with \"git push --no-verify\""
     "* More info here: ${README_URL}"
     "* Hide this message with \"echo SKIP_PUSH_MESSAGE=yes >> .envoypush\"")
+USE_BAZEL_TOOLS="${USE_BAZEL_TOOLS:-}"
 
 # this is a list of checks that are run
 # the check is split on the first colon
@@ -42,7 +45,7 @@ DEBUG="${DEBUG_COMMIT_PUSH:-}"
 
 # handle failure
 EXIT_ON_ERROR="${EXIT_ON_ERROR:-}"
-FAIL_ON_MISSING="${FAIL_ON_MISSING:-}"
+WARN_ON_MISSING="${WARN_ON_MISSING:-}"
 PUSH_ON_FAILURE="${PUSH_ON_FAILURE:-}"
 FAILED=
 
@@ -51,7 +54,8 @@ DCO_ERROR_COMMITS=(
     "ERROR: The following commits do not have DCO signoff:"
     ""
     "  See here for information on how to fix:"
-    "      https://github.com/envoyproxy/envoy/blob/main/CONTRIBUTING.md#dco-sign-your-work")
+    ""
+    "      ${DCO_URL}")
 
 # skip message/logic for code_format
 SKIP_CODE_FORMAT="${SKIP_CODE_FORMAT:-}"
@@ -59,40 +63,61 @@ CODE_FORMAT_WARNING=(
     "WARNING: Skipping code_format checks - missing \$BUILDIFIER_PATH or \$CLANG_FORMAT"
     ""
     "  For further information:"
-    "      https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker")
+    ""
+    "      ${BAZEL_README_URL}#running-clang-format-without-docker"
+    ""
+    "  Skip this check with \"echo SKIP_CODE_FORMAT=yes >> .envoypush\"")
 
 # skip message/logic for flake8
 FLAKE8_PATH=${FLAKE8_PATH:-$(command -v flake8)}
 FLAKE8_WARNING=(
-    "WARNING: Skipping python flake8 tests - missing flake8 command in \$PATH"
+    "WARNING: Skipping python flake8 tests - missing flake8 or bazel commands"
     ""
-    "  Install flake8 using pip.")
+    "  You can install bazel and \"echo USE_BAZEL_TOOLS=yes >> .envoypush\""
+    ""
+    "      For bazel: ${BAZEL_README_URL}"
+    ""
+    "  You can also install flake8 using pip - \"pip install flake8\"."
+    ""
+    "  Skip this check with \"echo SKIP_FLAKE8=yes >> .envoypush\"")
 SKIP_FLAKE8="${SKIP_FLAKE8:-}"
 
 # skip message/logic for shellcheck
 SHELLCHECK_PATH=${SHELLCHECK_PATH:-$(command -v shellcheck)}
 SHELLCHECK_WARNING=(
-    "WARNING: Skipping shellcheck checks - missing shellcheck command in \$PATH"
+    "WARNING: Skipping shellcheck checks - missing shellcheck command"
     ""
     "  Install shellcheck for your system:"
-    "      https://github.com/koalaman/shellcheck#installing")
+    ""
+    "      ${SHELLCHECK_INSTALL_URL}"
+    ""
+    "  Skip this check with \"echo SKIP_SHELLCHECK=yes >> .envoypush\"")
 SKIP_SHELLCHECK="${SKIP_SHELLCHECK:-}"
 
 # skip logic for protos - requires bazel
 SKIP_PROTOS="${SKIP_PROTOS:-}"
 BAZEL_PATH=${BAZEL_PATH:-$(command -v bazel)}
 PROTOS_WARNING=(
-    "WARNING: Skipping protobuf checks - missing bazel command in \$PATH"
+    "WARNING: Skipping protobuf checks - missing bazel command"
     ""
     "  Install bazel for your system:"
-    "      https://github.com/envoyproxy/envoy/blob/main/bazel/README.md")
+    ""
+    "       ${BAZEL_README_URL}"
+    ""
+    "  Skip this check with \"echo SKIP_PROTOS=yes >> .envoypush\"")
 
 # skip message/logic for yapf
 YAPF_PATH=${YAPF_PATH:-$(command -v yapf)}
 YAPF_WARNING=(
-    "WARNING: Skipping python yapf checks - missing yapf command in \$PATH"
+    "WARNING: Skipping python yapf checks - missing yapf or bazel commands"
     ""
-    "    Install yapf using pip.")
+    "  You can install bazel and \"echo USE_BAZEL_TOOLS=yes >> .envoypush\""
+    ""
+    "      For bazel: ${BAZEL_README_URL}"
+    ""
+    "  You can also install yapf using pip - \"pip install yapf\"."
+    ""
+    "  Skip this check with \"echo SKIP_YAPF=yes >> .envoypush\"")
 SKIP_YAPF="${SKIP_YAPF:-}"
 
 # NOTE: The `tools` directory will be the same relative to the support
@@ -141,7 +166,7 @@ check_code_format () {
     fi
     log_check code_format "$file"
     if [[ -n "$BUILDIFIER_PATH" ]] && [[ -n "$CLANG_FORMAT" ]];  then
-        "$SCRIPT_DIR"/code_format/check_format.py check "$file" || handle_error code_format
+        "$SCRIPT_DIR"/code_format/check_format.py check "$file" || handle_error code_format "$file"
     else
         handle_missing code_format "${CODE_FORMAT_WARNING[@]}"
         SKIP_CODE_FORMAT=yes
@@ -155,7 +180,9 @@ check_flake8 () {
         return
     fi
     log_check flake8 "$file"
-    if [[ -n "$FLAKE8_PATH" ]];  then
+    if [[ -n "$BAZEL_PATH" ]] && [[ -n "$USE_BAZEL_TOOLS" ]];  then
+        "$FLAKE8_PATH" run //tools/code_format:python_flake8 "$file" || handle_error flake8 "$file"
+    elif [[ -n "$FLAKE8_PATH" ]];  then
         "$FLAKE8_PATH" "$file" || handle_error flake8
     else
         handle_missing flake8 "${FLAKE8_WARNING[@]}"
@@ -178,7 +205,7 @@ check_protos () {
     SKIP_PROTOS=yes
 
     if [[ -n "$BAZEL_PATH" ]];  then
-        "$SCRIPT_DIR"/proto_format/proto_format.sh check || handle_error protos
+        "$SCRIPT_DIR"/proto_format/proto_format.sh check || handle_error protos "$file"
     else
         handle_missing protos "${PROTOS_WARNING[@]}"
     fi
@@ -200,7 +227,7 @@ check_shellcheck () {
     fi
     log_check shellcheck "$file"
     if [[ -n "$SHELLCHECK_PATH" ]];  then
-        "$SHELLCHECK_PATH" -x "$file" || handle_error shellcheck
+        "$SHELLCHECK_PATH" -x "$file" || handle_error shellcheck "$file"
     else
         handle_missing shellcheck "${SHELLCHECK_WARNING[@]}"
         SKIP_SHELLCHECK=yes
@@ -221,8 +248,10 @@ check_yapf () {
         return
     fi
     log_check yapf "$file"
-    if [[ -n "$YAPF_PATH" ]];  then
-        "$SCRIPT_DIR/code_format/format_python_tools.py" check "$file" || handle_error yapf
+    if [[ -n "$BAZEL_PATH" ]] && [[ -n "$USE_BAZEL_TOOLS" ]];  then
+        "$BAZEL_PATH" run //tools/code_format:python_yapf check "$file" || handle_error "yapf: ${file}"
+    elif [[ -n "$YAPF_PATH" ]];  then
+        "$SCRIPT_DIR/code_format/format_python_tools.py" check "$file" || handle_error "yapf: ${file}"
     else
         handle_missing yapf "${YAPF_WARNING[@]}"
         SKIP_YAPF=yes
@@ -251,8 +280,8 @@ check_repositories () {
 handle_missing () {
     local missing="$1"
     log_error "${@}"
-    if [[ -n "$FAIL_ON_MISSING" ]]; then
-        handle_error "${missing}"
+    if [[ -z "$WARN_ON_MISSING" ]]; then
+        handle_error "Missing required util: ${missing}"
     fi
 }
 
