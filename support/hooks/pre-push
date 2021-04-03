@@ -16,7 +16,7 @@ SKIP_PUSH_MESSAGE="${SKIP_PUSH_MESSAGE:-}"
 
 # Link to README in the repo
 # TODO(phlax): Update to main
-README_URL=https://github.com/envoyproxy/envoy/blob/2ff6c360fe80c84de846c5211fe42e594f1c734c/support/hooks/README.md
+README_URL=https://github.com/envoyproxy/envoy/blob/main/support/hooks/README.md
 
 PUSH_MESSAGE=(
     "Running pre-push checks"
@@ -64,7 +64,7 @@ CODE_FORMAT_WARNING=(
 # skip message/logic for flake8
 FLAKE8_PATH=${FLAKE8_PATH:-$(command -v flake8)}
 FLAKE8_WARNING=(
-    "WARNING: Missing flake8 command in \$PATH"
+    "WARNING: Skipping python flake8 tests - missing flake8 command in \$PATH"
     ""
     "  Install flake8 using pip.")
 SKIP_FLAKE8="${SKIP_FLAKE8:-}"
@@ -72,7 +72,7 @@ SKIP_FLAKE8="${SKIP_FLAKE8:-}"
 # skip message/logic for shellcheck
 SHELLCHECK_PATH=${SHELLCHECK_PATH:-$(command -v shellcheck)}
 SHELLCHECK_WARNING=(
-    "WARNING: Missing shellcheck command in \$PATH"
+    "WARNING: Skipping shellcheck checks - missing shellcheck command in \$PATH"
     ""
     "  Install shellcheck for your system:"
     "      https://github.com/koalaman/shellcheck#installing")
@@ -82,15 +82,15 @@ SKIP_SHELLCHECK="${SKIP_SHELLCHECK:-}"
 SKIP_PROTOS="${SKIP_PROTOS:-}"
 BAZEL_PATH=${BAZEL_PATH:-$(command -v bazel)}
 PROTOS_WARNING=(
-    "WARNING: Missing bazel command in \$PATH"
+    "WARNING: Skipping protobuf checks - missing bazel command in \$PATH"
     ""
     "  Install bazel for your system:"
-    "      https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker")
+    "      https://github.com/envoyproxy/envoy/blob/main/bazel/README.md")
 
 # skip message/logic for yapf
 YAPF_PATH=${YAPF_PATH:-$(command -v yapf)}
 YAPF_WARNING=(
-    "WARNING: Missing yapf command in \$PATH"
+    "WARNING: Skipping python yapf checks - missing yapf command in \$PATH"
     ""
     "    Install yapf using pip.")
 SKIP_YAPF="${SKIP_YAPF:-}"
@@ -252,16 +252,14 @@ handle_missing () {
     local missing="$1"
     log_error "${@}"
     if [[ -n "$FAIL_ON_MISSING" ]]; then
-        log_error "$missing" "ERROR: missing util"
-        handle_error "$missing"
+        handle_error "${missing}"
     fi
 }
 
 handle_error () {
-    local failure="$1"
     FAILED=yes
+    log_error FAILED "${@}"
     if [[ -n "$EXIT_ON_ERROR" ]]; then
-        log_error "$failure" "FAILED"
         exit 1
     fi
 }
@@ -270,17 +268,47 @@ log_check () {
     if [[ -z "$DEBUG" ]]; then
         return
     fi
-    echo "[check:${1}] ${2}"
+    echo "[${1}] ${2}"
 }
 
 log_error () {
     local check="$1"
     shift
-    echo "[check:${check}]" >&2
+    echo "[${check}]" >&2
     for line in "${@}"; do
-        echo "[check:${check}] ${line}" >&2
+        echo "[${check}] ${line}" >&2
     done
-    echo "[check:${check}]" >&2
+    echo "[${check}]" >&2
+}
+
+
+run_checks_for () {
+    # Run checks for a filepath
+    local filepath="$1"
+
+    # Run each check against the file where the check's regex matches for the filepath
+    for checkstring in "${CHECKS[@]}"; do
+        # Split on the first colon, and rejoin the rest
+        IFS=':' read -r -a checkinfo <<< "$checkstring"
+        check="${checkinfo[0]}"
+        match=$(IFS=':'; echo "${checkinfo[*]:1}")
+
+        if echo "$filepath" | grep -E "$match" > /dev/null; then
+            # check <> filepath match, run the check...
+            "check_${check}" "$filepath"
+        fi
+    done
+}
+
+run_checks () {
+    # Run all checks
+    local range="$1"
+
+    check_dco "$range"
+
+    for filepath in $(git diff --name-only "$range" --diff-filter=ACMR --ignore-submodules=all 2>&1); do
+        run_checks_for "$filepath"
+    done
 }
 
 
@@ -308,21 +336,7 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
             RANGE="$REMOTE_SHA..$LOCAL_SHA"
         fi
 
-        # Run the checks
-        check_dco "$RANGE"
-        for filepath in $(git diff --name-only "$RANGE" --diff-filter=ACMR --ignore-submodules=all 2>&1); do
-
-            # Run each check against the file where the check's regex matches for the filepath
-            for checkstring in "${CHECKS[@]}"; do
-                # Split on the first colon, and rejoin the rest
-                IFS=':' read -r -a checkinfo <<< "$checkstring"
-                check="${checkinfo[0]}"
-                match=$(IFS=':'; echo "${checkinfo[*]:1}")
-                if echo "$filepath" | grep -E "$match" > /dev/null; then
-                    "check_${check}" "$filepath"
-                fi
-            done
-        done
+        run_checks "$RANGE"
 
         # If push on failure is *not* set and there are errors, exit 1
         if [[ -z "$PUSH_ON_FAILURE" ]] && [[ -n "$FAILED" ]]; then
