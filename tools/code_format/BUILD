@@ -21,3 +21,12 @@ py_binary(
         requirement("pep8-naming"),
     ],
 )
+
+py_binary(
+    name = "python_yapf",
+    srcs = ["python_yapf.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("yapf"),
+    ],
+)

@@ -5,4 +5,4 @@
 select = N802,F401,E111,F821,E9,F63,F72,F82
 
 # TODO(phlax): exclude less
-exclude = build_docs,.git,generated,test,examples
+exclude = build_docs,.git,generated,test,examples,*/venv/*
