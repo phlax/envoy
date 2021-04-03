@@ -18,6 +18,12 @@ SKIP_PUSH_MESSAGE=
 # TODO(phlax): Update to main
 README_URL=https://github.com/envoyproxy/envoy/blob/2ff6c360fe80c84de846c5211fe42e594f1c734c/support/hooks/README.md
 
+PUSH_MESSAGE=(
+    "Running pre-push checks"
+    "* You can skip this step with \"git push --no-verify\""
+    "* More info here: ${README_URL}"
+    "* Hide this message with \"echo SKIP_PUSH_MESSAGE=yes >> .envoypush\"")
+
 # this is a list of checks that are run
 # the check is split on the first colon
 # - the function to run ie - `check_{check_name}`
@@ -41,35 +47,48 @@ PUSH_ON_FAILURE="${PUSH_ON_FAILURE:-}"
 FAILED=
 
 # DCO
-DCO_PROBLEM_COMMITS="ERROR: The following commits do not have DCO signoff:"
+DCO_ERROR_COMMITS=(
+    "ERROR: The following commits do not have DCO signoff:"
+    ""
+    "See here for information on how to fix")
 
 # skip message/logic for code_format
 SKIP_CODE_FORMAT="${SKIP_CODE_FORMAT:-}"
-CODE_FORMAT_PROBLEM="WARNING: Missing \$BUILDIFIER_PATH or \$CLANG_FORMAT, skipping code_format/check_format.py"
-CODE_FORMAT_SOLUTION="See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information"
+CODE_FORMAT_WARNING=(
+    "WARNING: Skipping code_format checks - missing \$BUILDIFIER_PATH or \$CLANG_FORMAT"
+    ""
+    "    See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information")
 
 # skip message/logic for flake8
 FLAKE8_PATH=${FLAKE8_PATH:-$(command -v flake8)}
-FLAKE8_PROBLEM="WARNING: Missing flake8 command in \$PATH"
-FLAKE8_SOLUTION="Install flake8 using pip."
+FLAKE8_WARNING=(
+    "WARNING: Missing flake8 command in \$PATH"
+    ""
+    "    Install flake8 using pip.")
 SKIP_FLAKE8="${SKIP_FLAKE8:-}"
 
 # skip message/logic for shellcheck
 SHELLCHECK_PATH=${SHELLCHECK_PATH:-$(command -v shellcheck)}
-SHELLCHECK_PROBLEM="WARNING: Missing shellcheck command in \$PATH"
-SHELLCHECK_SOLUTION="Install shellcheck for your system."
+SHELLCHECK_WARNING=(
+    "WARNING: Missing shellcheck command in \$PATH"
+    ""
+    "    Install shellcheck for your system.")
 SKIP_SHELLCHECK="${SKIP_SHELLCHECK:-}"
 
 # skip logic for protos - requires bazel
 SKIP_PROTOS="${SKIP_PROTOS:-}"
 BAZEL_PATH=${BAZEL_PATH:-$(command -v bazel)}
-BAZEL_PROBLEM="WARNING: Missing bazel command in \$PATH"
-BAZEL_SOLUTION="Install bazel for your system."
+PROTOS_WARNING=(
+    "WARNING: Missing bazel command in \$PATH"
+    ""
+    "    Install bazel for your system.")
 
 # skip message/logic for yapf
 YAPF_PATH=${YAPF_PATH:-$(command -v yapf)}
-YAPF_PROBLEM="WARNING: Missing yapf command in \$PATH"
-YAPF_SOLUTION="Install yapf using pip."
+YAPF_WARNING=(
+    "WARNING: Missing yapf command in \$PATH"
+    ""
+    "    Install yapf using pip.")
 SKIP_YAPF="${SKIP_YAPF:-}"
 
 # NOTE: The `tools` directory will be the same relative to the support
@@ -101,7 +120,7 @@ check_dco () {
     signed_off=$(git rev-list --no-merges --grep "^Signed-off-by: " "$range")
     not_signed_off=$(git rev-list --no-merges "$range" | grep -Fxv "$signed_off")
     if [[ -n "$not_signed_off" ]]; then
-        log_error dco "$DCO_PROBLEM_COMMITS"
+        log_error dco "${DCO_ERROR_COMMITS[@]}"
         while read -r commit; do
             echo "  $(git log --pretty=oneline --abbrev-commit -n 1 "$commit")"
         done <<< "$not_signed_off"
@@ -120,7 +139,7 @@ check_code_format () {
     if [[ -n "$BUILDIFIER_PATH" ]] && [[ -n "$CLANG_FORMAT" ]];  then
         "$SCRIPT_DIR"/code_format/check_format.py check "$file" || handle_error code_format
     else
-        handle_missing code_format "$CODE_FORMAT_PROBLEM" "    $CODE_FORMAT_SOLUTION"
+        handle_missing code_format "${CODE_FORMAT_WARNING[@]}"
         SKIP_CODE_FORMAT=yes
     fi
 }
@@ -135,7 +154,7 @@ check_flake8 () {
     if [[ -n "$FLAKE8_PATH" ]];  then
         "$FLAKE8_PATH" "$file" || handle_error flake8
     else
-        handle_missing flake8 "$FLAKE8_PROBLEM" "    $FLAKE8_SOLUTION"
+        handle_missing flake8 "${FLAKE8_WARNING[@]}"
         SKIP_FLAKE8=yes
     fi
 }
@@ -156,7 +175,7 @@ check_protos () {
     if [[ -n "$BAZEL_PATH" ]];  then
         "$SCRIPT_DIR"/proto_format/proto_format.sh check || handle_error protos
     else
-        handle_missing protos "$BAZEL_PROBLEM" "    $BAZEL_SOLUTION"
+        handle_missing protos "${PROTOS_WARNING[@]}"
     fi
 }
 
@@ -178,7 +197,7 @@ check_shellcheck () {
     if [[ -n "$SHELLCHECK_PATH" ]];  then
         "$SHELLCHECK_PATH" -x "$file" || handle_error shellcheck
     else
-        handle_missing shellcheck "$SHELLCHECK_PROBLEM" "    $SHELLCHECK_SOLUTION"
+        handle_missing shellcheck "${SHELLCHECK_WARNING[@]}"
         SKIP_SHELLCHECK=yes
     fi
 }
@@ -200,7 +219,7 @@ check_yapf () {
     if [[ -n "$YAPF_PATH" ]];  then
         "$SCRIPT_DIR/code_format/format_python_tools.py" check "$file" || handle_error yapf
     else
-        handle_missing yapf "$YAPF_PROBLEM" "    $YAPF_SOLUTION"
+        handle_missing yapf "${YAPF_WARNING[@]}"
         SKIP_YAPF=yes
     fi
 }
@@ -252,22 +271,20 @@ log_check () {
 log_error () {
     local check="$1"
     shift
+    echo "[check:${check}]" >&2
     for line in "${@}"; do
         echo "[check:${check}] ${line}" >&2
     done
+    echo "[check:${check}]" >&2
 }
 
 
 if [[ -z "$SKIP_PUSH_MESSAGE" ]]; then
     echo
-    echo "  Running pre-push checks"
-    echo
-    echo "    You can skip this step with \"git push --no-verify\""
-    echo
-    echo "    Check ${README_URL} for more info"
-    echo
-    echo "    Hide this message with \"echo SKIP_PUSH_MESSAGE=yes >> .envoypush\""
-    echo
+    for line in "${PUSH_MESSAGE[@]}"; do
+        echo "    $line"
+        echo
+    done
 fi
 
 while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
@@ -289,7 +306,8 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
         # Run the checks
         check_dco "$RANGE"
         for filepath in $(git diff --name-only "$RANGE" --diff-filter=ACMR --ignore-submodules=all 2>&1); do
-            # run each check against the file where the check's regex matches
+
+            # run each check against the file where the check's regex matches for the filepath
             for checkinfo in "${CHECKS[@]}"; do
                 read -ra check <<< "${checkinfo//:/ }"
                 if echo "$filepath" | grep -E "${check[1]}" > /dev/null; then
@@ -297,6 +315,8 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
                 fi
             done
         done
+
+        # If push on failure is *not* set and there are errors, exit 1
         if [[ -z "$PUSH_ON_FAILURE" ]] && [[ -n "$FAILED" ]]; then
             exit 1
         fi

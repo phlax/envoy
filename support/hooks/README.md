@@ -185,7 +185,7 @@ See the pre-push file for other settings.
 
 ### Missing check utilities
 
-If a utility required by a check is missing **the check will be disabled**, and a warning will be printed to `stderr`.
+**If a utility required by a check is missing the check will be disabled**, and a warning will be printed to `stderr`.
 
 This warning message should also provide some pointer to install the requirements
 
@@ -202,7 +202,7 @@ $ echo "SKIP_CODE_FORMAT=yes" >> .envoypush
 
 ```
 
-If you wish to make missing utilities a failure you can set the `FAIL_ON_MISSING` var in `.envoypush`
+If you wish to make the absence of a required utility into a failure, and preventing push, you can set the `FAIL_ON_MISSING` var in `.envoypush`
 
 ```console
 
@@ -218,9 +218,9 @@ error: failed to push some refs to 'github.com:user/envoy'
 
 ### Debugging hook checks
 
-Mostly the hooks should be quiet (ideally at least!), unless there is a problem.
+Hook should be quiet unless there a problem is found.
 
-If you wish to see what is being run set the `DEBUG` flag in `.envoypush`
+If you wish to see what checks are being run when you push, you can set the `DEBUG` flag in `.envoypush`
 
 ```console
 
