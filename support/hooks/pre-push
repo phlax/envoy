@@ -12,7 +12,7 @@
 DUMMY_SHA=0000000000000000000000000000000000000000
 
 # Set non-empty value to quieten push hook
-SKIP_PUSH_MESSAGE=
+SKIP_PUSH_MESSAGE="${SKIP_PUSH_MESSAGE:-}"
 
 # Link to README in the repo
 # TODO(phlax): Update to main
@@ -50,21 +50,23 @@ FAILED=
 DCO_ERROR_COMMITS=(
     "ERROR: The following commits do not have DCO signoff:"
     ""
-    "See here for information on how to fix")
+    "  See here for information on how to fix:"
+    "      https://github.com/envoyproxy/envoy/blob/main/CONTRIBUTING.md#dco-sign-your-work")
 
 # skip message/logic for code_format
 SKIP_CODE_FORMAT="${SKIP_CODE_FORMAT:-}"
 CODE_FORMAT_WARNING=(
     "WARNING: Skipping code_format checks - missing \$BUILDIFIER_PATH or \$CLANG_FORMAT"
     ""
-    "    See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker for further information")
+    "  For further information:"
+    "      https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker")
 
 # skip message/logic for flake8
 FLAKE8_PATH=${FLAKE8_PATH:-$(command -v flake8)}
 FLAKE8_WARNING=(
     "WARNING: Missing flake8 command in \$PATH"
     ""
-    "    Install flake8 using pip.")
+    "  Install flake8 using pip.")
 SKIP_FLAKE8="${SKIP_FLAKE8:-}"
 
 # skip message/logic for shellcheck
@@ -72,7 +74,8 @@ SHELLCHECK_PATH=${SHELLCHECK_PATH:-$(command -v shellcheck)}
 SHELLCHECK_WARNING=(
     "WARNING: Missing shellcheck command in \$PATH"
     ""
-    "    Install shellcheck for your system.")
+    "  Install shellcheck for your system:"
+    "      https://github.com/koalaman/shellcheck#installing")
 SKIP_SHELLCHECK="${SKIP_SHELLCHECK:-}"
 
 # skip logic for protos - requires bazel
@@ -81,7 +84,8 @@ BAZEL_PATH=${BAZEL_PATH:-$(command -v bazel)}
 PROTOS_WARNING=(
     "WARNING: Missing bazel command in \$PATH"
     ""
-    "    Install bazel for your system.")
+    "  Install bazel for your system:"
+    "      https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#running-clang-format-without-docker")
 
 # skip message/logic for yapf
 YAPF_PATH=${YAPF_PATH:-$(command -v yapf)}
@@ -163,6 +167,7 @@ check_protos () {
     # Run proto_format.sh
     # this only runs once and only if a .proto file is found to be changed
     #
+    local file="$1"
     if [[ -n "$SKIP_PROTOS" ]]; then
         return
     fi
@@ -307,11 +312,14 @@ while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
         check_dco "$RANGE"
         for filepath in $(git diff --name-only "$RANGE" --diff-filter=ACMR --ignore-submodules=all 2>&1); do
 
-            # run each check against the file where the check's regex matches for the filepath
-            for checkinfo in "${CHECKS[@]}"; do
-                read -ra check <<< "${checkinfo//:/ }"
-                if echo "$filepath" | grep -E "${check[1]}" > /dev/null; then
-                    "check_${check[0]}" "$filepath"
+            # Run each check against the file where the check's regex matches for the filepath
+            for checkstring in "${CHECKS[@]}"; do
+                # Split on the first colon, and rejoin the rest
+                IFS=':' read -r -a checkinfo <<< "$checkstring"
+                check="${checkinfo[0]}"
+                match=$(IFS=':'; echo "${checkinfo[*]:1}")
+                if echo "$filepath" | grep -E "$match" > /dev/null; then
+                    "check_${check}" "$filepath"
                 fi
             done
         done
