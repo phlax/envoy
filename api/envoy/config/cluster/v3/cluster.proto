@@ -83,7 +83,6 @@ message Cluster {
     // Refer to the :ref:`round robin load balancing
     // policy<arch_overview_load_balancing_types_round_robin>`
     // for an explanation.
-    // EXTRA COMMENT - REMOVE..
     ROUND_ROBIN = 0;
 
     // Refer to the :ref:`least request load balancing
