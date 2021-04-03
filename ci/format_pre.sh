@@ -44,6 +44,10 @@ bazel run "${BAZEL_BUILD_OPTIONS[@]}" //configs:example_configs_validation
 CURRENT=flake8
 bazel run "${BAZEL_BUILD_OPTIONS[@]}" //tools/code_format:python_flake8 "$(pwd)"
 
+CURRENT=yapf
+bazel run "${BAZEL_BUILD_OPTIONS[@]}" //tools/code_format:python_yapf "$(pwd)"
+
+
 if [[ "${#FAILED[@]}" -ne "0" ]]; then
     echo "TESTS FAILED:" >&2
     for failed in "${FAILED[@]}"; do
