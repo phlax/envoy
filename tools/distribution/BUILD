@@ -11,6 +11,14 @@ exports_files([
 ])
 
 envoy_py_binary(
+    name = "tools.distribution.push",
+    deps = [
+        "//tools/base:runner",
+        "//tools/git:utils",
+    ],
+)
+
+envoy_py_binary(
     name = "tools.distribution.sign",
     deps = [
         "//tools/base:runner",
