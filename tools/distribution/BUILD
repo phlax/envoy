@@ -11,6 +11,15 @@ exports_files([
 ])
 
 envoy_py_binary(
+    name = "tools.distribution.sign",
+    deps = [
+        "//tools/base:runner",
+        "//tools/base:utils",
+        "//tools/gpg:identity",
+    ],
+)
+
+envoy_py_binary(
     name = "tools.distribution.verify",
     deps = [
         "//tools/base:checker",
