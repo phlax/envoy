@@ -25,31 +25,18 @@ genrule(
 envoy_pkg_distros(version = VERSION)
 # envoy_pkg_distros(version = VERSION, envoy_bin = ":envoy-dummy")
 
-pkg_tar(
-    name = "distros",
-    deps = [
-        "//distribution/distros:build-debian_buster.tar",
-        "//distribution/distros:build-debian_bullseye.tar",
-        "//distribution/distros:build-ubuntu_impish.tar",
-        "//distribution/distros:build-ubuntu_hirstute.tar",
-        "//distribution/distros:build-redhat_8.1.tar",
-        "//distribution/distros:build-redhat_8.2.tar",
-        "//distribution/distros:build-redhat_8.3.tar",
-        "//distribution/distros:build-redhat_8.4.tar",
-    ],
-)
 
 sh_binary(
     name = "verify_packages",
     data = [
         "//tools/distribution:verify",
-        ":distros",
+        ":distros.yaml",
         "//tools/distribution:distrotest.sh",
     ],
     srcs = [":verification.sh"],
     args = [
         "$(location //tools/distribution:verify)",
         "$(location //tools/distribution:distrotest.sh)",
-        "$(location :distros)",
+        "$(location :distros.yaml)",
     ],
 )
