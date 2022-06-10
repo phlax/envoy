@@ -7,6 +7,12 @@ df -h
 
 # Temporary script to remove tools from Azure pipelines agent to create more disk space room.
 
+du -ch / | grep [0-9]G
+
+
+exit 1
+
+
 PURGE_PACKAGES=(
     "adoptopenjdk-*"
     "ant"
