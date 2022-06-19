@@ -18,6 +18,12 @@ import re
 import subprocess
 import sys
 
+from packaging import version
+
+from bazel_tools.tools.python.runfiles import runfiles
+
+sys.path = [p for p in sys.path if not p.endswith('bazel_tools')]
+
 from tools.api_proto_plugin import annotations, traverse, visitor
 from tools.api_versioning import utils as api_version_utils
 from tools.protoxform import options as protoxform_options, utils
@@ -29,6 +35,8 @@ from google.protobuf import text_format
 from envoy.annotations import deprecation_pb2
 from udpa.annotations import migrate_pb2, status_pb2
 from xds.annotations.v3 import status_pb2 as xds_status_pb2
+
+import envoy_repo
 
 NEXT_FREE_FIELD_MIN = 5
 
@@ -65,7 +73,10 @@ def extract_clang_proto_style(clang_format_text):
     return str(format_dict)
 
 
-def clang_format(contents, style):
+CLANG_FORMAT_STYLE = extract_clang_proto_style(pathlib.Path(runfiles.Create().Rlocation("envoy/.clang-format")).read_text())
+
+
+def clang_format(contents):
     """Run proto-style oriented clang-format over given string.
 
     Args:
@@ -77,7 +88,8 @@ def clang_format(contents, style):
     clang_format_path = os.getenv("CLANG_FORMAT", "clang-format")
     return subprocess.run(
         [clang_format_path,
-         '--style=%s' % style, '--assume-filename=.proto'],
+         '--style=%s' % CLANG_FORMAT_STYLE,
+         '--assume-filename=.proto'],
         input=contents.encode('utf-8'),
         stdout=subprocess.PIPE).stdout
 
@@ -590,13 +602,16 @@ class ProtoFormatVisitor(visitor.Visitor):
     See visitor.Visitor for visitor method docs comments.
     """
 
-    def __init__(self, api_version_file_path, frozen_proto, clang_format_style):
-        current_api_version = api_version_utils.get_api_version(api_version_file_path)
+    def __init__(self, active_or_frozen, params):
+        if params['type_db_path']:
+            utils.load_type_db(params['type_db_path'])
+        self._freeze = 'extra_args' in params and params['extra_args'] == 'freeze'
+        self._active_or_frozen = active_or_frozen
+        current_api_version = version.Version(envoy_repo.API_VERSION)
         self._deprecated_annotation_version_value = '{}.{}'.format(
             current_api_version.major, current_api_version.minor)
         self._requires_deprecation_annotation_import = False
-        self._frozen_proto = frozen_proto
-        self.clang_format_style = clang_format_style
+        self._frozen_proto = params.get("freeze", False)
 
     def _add_deprecation_version(self, field_or_evalue, deprecation_tag, disallowed_tag):
         """Adds a deprecation version annotation if needed to the given field or enum value.
@@ -666,6 +681,7 @@ class ProtoFormatVisitor(visitor.Visitor):
             joined_values)
 
     def visit_message(self, msg_proto, type_context, nested_msgs, nested_enums):
+
         # Skip messages synthesized to represent map types.
         if msg_proto.options.map_entry:
             return ''
@@ -720,34 +736,22 @@ class ProtoFormatVisitor(visitor.Visitor):
         formatted_services = format_block('\n'.join(services))
         formatted_enums = format_block('\n'.join(enums))
         formatted_msgs = format_block('\n'.join(msgs))
-        return clang_format(header + formatted_services + formatted_enums + formatted_msgs, self.clang_format_style)
+        return clang_format(header + formatted_services + formatted_enums + formatted_msgs)
 
 
-if __name__ == '__main__':
-    raise Exception(sys.argv)
-
-    proto_desc_path = sys.argv[1]
-
-    clang_format_style = extract_clang_proto_style(pathlib.Path('.clang-format').read_text())
-
+def main():
+    from tools.api_proto_plugin import plugin
 
     utils.load_protos()
 
-    file_proto = descriptor_pb2.FileDescriptorProto()
-    input_text = pathlib.Path(proto_desc_path).read_text()
-    if not input_text:
-        sys.exit(0)
-    text_format.Merge(input_text, file_proto)
-    dst_path = pathlib.Path(sys.argv[2])
-    utils.load_type_db(sys.argv[3])
-    api_version_file_path = pathlib.Path(sys.argv[4])
-    frozen_proto = file_proto.options.Extensions[
-        status_pb2.file_status].package_version_status == status_pb2.FROZEN
+    plugin.plugin([
+        plugin.direct_output_descriptor(
+            '.proto',
+            functools.partial(ProtoFormatVisitor, True),
+            want_params=True),
+    ])
 
-    dst_path.write_bytes(
-        traverse.traverse_file(
-            file_proto,
-            ProtoFormatVisitor(
-                api_version_file_path,
-                frozen_proto,
-                clang_format_style)))
+
+
+if __name__ == '__main__':
+    main()

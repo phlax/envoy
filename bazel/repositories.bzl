@@ -80,10 +80,12 @@ def _envoy_repo_impl(repository_ctx):
 
     """
     repo_path = repository_ctx.path(repository_ctx.attr.envoy_version)
+    api_path = repository_ctx.path(repository_ctx.attr.envoy_api_version)
     version = repository_ctx.read(repo_path.dirname.get_child(repo_path.basename)).strip()
-    repository_ctx.file("version.bzl", "VERSION = '%s'" % version)
+    api_version = repository_ctx.read(api_path.dirname.get_child(api_path.basename)).strip()
+    repository_ctx.file("version.bzl", "VERSION = '%s'\nAPI_VERSION = '%s'" % (version, api_version))
     repository_ctx.file("path.bzl", "PATH = '%s'" % repo_path.dirname)
-    repository_ctx.file("__init__.py", "PATH = '%s'\nVERSION = '%s'" % (repo_path.dirname, version))
+    repository_ctx.file("__init__.py", "PATH = '%s'\nVERSION = '%s'\nAPI_VERSION = '%s'" % (repo_path.dirname, version, api_version))
     repository_ctx.file("WORKSPACE", "")
     repository_ctx.file("BUILD", """
 load("@rules_python//python:defs.bzl", "py_library")
@@ -96,6 +98,7 @@ _envoy_repo = repository_rule(
     implementation = _envoy_repo_impl,
     attrs = {
         "envoy_version": attr.label(default = "@envoy//:VERSION.txt"),
+        "envoy_api_version": attr.label(default = "@envoy//:API_VERSION.txt"),
     },
 )
 

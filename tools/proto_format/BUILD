@@ -1,10 +1,13 @@
 load("//bazel:envoy_build_system.bzl", "envoy_package")
 load("//tools/base:envoy_python.bzl", "envoy_genjson", "envoy_py_data")
+load("//tools/protoxform:protoprint.bzl", "protoprint_rule")
 load("@aspect_bazel_lib//lib:jq.bzl", "jq")
 load("@envoy_repo//:path.bzl", "PATH")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:pkg.bzl", "pkg_tar")
+
+load("@dev_pip3//:requirements.bzl", dev_requirement = "requirement")
 
 licenses(["notice"])  # Apache 2
 
@@ -56,15 +59,37 @@ envoy_py_data(
     src = ":data_srcs",
 )
 
+protoprint_rule(
+    name = "prettyprinted_srcs",
+    deps = ["//tools/protoxform:api_protoxform"],
+)
+
 pkg_files(
-    name = "protoprinted_files",
+    name = "prettyprinted_files",
+    srcs = [":prettyprinted_srcs"],
+    strip_prefix = strip_prefix.from_pkg(),
+)
+
+pkg_files(
+    name = "prettyprinted_files_stripped",
+    srcs = [":prettyprinted_files"],
+    strip_prefix = "pkg",
+)
+
+pkg_tar(
+    name = "prettyprinted",
+    srcs = [":prettyprinted_files_stripped"],
+)
+
+pkg_files(
+    name = "xformed_files",
     srcs = ["//tools/protoxform:api_protoxform"],
     strip_prefix = strip_prefix.from_pkg(),
 )
 
 pkg_tar(
-    name = "protoprinted",
-    srcs = [":protoprinted_files"],
+    name = "xformed",
+    srcs = [":xformed_files"],
 )
 
 py_binary(
@@ -75,11 +100,16 @@ py_binary(
         "--protoprint=$(location //tools/protoxform:protoprint)",
         "--descriptor=$(location //tools/type_whisperer:api_type_db.pb_text)",
     ],
-    data = ["//tools/type_whisperer:api_type_db.pb_text"],
+    data = [
+        "//:.clang-format",
+        "//:API_VERSION.txt",
+        "//tools/type_whisperer:api_type_db.pb_text",
+    ],
     deps = [
         ":data",
         "//tools/api_proto_plugin:utils",
         "//tools/protoxform:protoprint",
+        dev_requirement("remote_pdb"),
     ],
 )
 
@@ -92,11 +122,13 @@ genrule(
         --protoprint=$(location //tools/protoxform:protoprint) \
         --descriptor=$(location //tools/type_whisperer:api_type_db.pb_text) \
         --outfile=$@ \
-        --protoprinted=$(location :protoprinted) \
+        --xformed=$(location :xformed) \
+        --protoprinted=$(location :prettyprinted) \
     """ % PATH,
     tools = [
         ":format_api",
-        ":protoprinted",
+        ":prettyprinted",
+        ":xformed",
         "//tools/protoxform:protoprint",
         "//tools/type_whisperer:api_type_db.pb_text",
     ],

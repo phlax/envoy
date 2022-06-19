@@ -254,7 +254,7 @@ def sync_build_files(cmd, dst_root):
             f.write(build_contents)
 
 
-def format_api(api_root, mode, protoprint, descriptor, outfile, printed):
+def format_api(api_root, mode, protoprint, descriptor, outfile, xformed, printed):
     # this is currently assumed by protoprint
     os.chdir(pathlib.Path(api_root).parent)
 
@@ -262,9 +262,13 @@ def format_api(api_root, mode, protoprint, descriptor, outfile, printed):
         dst_dir = pathlib.Path(tmp)
         printed_dir = dst_dir.joinpath("printed")
         printed_dir.mkdir()
-
         with tarfile.open(printed) as tar:
             tar.extractall(printed_dir)
+
+        xformed_dir = dst_dir.joinpath("xformed")
+        xformed_dir.mkdir()
+        with tarfile.open(xformed) as tar:
+            tar.extractall(xformed_dir)
 
         paths = []
         dst_src_paths = defaultdict(list)
@@ -272,15 +276,18 @@ def format_api(api_root, mode, protoprint, descriptor, outfile, printed):
         for label in data["proto_targets"]:
             _label = label[len('@envoy_api//'):].replace(':', '/')
             for suffix in ["active_or_frozen", "next_major_version_candidate"]:
-                path = printed_dir.joinpath(f"pkg/{_label}.{suffix}.proto")
-                if path.exists() and os.stat(path).st_size > 0:
+                xpath = xformed_dir.joinpath(f"pkg/{_label}.{suffix}.proto")
+                path = printed_dir.joinpath(f"{_label}.proto")
+
+                if xpath.exists() and os.stat(xpath).st_size > 0:
                     target = dst_dir.joinpath(_label)
                     target.parent.mkdir(exist_ok=True, parents=True)
                     dst_src_paths[str(target)].append(str(path))
 
-        # TODO(phlax): Move this to an aspect or at least just parse the descriptor once.
-        with mp.Pool() as p:
-            p.map(functools.partial(sync_proto_file, protoprint, descriptor), dst_src_paths.items())
+        for k, v in dst_src_paths.items():
+            shutil.copy(v[0], k)
+            if len(v) > 1:
+                raise Exception(k, v)
         sync_build_files(mode, dst_dir)
 
         # These support files are handled manually.
@@ -291,6 +298,7 @@ def format_api(api_root, mode, protoprint, descriptor, outfile, printed):
             shutil.copy(str(pathlib.Path(api_root, f)), str(copy_dst_dir))
 
         shutil.rmtree(str(printed_dir))
+        shutil.rmtree(str(xformed_dir))
         with tarfile.open(outfile, "w") as tar:
             tar.add(dst_dir, arcname=".")
 
@@ -303,9 +311,13 @@ if __name__ == '__main__':
     parser.add_argument('--descriptor')
     parser.add_argument('--outfile')
     parser.add_argument('--protoprinted')
+    parser.add_argument('--xformed')
     args = parser.parse_args()
 
     format_api(
-        args.api_root, args.mode, str(pathlib.Path(args.protoprint).absolute()),
-        str(pathlib.Path(args.descriptor).absolute()), str(pathlib.Path(args.outfile).absolute()),
+        args.api_root, args.mode,
+        str(pathlib.Path(args.protoprint).absolute()),
+        str(pathlib.Path(args.descriptor).absolute()),
+        str(pathlib.Path(args.outfile).absolute()),
+        str(pathlib.Path(args.xformed).absolute()),
         args.protoprinted)

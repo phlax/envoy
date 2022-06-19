@@ -20,9 +20,13 @@ def _path_ignoring_repository(f):
         # before "external/workspace", so we need to add the starting index of "external/workspace"
         return f.path[f.path.find(f.owner.workspace_root) + len(f.owner.workspace_root) + 1:]
 
-def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes):
+def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes, extra_inputs = []):
     # Compute output files from the current proto_library node's dependencies.
     transitive_outputs = depset(transitive = [dep.output_groups[output_group] for dep in ctx.rule.attr.deps])
+
+    if ProtoInfo not in target:
+        return [OutputGroupInfo(**{output_group: transitive_outputs})]
+
     proto_sources = [
         f
         for f in target[ProtoInfo].direct_sources
@@ -53,6 +57,10 @@ def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes):
 
     # Create the protoc command-line args.
     inputs = target[ProtoInfo].transitive_sources
+    if extra_inputs:
+        for extra in extra_inputs:
+            print(extra)
+            inputs += extra.transitive_sources
     ctx_path = ctx.label.package + "/" + ctx.label.name
     output_path = outputs[0].root.path + "/" + outputs[0].owner.workspace_root + "/" + ctx_path
     args = ["-I./" + ctx.label.workspace_root]
@@ -81,7 +89,7 @@ def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes):
     transitive_outputs = depset(outputs, transitive = [transitive_outputs])
     return [OutputGroupInfo(**{output_group: transitive_outputs})]
 
-def api_proto_plugin_aspect(tool_label, aspect_impl, use_type_db = False):
+def api_proto_plugin_aspect(tool_label, aspect_impl, use_type_db = False, extra_inputs = []):
     _attrs = {
         "_protoc": attr.label(
             default = Label("@com_google_protobuf//:protoc"),
@@ -98,6 +106,11 @@ def api_proto_plugin_aspect(tool_label, aspect_impl, use_type_db = False):
         _attrs["_type_db"] = attr.label(
             default = Label("@envoy//tools/api_proto_plugin:default_type_db"),
         )
+    if extra_inputs:
+        _attrs["_extra_inputs"] = attr.label_list(
+            mandatory = False,
+            allow_empty = True,
+            providers = extra_inputs)
     _attrs["_extra_args"] = attr.label(
         default = Label("@envoy//tools/api_proto_plugin:extra_args"),
     )
