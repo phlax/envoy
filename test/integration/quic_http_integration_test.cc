@@ -484,6 +484,119 @@ public:
   }
 };
 
+class QuicHttpIntegrationTest : public QuicHttpIntegrationTestBase,
+                                public testing::TestWithParam<Network::Address::IpVersion> {
+public:
+  QuicHttpIntegrationTest()
+      : QuicHttpIntegrationTestBase(GetParam(), ConfigHelper::quicHttpProxyConfig()) {}
+};
+
+class QuicHttpMultiAddressesIntegrationTest
+    : public QuicHttpIntegrationTestBase,
+      public testing::TestWithParam<Network::Address::IpVersion> {
+public:
+  QuicHttpMultiAddressesIntegrationTest()
+      : QuicHttpIntegrationTestBase(GetParam(), ConfigHelper::quicHttpProxyConfig(true)) {}
+
+  void testMultipleQuicConnections() {
+    // Enabling SO_REUSEPORT with 8 workers. Unfortunately this setting makes the test rarely flaky
+    // if it is configured to run with --runs_per_test=N where N > 1 but without --jobs=1.
+    setConcurrency(8);
+    initialize();
+    std::vector<std::string> addresses({"address1", "address2"});
+    registerTestServerPorts(addresses);
+    std::vector<IntegrationCodecClientPtr> codec_clients1;
+    std::vector<IntegrationCodecClientPtr> codec_clients2;
+    for (size_t i = 1; i <= concurrency_; ++i) {
+      // The BPF filter and ActiveQuicListener::destination() look at the 1st word of connection id
+      // in the packet header. And currently all QUIC versions support >= 8 bytes connection id. So
+      // create connections with the first 4 bytes of connection id different from each
+      // other so they should be evenly distributed.
+      designated_connection_ids_.push_back(quic::test::TestConnectionId(i << 32));
+      // TODO(sunjayBhatia,wrowe): deserialize this, establishing all connections in parallel
+      // (Expected to save ~14s each across 6 tests on Windows)
+      codec_clients1.push_back(makeHttpConnection(lookupPort("address1")));
+
+      // Using the same connection id for the address1 and address2 here. Since the multiple
+      // addresses listener are expected to create separated `ActiveQuicListener` instance for each
+      // address, then expects the `UdpWorkerRouter` will route the connection to the correct
+      // `ActiveQuicListener` instance. If the two connections with same connection id are going to
+      // the same `ActiveQuicListener`, the test will fail.
+      // For the case of the packets from the different addresses in the same listener wants to be
+      // the same QUIC connection,(Which mentioned at
+      // https://github.com/envoyproxy/envoy/issues/11184#issuecomment-679214885) it doesn't support
+      // for now. When someday that case supported by envoy, we can change this testcase.
+      designated_connection_ids_.push_back(quic::test::TestConnectionId(i << 32));
+      codec_clients2.push_back(makeHttpConnection(lookupPort("address2")));
+    }
+    constexpr auto timeout_first = std::chrono::seconds(15);
+    constexpr auto timeout_subsequent = std::chrono::milliseconds(10);
+    if (version_ == Network::Address::IpVersion::v4) {
+      test_server_->waitForCounterEq("listener.127.0.0.1_0.downstream_cx_total", 16u,
+                                     timeout_first);
+    } else {
+      test_server_->waitForCounterEq("listener.[__1]_0.downstream_cx_total", 16u, timeout_first);
+    }
+    for (size_t i = 0; i < concurrency_; ++i) {
+      if (version_ == Network::Address::IpVersion::v4) {
+        test_server_->waitForGaugeEq(
+            fmt::format("listener.127.0.0.1_0.worker_{}.downstream_cx_active", i), 2u,
+            timeout_subsequent);
+        test_server_->waitForCounterEq(
+            fmt::format("listener.127.0.0.1_0.worker_{}.downstream_cx_total", i), 2u,
+            timeout_subsequent);
+      } else {
+        test_server_->waitForGaugeEq(
+            fmt::format("listener.[__1]_0.worker_{}.downstream_cx_active", i), 2u,
+            timeout_subsequent);
+        test_server_->waitForCounterEq(
+            fmt::format("listener.[__1]_0.worker_{}.downstream_cx_total", i), 2u,
+            timeout_subsequent);
+      }
+    }
+    for (size_t i = 0; i < concurrency_; ++i) {
+      fake_upstream_connection_ = nullptr;
+      upstream_request_ = nullptr;
+
+      auto encoder_decoder = codec_clients1[i]->startRequest(
+          Http::TestRequestHeaderMapImpl{{":method", "GET"},
+                                         {":path", "/test/long/url"},
+                                         {":scheme", "http"},
+                                         {":authority", "host"}});
+      auto& request_encoder = encoder_decoder.first;
+      auto response = std::move(encoder_decoder.second);
+      codec_clients1[i]->sendData(request_encoder, 1000, true);
+      waitForNextUpstreamRequest();
+      upstream_request_->encodeHeaders(Http::TestResponseHeaderMapImpl{{":status", "200"},
+                                                                       {"set-cookie", "foo"},
+                                                                       {"set-cookie", "bar"}},
+                                       true);
+
+      ASSERT_TRUE(response->waitForEndStream());
+      EXPECT_TRUE(response->complete());
+      codec_clients1[i]->close();
+
+      auto encoder_decoder2 = codec_clients2[i]->startRequest(
+          Http::TestRequestHeaderMapImpl{{":method", "GET"},
+                                         {":path", "/test/long/url"},
+                                         {":scheme", "http"},
+                                         {":authority", "host"}});
+      auto& request_encoder2 = encoder_decoder2.first;
+      auto response2 = std::move(encoder_decoder2.second);
+      codec_clients2[i]->sendData(request_encoder2, 1000, true);
+      waitForNextUpstreamRequest();
+      upstream_request_->encodeHeaders(Http::TestResponseHeaderMapImpl{{":status", "200"},
+                                                                       {"set-cookie", "foo"},
+                                                                       {"set-cookie", "bar"}},
+                                       true);
+
+      ASSERT_TRUE(response2->waitForEndStream());
+      EXPECT_TRUE(response2->complete());
+      codec_clients2[i]->close();
+    }
+  }
+};
+
 INSTANTIATE_TEST_SUITE_P(QuicHttpIntegrationTests, QuicHttpIntegrationTest,
                          testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
                          TestUtility::ipTestParamsToString);
