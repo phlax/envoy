@@ -291,7 +291,7 @@ stages:
   condition: and(not(canceled()), or(succeeded(), eq(variables['PostSubmit'], true)))
   jobs:
   - job: release
-    condition: and(not(canceled()), succeeded(), ne(stageDependencies.env.repo.outputs['changed.mobileOnly'], 'true'), ne(stageDependencies.env.repo.outputs['changed.docsOnly'], 'true'))
+    condition: and(not(canceled()), ne(stageDependencies.env.repo.outputs['changed.mobileOnly'], 'true'), ne(stageDependencies.env.repo.outputs['changed.docsOnly'], 'true'))
     timeoutInMinutes: 120
     pool:
       vmImage: "ubuntu-20.04"
@@ -319,7 +319,7 @@ stages:
   condition: and(not(canceled()), or(succeeded(), eq(variables['PostSubmit'], true)))
   jobs:
   - job: release
-    condition: and(not(canceled()), succeeded(), ne(stageDependencies.env.repo.outputs['changed.mobileOnly'], 'true'), ne(stageDependencies.env.repo.outputs['changed.docsOnly'], 'true'))
+    condition: and(not(canceled()), ne(stageDependencies.env.repo.outputs['changed.mobileOnly'], 'true'), ne(stageDependencies.env.repo.outputs['changed.docsOnly'], 'true'))
     timeoutInMinutes: 120
     pool: "arm-large"
     steps:
