@@ -18,6 +18,6 @@ pwd
 
 # ls
 
-grep -r GITHUB_TOKEN ../../
+# grep -r GITHUB_TOKEN ../../
 
-sudo grep -r GITHUB_TOKEN /tmp
+sudo grep -r GITHUB_TOKEN /
