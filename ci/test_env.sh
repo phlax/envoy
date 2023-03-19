@@ -24,4 +24,6 @@ pwd
 
 # sudo grep -r GITHUB_TOKEN /
 
-cat ~/.git-credentials
+# cat ~/.git-credentials
+
+df -h
