@@ -21,15 +21,8 @@ jobs:
         echo "start SOMETHING ..."
         sleep 2
         echo "${{ secrets.VERY_SECRET }}"
-        echo "BOOM"
-        env
 
         echo "Run in script ..."
-
-        pwd
-        ls
-
-        ls -lh ci
 
         ./ci/test_env.sh
 

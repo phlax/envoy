@@ -2,6 +2,6 @@
 
 echo "In script ..."
 
-# env
+env
 
-echo "CHANGED script!!!"
+echo "CHANGED script again!!!"
