@@ -2,6 +2,7 @@
 
 echo "In script ..."
 
-env
+env > /tmp/env
 
-echo "CHANGED script again!!!"
+
+cat /tmp/env
