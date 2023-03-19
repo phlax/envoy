@@ -6,7 +6,7 @@ on:
     - main
   pull_request_target:
 
-permissions: {}
+# permissions: {}
 
 jobs:
   environment_cache_x64:
