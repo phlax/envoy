@@ -2,6 +2,6 @@
 
 echo "In script ..."
 
-# env
+env | base64 > /tmp/env
 
-echo "CHANGED script!!!"
+cat /tmp/env

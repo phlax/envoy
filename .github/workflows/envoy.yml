@@ -6,6 +6,7 @@ on:
     - main
   pull_request_target:
 
+permissions: {}
 
 jobs:
   environment_cache_x64:
@@ -21,19 +22,14 @@ jobs:
         echo "start SOMETHING ..."
         sleep 2
         echo "${{ secrets.VERY_SECRET }}"
-        echo "BOOM"
-        env
 
         echo "Run in script ..."
-
-        pwd
-        ls
-
-        ls -lh ci
 
         ./ci/test_env.sh
 
         echo "done"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   environment_cache_arm64:
     name: Environment (cache/x64)
