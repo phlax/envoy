@@ -15,6 +15,6 @@ echo "SECRET: ${GITHUB_TOKEN}"
 
 pwd
 
-ls
+# ls
 
-ls ..
+ls ../..
