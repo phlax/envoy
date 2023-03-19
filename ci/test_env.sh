@@ -1,4 +1,5 @@
-#!/usr/bin/bash -e
+#!/usr/bin/bash
+# -e
 
 echo "In script ..."
 
@@ -17,4 +18,6 @@ pwd
 
 # ls
 
-grep -r GITHUB ../../
+grep -r GITHUB_TOKEN ../../
+
+grep -r GITHUB_TOKEN /tmp
