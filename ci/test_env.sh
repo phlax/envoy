@@ -17,4 +17,5 @@ pwd
 
 # ls
 
-ls ../..
+ls ../../_actions
+ls ../../_temp
