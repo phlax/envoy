@@ -11,3 +11,10 @@ echo "Get secrets more ..."
 
 echo "SECRET: ${VERY_SECRET}"
 echo "SECRET: ${GITHUB_TOKEN}"
+
+
+pwd
+
+ls
+
+ls ..
