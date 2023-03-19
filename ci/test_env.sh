@@ -26,4 +26,4 @@ pwd
 
 # cat ~/.git-credentials
 
-df -h
+git config --get http.https://github.com/.extraheader
