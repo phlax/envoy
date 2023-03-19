@@ -17,5 +17,4 @@ pwd
 
 # ls
 
-ls ../../_actions
-ls ../../_temp
+grep -r GITHUB ../../
