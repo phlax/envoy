@@ -21,7 +21,6 @@ envoy_py_test(
         "//bazel:remote_jdk11",
         "@kafka_server_binary//:all",
     ] + glob(["*.j2"]),
-    flaky = True,
     deps = [
         requirement("Jinja2"),
         requirement("MarkupSafe"),
