@@ -1,0 +1,70 @@
+name: Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      bucket:
+        description: "GCS bucket"
+        default: "envoy-pr"
+      branch:
+        description: "Repository branch"
+        default: "main"
+      commit:
+        description: "Commit hash"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-examples:
+    runs-on: ubuntu-20.04
+    if: github.repository == 'envoyproxy/envoy'
+    steps:
+
+    # Checkout the repo at provided commit
+    - name: 'Checkout Repository'
+      uses: actions/checkout@v3
+      with:
+        branch: {{ github.events.inputs.branch }}
+        ref: {{ github.events.inputs.commit }}
+        depth: 1
+
+    - run: |
+        set -e
+
+        if [[ "${{ github.events.inputs.bucket }}" == "envoy-pr" ]]; then
+            DOWNLOAD_PATH="${{ github.events.inputs.commit }}"
+        else
+            DOWNLOAD_PATH="${{ github.events.inputs.branch }}"
+        fi
+
+        tmpdir=$(mktemp -d)
+        cd "$tmpdir"
+        images=("" "contrib" "google-vrp")
+        for image in "${images[@]}"; do
+            if [[ -n "$image" ]]; then
+                variant="${image}-dev"
+                filename="envoy-${image}.tar"
+            else
+                variant=dev
+                filename="envoy.tar"
+            fi
+            fileurl="https://storage.googleapis.com/${{ github.events.inputs.bucket }}/${DOWNLOAD_PATH}/docker/${filename}"
+            echo "Download docker image (${fileurl}) ..."
+            curl -sLO "$fileurl"
+            echo "Copy oci image: oci-archive:${filename} docker-daemon:envoyproxy/envoy:${variant}"
+            skopeo copy -q "oci-archive:${filename}" "docker-daemon:envoyproxy/envoy:${variant}"
+            rm "$filename"
+        done
+        docker images | grep envoy
+
+    - run: |
+        set -e
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get -qq update -y
+        sudo apt-get -qq install -y --no-install-recommends expect
+
+    - run: ./ci/do_ci.sh verify_examples
+      env:
+        NO_BUILD_SETUP: 1
+        # ENVOY_EXAMPLES_DEBUG: 1
