@@ -12,12 +12,12 @@ on:
 
 jobs:
   androidbuild:
-    if: ${{ github.repository == 'phlax/envoy' && inputs.run == 'true' }}
+    if: ${{ github.repository == 'envoyproxy/envoy' && inputs.run == 'true' }}
     name: android_build
     runs-on: ubuntu-20.04
     timeout-minutes: 90
     container:
-      image: phlax/envoy-build-ubuntu:mobile-818d28832abf2a7c0cb2bff00435be231729a0bf
+      image: envoyproxy/envoy-build-ubuntu:mobile-818d28832abf2a7c0cb2bff00435be231729a0bf
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
@@ -36,7 +36,7 @@ jobs:
           //:android_dist
 
   javahelloworld:
-    if: ${{ github.repository == 'phlax/envoy' && inputs.run_all == 'true' }}
+    if: ${{ github.repository == 'envoyproxy/envoy' && inputs.run_all == 'true' }}
     name: java_helloworld
     needs: androidbuild
     runs-on: macos-12
@@ -59,7 +59,7 @@ jobs:
         command: ./mobile/ci/start_android_emulator.sh
     # Return to using:
     #   cd mobile && ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/java/hello_world:hello_envoy
-    # When https://github.com/phlax/envoy-mobile/issues/853 is fixed.
+    # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
     - name: 'Start java app'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,7 +80,7 @@ jobs:
             exit 1
         }
   kotlinhelloworld:
-    if: ${{ github.repository == 'phlax/envoy' && inputs.run == 'true' }}
+    if: ${{ github.repository == 'envoyproxy/envoy' && inputs.run == 'true' }}
     name: kotlin_helloworld
     needs: androidbuild
     runs-on: macos-12
@@ -103,7 +103,7 @@ jobs:
         command: ./mobile/ci/start_android_emulator.sh
     # Return to using:
     #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
-    # When https://github.com/phlax/envoy-mobile/issues/853 is fixed.
+    # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
     - name: 'Start kotlin app'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,7 +125,7 @@ jobs:
         }
 
   kotlinbaselineapp:
-    if: ${{ github.repository == 'phlax/envoy' && inputs.run_all == 'true' }}
+    if: ${{ github.repository == 'envoyproxy/envoy' && inputs.run_all == 'true' }}
     name: kotlin_baseline_app
     needs: androidbuild
     runs-on: macos-12
@@ -148,7 +148,7 @@ jobs:
         command: ./mobile/ci/start_android_emulator.sh
     # Return to using:
     #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
-    # When https://github.com/phlax/envoy-mobile/issues/853 is fixed.
+    # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
     - name: 'Start kotlin app'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -169,7 +169,7 @@ jobs:
             exit 1
         }
   kotlinexperimentalapp:
-    if: ${{ github.repository == 'phlax/envoy' && inputs.run_all == 'true' }}
+    if: ${{ github.repository == 'envoyproxy/envoy' && inputs.run_all == 'true' }}
     name: kotlin_experimental_app
     needs: androidbuild
     runs-on: macos-12
@@ -192,7 +192,7 @@ jobs:
         command: ./mobile/ci/start_android_emulator.sh
     # Return to using:
     #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
-    # When https://github.com/phlax/envoy-mobile/issues/853 is fixed.
+    # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
     - name: 'Start kotlin app'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
