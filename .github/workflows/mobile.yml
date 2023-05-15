@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   repo:
-    if: github.repository == 'envoyproxy/envoy'
+    if: github.repository == 'phlax/envoy'
     name: mobile
     runs-on: ubuntu-20.04
     outputs:
