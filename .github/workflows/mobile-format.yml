@@ -34,7 +34,7 @@ jobs:
     - name: 'Run precommit'
       run: cd mobile && find mobile/* | pre-commit run --files
   swiftlint:
-    if: github.repository == 'phlax/envoy'
+    if: github.repository == 'envoyproxy/envoy'
     name: swift_lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
