@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
+
+set -o pipefail
 
 # directory:coverage_percent
 # for existing directories with low coverage.

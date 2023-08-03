@@ -1,4 +1,7 @@
 #!/bin/bash -e
+
+set -o pipefail
+
 #
 # This is a fork of https://github.com/bazelbuild/bazel/blob/3.1.0/tools/test/collect_cc_coverage.sh
 # to cover most of use cases in Envoy.
