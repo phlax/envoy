@@ -104,6 +104,7 @@ def _envoy_repo_impl(repository_ctx):
 load("@rules_python//python:defs.bzl", "py_library")
 load("@envoy//tools/base:envoy_python.bzl", "envoy_entry_point")
 load("//:path.bzl", "PATH")
+load("@dev_pip3//:requirements.bzl", dev_entry_point = "entry_point")
 
 py_library(
     name = "envoy_repo",
@@ -115,6 +116,7 @@ envoy_entry_point(
     name = "get_project_json",
     pkg = "envoy.base.utils",
     script = "envoy.project_data",
+    entry_point_alias = dev_entry_point,
 )
 
 genrule(
