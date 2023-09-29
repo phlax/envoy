@@ -123,8 +123,8 @@ genrule(
     name = "project",
     outs = ["project.json"],
     cmd = """
-    $(location :get_project_json) . > $@
-    """,
+    $(location :get_project_json) %s > $@
+    """ % PATH,
     tools = [
         ":get_project_json",
         "@envoy//:VERSION.txt",
