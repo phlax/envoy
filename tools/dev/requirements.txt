@@ -290,7 +290,7 @@ cryptography==41.0.4 \
     --hash=sha256:efc8ad4e6fc4f1752ebfb58aefece8b4e3c4cae940b0994d43649bdfce8d0d4f
     # via pyjwt
 envoy-base-utils @ file:///src/workspace/toolshed/tmpdist/envoy.base.utils-0.4.12.dev0-py3-none-any.whl \
-    --hash=sha256:9cb8001cb43ef1c528c00291563f6cc92777298292584efd83f6473c540719be
+    --hash=sha256:248a5933799bbb7209dabeca80d473bcef13e8462434655c7bf95403b8cd1e68
     # via -r tools/dev/requirements.in
 frozendict==2.3.8 \
     --hash=sha256:0bc4767e2f83db5b701c787e22380296977368b0c57e485ca71b2eedfa11c4a3 \
