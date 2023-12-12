@@ -102,7 +102,7 @@ jobs:
                 app: //examples/swift/hello_world:app
                 status: 200
           target: swift-hello-world
-          timeout-minutes: 50
+          timeout-minutes: 120
 
   apps:
     permissions:
@@ -124,7 +124,7 @@ jobs:
         ./ci/mac_ci_setup.sh
       steps-post: ${{ matrix.steps-post }}
       target: ${{ matrix.target }}
-      timeout-minutes: 50
+      timeout-minutes: 120
       trusted: ${{ fromJSON(needs.load.outputs.trusted) }}
       working-directory: mobile
     strategy:
