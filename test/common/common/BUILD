@@ -15,6 +15,9 @@ envoy_package()
 envoy_cc_test(
     name = "backoff_strategy_test",
     srcs = ["backoff_strategy_test.cc"],
+    exec_properties = {
+        "Pool": "2core",
+    },
     deps = [
         "//source/common/common:backoff_lib",
         "//test/mocks/runtime:runtime_mocks",

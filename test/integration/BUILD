@@ -620,6 +620,9 @@ envoy_cc_test(
     srcs = [
         "buffer_accounting_integration_test.cc",
     ],
+    exec_properties = {
+        "Pool": "2core",
+    },
     tags = [
         "cpu:3",
     ],
