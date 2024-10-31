@@ -248,8 +248,8 @@ genrule(
     # The Envoy workspace will provide this on stamped builds. For external builds
     # you must either pass an env var or pass it through the workspace's status.
     cmd = """
-    echo "SPHINX RUNNER!!!"
-    echo "Running sphinx_runner" >&2
+    echo "HMTL BUILD TEST" | tee $@
+    exit 0
     . $(location //bazel:volatile_env)
     _BUILD_SHA=$${BUILD_DOCS_SHA:-$${ENVOY_BUILD_SCM_REVISION:-$${{BUILD_SCM_REVISION}}}
     $(location //tools/docs:sphinx_runner) \
@@ -260,22 +260,6 @@ genrule(
          --descriptor_path=$(location @envoy_api//:v3_proto_set) \
          $(location rst) \
          $@
-    """,
-    stamp = 1,
-    srcs = [
-        ":rst",
-        "//:VERSION.txt",
-        "//bazel:volatile_env",
-        "@envoy_api//:v3_proto_set",
-    ],
-    tools = ["//tools/docs:sphinx_runner"],
-)
-
-genrule(
-    name = "html_testing",
-    outs = ["html_testing.tar.gz"],
-    cmd = """
-    echo "HMTL BUILD TEST" | tee $@
     """,
     stamp = 1,
     srcs = [
