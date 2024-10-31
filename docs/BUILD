@@ -248,6 +248,7 @@ genrule(
     # The Envoy workspace will provide this on stamped builds. For external builds
     # you must either pass an env var or pass it through the workspace's status.
     cmd = """
+    echo "SPHINX RUNNER!!!"
     echo "Running sphinx_runner" >&2
     . $(location //bazel:volatile_env)
     _BUILD_SHA=$${BUILD_DOCS_SHA:-$${ENVOY_BUILD_SCM_REVISION:-$${{BUILD_SCM_REVISION}}}
