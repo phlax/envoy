@@ -250,15 +250,14 @@ genrule(
     cmd = """
     . $(location //bazel:volatile_env)
     _BUILD_SHA=$${BUILD_DOCS_SHA:-$${ENVOY_BUILD_SCM_REVISION:-$${{BUILD_SCM_REVISION}}}
-    echo "HMTL BUILD TEST" | tee $@
-    exit 0
+    echo "HMTL BUILD TEST"
     $(location //tools/docs:sphinx_runner) \
          $${SPHINX_RUNNER_ARGS:-} \
          --build_sha="$$_BUILD_SHA" \
          --docs_tag="$${BUILD_DOCS_TAG:-}" \
          --version_file=$(location //:VERSION.txt) \
          --descriptor_path=$(location @envoy_api//:v3_proto_set) \
-         $(location rst) \
+         $(location :rst) \
          $@
     """,
     stamp = 1,
