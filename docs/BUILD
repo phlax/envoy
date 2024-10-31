@@ -261,7 +261,7 @@ genrule(
          $@
     """,
     stamp = 1,
-    data = [
+    srcs = [
         ":rst",
         "//:VERSION.txt",
         "//bazel:volatile_env",
