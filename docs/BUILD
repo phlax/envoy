@@ -261,13 +261,13 @@ genrule(
          $@
     """,
     stamp = 1,
-    tools = [
+    data = [
         ":rst",
         "//:VERSION.txt",
         "//bazel:volatile_env",
-        "//tools/docs:sphinx_runner",
         "@envoy_api//:v3_proto_set",
     ],
+    tools = ["//tools/docs:sphinx_runner"],
 )
 
 # No git stamping, speeds up local dev switching branches
