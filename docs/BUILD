@@ -248,9 +248,9 @@ genrule(
     # The Envoy workspace will provide this on stamped builds. For external builds
     # you must either pass an env var or pass it through the workspace's status.
     cmd = """
+    . $(location //bazel:volatile_env)
     echo "HMTL BUILD TEST" | tee $@
     exit 0
-    . $(location //bazel:volatile_env)
     _BUILD_SHA=$${BUILD_DOCS_SHA:-$${ENVOY_BUILD_SCM_REVISION:-$${{BUILD_SCM_REVISION}}}
     $(location //tools/docs:sphinx_runner) \
          $${SPHINX_RUNNER_ARGS:-} \
