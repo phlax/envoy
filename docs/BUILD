@@ -270,6 +270,22 @@ genrule(
     tools = ["//tools/docs:sphinx_runner"],
 )
 
+genrule(
+    name = "html_testing",
+    outs = ["html_testing.tar.gz"],
+    cmd = """
+    echo "HMTL BUILD TEST" | tee $@
+    """,
+    stamp = 1,
+    srcs = [
+        ":rst",
+        "//:VERSION.txt",
+        "//bazel:volatile_env",
+        "@envoy_api//:v3_proto_set",
+    ],
+    tools = ["//tools/docs:sphinx_runner"],
+)
+
 # No git stamping, speeds up local dev switching branches
 genrule(
     name = "html",
