@@ -303,7 +303,7 @@ jobs:
     - run: |
         echo "e3b4a6e9570da15ac1caffdded17a8bebdc7dfc9" > .BAZEL_FAKE_SCM_REVISION
       if: >-
-        ${{ fromJSON(inputs.request).request.pr == '' }}
+        ${{ fromJSON(inputs.request).request.pr != '' }}
 
     - run: |
         if [[ "${{ secrets.gcp-key }}" == "" ]]; then
