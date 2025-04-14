@@ -13,6 +13,9 @@ bug_fixes:
     Fixed an issue that could lead to too many connections when using
     :ref:`AutoHttpConfig <envoy_v3_api_msg_extensions.upstreams.http.v3.HttpProtocolOptions.AutoHttpConfig>` if the
     established connection is ``http/2`` and Envoy predicted it would have lower concurrent capacity.
+- area: eds
+  change: |
+    Fixed crash when creating an EDS cluster with invalid configuration.
 - area: conn_pool
   change: |
     Fixed an issue that could lead to insufficient connections for current pending requests. If a connection starts draining while it
