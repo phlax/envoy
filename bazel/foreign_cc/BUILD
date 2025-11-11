@@ -29,6 +29,18 @@ configure_make(
     name = "liburing",
     configure_in_place = True,
     lib_source = "@com_github_axboe_liburing//:all",
+    data = select({
+        "//bazel:clang_build": ["@llvm_toolchain_llvm//:ranlib"],
+        "//conditions:default": [],
+    }),
+    env = select({
+        "//bazel:clang_build": {
+            "AR": "$$EXT_BUILD_ROOT/$(AR)",
+            "LD": "$$EXT_BUILD_ROOT/$(LD)",
+            "RANLIB": "$$EXT_BUILD_ROOT/$(location @llvm_toolchain_llvm//:ranlib)",
+        },
+        "//conditions:default": {},
+    }),
     tags = [
         "nocompdb",
         "skip_on_windows",
