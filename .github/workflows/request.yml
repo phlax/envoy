@@ -15,9 +15,6 @@ on:
     branches:
     - main
     - release/v*
-    - ci/testing
-  schedule:
-  - cron: '30 6 * * *'
 
 concurrency:
   group: |
@@ -67,7 +64,7 @@ jobs:
       lock-app-id: ${{ secrets.ENVOY_CI_MUTEX_APP_ID }}
     # For branches this can be pinned to a specific version if required
     # NB: `uses` cannot be dynamic so it _must_ be hardcoded anywhere it is read
-    uses: envoyproxy/envoy/.github/workflows/_request.yml@main
+    uses: envoyproxy/envoy-ci-staging/.github/workflows/_request.yml@main
     if: >-
       ${{ github.repository == 'envoyproxy/envoy'
           || (vars.ENVOY_CI && github.event_name != 'schedule')
