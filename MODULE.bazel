@@ -90,7 +90,7 @@ git_override(
 # Note: Marked as dev_dependency to prevent circular dependency
 git_override(
     module_name = "envoy_examples",
-    commit = "269be4156629a634c4d4296cd5a3ae840b387289",
+    commit = "b02d478e24038e0f2d5b16bdb01ab41bbbf4032e",
     remote = "https://github.com/mmorel-35/examples",
 )
 
