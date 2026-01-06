@@ -80,8 +80,15 @@ load("@envoy_api//bazel:envoy_http_archive.bzl", "envoy_http_archive")
 load("@envoy_api//bazel:external_deps.bzl", "load_repository_locations")
 load("@envoy_toolshed//repository:utils.bzl", "arch_alias")
 load(":repo.bzl", "envoy_repo")
-load(":repositories.bzl", "envoy_dependencies", "external_http_archive")
+load(":repositories.bzl", "default_envoy_build_config", "envoy_dependencies", "external_http_archive")
 load(":repository_locations.bzl", "REPOSITORY_LOCATIONS_SPEC")
+
+def _envoy_build_config_impl(module_ctx):
+    default_envoy_build_config(name = "envoy_build_config")
+
+envoy_build_config_ext = module_extension(
+    implementation = _envoy_build_config_impl,
+)
 
 def _envoy_dependencies_impl(module_ctx):
     """Implementation of the envoy_dependencies module extension.

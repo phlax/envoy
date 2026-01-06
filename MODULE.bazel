@@ -16,8 +16,6 @@ bazel_dep(name = "brotli", version = "1.2.0", repo_name = "org_brotli")
 bazel_dep(name = "cel-spec", version = "0.25.1", repo_name = "dev_cel")
 bazel_dep(name = "emsdk", version = "4.0.13")
 bazel_dep(name = "envoy_api", version = "1.36.4-dev")
-bazel_dep(name = "envoy_build_config", version = "1.36.4-dev")
-bazel_dep(name = "envoy_mobile", version = "1.36.4-dev")
 bazel_dep(name = "envoy_toolshed", version = "0.3.11")
 bazel_dep(name = "fast_float", version = "8.0.2")
 bazel_dep(name = "flatbuffers", version = "25.9.23", repo_name = "com_github_google_flatbuffers")
@@ -67,16 +65,6 @@ local_path_override(
     path = "api",
 )
 
-local_path_override(
-    module_name = "envoy_build_config",
-    path = "mobile/envoy_build_config",
-)
-
-local_path_override(
-    module_name = "envoy_mobile",
-    path = "mobile",
-)
-
 single_version_override(
     module_name = "rules_swift",
     version = "3.1.2",
@@ -102,13 +90,13 @@ git_override(
 # Note: Marked as dev_dependency to prevent circular dependency
 git_override(
     module_name = "envoy_examples",
-    commit = "1487f2587bed1d9d0266c50f57eff77c3befa10e",
+    commit = "269be4156629a634c4d4296cd5a3ae840b387289",
     remote = "https://github.com/mmorel-35/examples",
 )
 
 git_override(
     module_name = "envoy_example_wasm_cc",
-    commit = "1487f2587bed1d9d0266c50f57eff77c3befa10e",
+    commit = "269be4156629a634c4d4296cd5a3ae840b387289",
     remote = "https://github.com/mmorel-35/examples",
     strip_prefix = "wasm-cc",
 )
@@ -400,3 +388,6 @@ use_repo(envoy_repo_ext, "envoy_repo")
 # This extension creates toolchain-related repositories for bzlmod mode
 envoy_toolchains_ext = use_extension("//bazel:extensions.bzl", "envoy_toolchains_extension")
 use_repo(envoy_toolchains_ext, "clang_platform")
+
+envoy_build_config_ext = use_extension("//bazel:extensions.bzl", "envoy_build_config_ext")
+use_repo(envoy_build_config_ext, "envoy_build_config")
