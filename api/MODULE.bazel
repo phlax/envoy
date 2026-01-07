@@ -31,7 +31,7 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "rules_python", version = "1.7.0")
 bazel_dep(name = "xds", version = "0.0.0-20240423-555b57e")
 bazel_dep(name = "yq.bzl", version = "0.1.1.envoy")
-bazel_dep(name = "zipkin-api", version = "1.0.0")
+bazel_dep(name = "zipkin-api", version = "1.0.0.envoy")
 
 
 ####################################################################################

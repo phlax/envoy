@@ -37,9 +37,10 @@ envoy_cc_library(
         "//source/common/common:logger_lib",
         "//source/common/common:utility_lib",
     ] + select({
-        "//bazel:sockmap_enabled": ["//bazel/foreign_cc:libbpf_linux"],
+        "//bazel:sockmap_enabled": ["@libbpf"],
         "//conditions:default": [],
     }),
+    target_compatible_with = ["@platforms//os:linux"]
 )
 
 envoy_cc_library(
