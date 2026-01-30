@@ -28,6 +28,7 @@ envoy_cc_library(
     ],
     deps = [
         "//bazel:boringssl",
+        "//source/common/protobuf",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/time",
