@@ -20,13 +20,14 @@
 
 #include "gtest/gtest.h"
 
-using Envoy::Protobuf::util::MessageDifferencer;
-
 #include <functional>
 #include <vector>
 
 namespace Envoy {
 namespace JwtVerify {
+
+using Protobuf::util::MessageDifferencer;
+
 namespace {
 
 // JWT with
