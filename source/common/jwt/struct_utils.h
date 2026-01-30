@@ -17,14 +17,14 @@
 
 #pragma once
 
-#include "google/protobuf/struct.pb.h"
+#include "source/common/protobuf/protobuf.h"
 
 namespace Envoy {
 namespace JwtVerify {
 
 class StructUtils {
 public:
-  StructUtils(const ::google::protobuf::Struct& struct_pb);
+  StructUtils(const Protobuf::Struct& struct_pb);
 
   enum FindResult {
     OK = 0,
@@ -49,10 +49,10 @@ public:
   FindResult GetStringList(const std::string& name, std::vector<std::string>* list);
 
   // Find the value with nested names.
-  FindResult GetValue(const std::string& nested_names, const google::protobuf::Value*& found);
+  FindResult GetValue(const std::string& nested_names, const Protobuf::Value*& found);
 
 private:
-  const ::google::protobuf::Struct& struct_pb_;
+  const Protobuf::Struct& struct_pb_;
 };
 
 } // namespace JwtVerify

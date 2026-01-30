@@ -20,15 +20,15 @@
 namespace Envoy {
 namespace JwtVerify {
 
-StructUtils::StructUtils(const ::google::protobuf::Struct& struct_pb) : struct_pb_(struct_pb) {}
+StructUtils::StructUtils(const Protobuf::Struct& struct_pb) : struct_pb_(struct_pb) {}
 
 StructUtils::FindResult StructUtils::GetString(const std::string& name, std::string* str_value) {
-  const ::google::protobuf::Value* found;
+  const Protobuf::Value* found;
   FindResult result = GetValue(name, found);
   if (result != OK) {
     return result;
   }
-  if (found->kind_case() != google::protobuf::Value::kStringValue) {
+  if (found->kind_case() != Protobuf::Value::kStringValue) {
     return WRONG_TYPE;
   }
   *str_value = found->string_value();
@@ -36,12 +36,12 @@ StructUtils::FindResult StructUtils::GetString(const std::string& name, std::str
 }
 
 StructUtils::FindResult StructUtils::GetDouble(const std::string& name, double* double_value) {
-  const ::google::protobuf::Value* found;
+  const Protobuf::Value* found;
   FindResult result = GetValue(name, found);
   if (result != OK) {
     return result;
   }
-  if (found->kind_case() != google::protobuf::Value::kNumberValue) {
+  if (found->kind_case() != Protobuf::Value::kNumberValue) {
     return WRONG_TYPE;
   }
   *double_value = found->number_value();
@@ -63,12 +63,12 @@ StructUtils::FindResult StructUtils::GetUInt64(const std::string& name, uint64_t
 }
 
 StructUtils::FindResult StructUtils::GetBoolean(const std::string& name, bool* bool_value) {
-  const ::google::protobuf::Value* found;
+  const Protobuf::Value* found;
   FindResult result = GetValue(name, found);
   if (result != OK) {
     return result;
   }
-  if (found->kind_case() != google::protobuf::Value::kBoolValue) {
+  if (found->kind_case() != Protobuf::Value::kBoolValue) {
     return WRONG_TYPE;
   }
   *bool_value = found->bool_value();
@@ -77,18 +77,18 @@ StructUtils::FindResult StructUtils::GetBoolean(const std::string& name, bool* b
 
 StructUtils::FindResult StructUtils::GetStringList(const std::string& name,
                                                    std::vector<std::string>* list) {
-  const ::google::protobuf::Value* found;
+  const Protobuf::Value* found;
   FindResult result = GetValue(name, found);
   if (result != OK) {
     return result;
   }
-  if (found->kind_case() == google::protobuf::Value::kStringValue) {
+  if (found->kind_case() == Protobuf::Value::kStringValue) {
     list->push_back(found->string_value());
     return OK;
   }
-  if (found->kind_case() == google::protobuf::Value::kListValue) {
+  if (found->kind_case() == Protobuf::Value::kListValue) {
     for (const auto& v : found->list_value().values()) {
-      if (v.kind_case() != google::protobuf::Value::kStringValue) {
+      if (v.kind_case() != Protobuf::Value::kStringValue) {
         return WRONG_TYPE;
       }
       list->push_back(v.string_value());
@@ -99,10 +99,10 @@ StructUtils::FindResult StructUtils::GetStringList(const std::string& name,
 }
 
 StructUtils::FindResult StructUtils::GetValue(const std::string& nested_names,
-                                              const google::protobuf::Value*& found) {
+                                              const Protobuf::Value*& found) {
   const std::vector<absl::string_view> name_vector = absl::StrSplit(nested_names, '.');
 
-  const google::protobuf::Struct* current_struct = &struct_pb_;
+  const Protobuf::Struct* current_struct = &struct_pb_;
   for (size_t i = 0; i < name_vector.size(); ++i) {
     const auto& fields = current_struct->fields();
     const auto it = fields.find(std::string(name_vector[i]));
@@ -113,7 +113,7 @@ StructUtils::FindResult StructUtils::GetValue(const std::string& nested_names,
       found = &it->second;
       return OK;
     }
-    if (it->second.kind_case() != google::protobuf::Value::kStructValue) {
+    if (it->second.kind_case() != Protobuf::Value::kStructValue) {
       return WRONG_TYPE;
     }
     current_struct = &it->second.struct_value();

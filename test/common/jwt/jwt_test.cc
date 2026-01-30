@@ -16,10 +16,11 @@
 #include "source/common/jwt/jwt.h"
 #include "source/common/jwt/struct_utils.h"
 
-#include "google/protobuf/util/message_differencer.h"
+#include "source/common/protobuf/protobuf.h"
+
 #include "gtest/gtest.h"
 
-using google::protobuf::util::MessageDifferencer;
+using Protobuf::util::MessageDifferencer;
 
 #include <functional>
 #include <vector>

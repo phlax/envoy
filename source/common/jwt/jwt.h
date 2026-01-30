@@ -22,7 +22,7 @@
 
 #include "source/common/jwt/status.h"
 
-#include "google/protobuf/struct.pb.h"
+#include "source/common/protobuf/protobuf.h"
 
 namespace Envoy {
 namespace JwtVerify {
@@ -42,14 +42,14 @@ struct Jwt {
   // header base64_url encoded
   std::string header_str_base64url_;
   // header in Struct protobuf
-  ::google::protobuf::Struct header_pb_;
+  Protobuf::Struct header_pb_;
 
   // payload string
   std::string payload_str_;
   // payload base64_url encoded
   std::string payload_str_base64url_;
   // payload in Struct protobuf
-  ::google::protobuf::Struct payload_pb_;
+  Protobuf::Struct payload_pb_;
   // signature string
   std::string signature_;
   // alg

@@ -21,10 +21,10 @@
 
 #include "source/common/jwt/struct_utils.h"
 
+#include "source/common/protobuf/protobuf.h"
+
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
-#include "google/protobuf/struct.pb.h"
-#include "google/protobuf/util/json_util.h"
 #include "openssl/bio.h"
 #include "openssl/bn.h"
 #include "openssl/curve25519.h"
@@ -149,7 +149,7 @@ private:
   };
 };
 
-Status extractJwkFromJwkRSA(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
+Status extractJwkFromJwkRSA(const Protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
   if (!jwk->alg_.empty() && (jwk->alg_.size() < 2 || (jwk->alg_.compare(0, 2, "RS") != 0 &&
                                                       jwk->alg_.compare(0, 2, "PS") != 0))) {
     return Status::JwksRSAKeyBadAlg;
@@ -179,7 +179,7 @@ Status extractJwkFromJwkRSA(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubk
   return e.getStatus();
 }
 
-Status extractJwkFromJwkEC(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
+Status extractJwkFromJwkEC(const Protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
   if (!jwk->alg_.empty() && (jwk->alg_.size() < 2 || jwk->alg_.compare(0, 2, "ES") != 0)) {
     return Status::JwksECKeyBadAlg;
   }
@@ -246,7 +246,7 @@ Status extractJwkFromJwkEC(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubke
   return e.getStatus();
 }
 
-Status extractJwkFromJwkOct(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
+Status extractJwkFromJwkOct(const Protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
   if (!jwk->alg_.empty() && jwk->alg_ != "HS256" && jwk->alg_ != "HS384" && jwk->alg_ != "HS512") {
     return Status::JwksHMACKeyBadAlg;
   }
@@ -271,7 +271,7 @@ Status extractJwkFromJwkOct(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubk
 }
 
 // The "OKP" key type is defined in https://tools.ietf.org/html/rfc8037
-Status extractJwkFromJwkOKP(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
+Status extractJwkFromJwkOKP(const Protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
   // alg is not required, but if present it must be EdDSA
   if (!jwk->alg_.empty() && jwk->alg_ != "EdDSA") {
     return Status::JwksOKPKeyBadAlg;
@@ -320,7 +320,7 @@ Status extractJwkFromJwkOKP(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubk
   return e.getStatus();
 }
 
-Status extractJwk(const ::google::protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
+Status extractJwk(const Protobuf::Struct& jwk_pb, Jwks::Pubkey* jwk) {
   StructUtils jwk_getter(jwk_pb);
   // Check "kty" parameter, it should exist.
   // https://tools.ietf.org/html/rfc7517#section-4.1
@@ -371,13 +371,13 @@ Status extractX509(const std::string& key, Jwks::Pubkey* jwk) {
   return Status::Ok;
 }
 
-bool shouldCheckX509(const ::google::protobuf::Struct& jwks_pb) {
+bool shouldCheckX509(const Protobuf::Struct& jwks_pb) {
   if (jwks_pb.fields().empty()) {
     return false;
   }
 
   for (const auto& kid : jwks_pb.fields()) {
-    if (kid.first.empty() || kid.second.kind_case() != google::protobuf::Value::kStringValue) {
+    if (kid.first.empty() || kid.second.kind_case() != Protobuf::Value::kStringValue) {
       return false;
     }
     const std::string& cert = kid.second.string_value();
@@ -388,7 +388,7 @@ bool shouldCheckX509(const ::google::protobuf::Struct& jwks_pb) {
   return true;
 }
 
-Status createFromX509(const ::google::protobuf::Struct& jwks_pb,
+Status createFromX509(const Protobuf::Struct& jwks_pb,
                       std::vector<Jwks::PubkeyPtr>& keys) {
   for (const auto& kid : jwks_pb.fields()) {
     Jwks::PubkeyPtr key_ptr(new Jwks::Pubkey());
@@ -507,9 +507,9 @@ void Jwks::createFromPemCore(const std::string& pkey_pem) {
 void Jwks::createFromJwksCore(const std::string& jwks_json) {
   keys_.clear();
 
-  ::google::protobuf::util::JsonParseOptions options;
-  ::google::protobuf::Struct jwks_pb;
-  const auto status = ::google::protobuf::util::JsonStringToMessage(jwks_json, &jwks_pb, options);
+  Protobuf::util::JsonParseOptions options;
+  Protobuf::Struct jwks_pb;
+  const auto status = Protobuf::util::JsonStringToMessage(jwks_json, &jwks_pb, options);
   if (!status.ok()) {
     updateStatus(Status::JwksParseError);
     return;
@@ -526,13 +526,13 @@ void Jwks::createFromJwksCore(const std::string& jwks_json) {
     updateStatus(Status::JwksNoKeys);
     return;
   }
-  if (keys_it->second.kind_case() != google::protobuf::Value::kListValue) {
+  if (keys_it->second.kind_case() != Protobuf::Value::kListValue) {
     updateStatus(Status::JwksBadKeys);
     return;
   }
 
   for (const auto& key_value : keys_it->second.list_value().values()) {
-    if (key_value.kind_case() != ::google::protobuf::Value::kStructValue) {
+    if (key_value.kind_case() != Protobuf::Value::kStructValue) {
       continue;
     }
     PubkeyPtr key_ptr(new Pubkey());

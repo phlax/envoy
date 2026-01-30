@@ -19,11 +19,12 @@
 
 #include "source/common/jwt/struct_utils.h"
 
+#include "source/common/protobuf/protobuf.h"
+
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/time/clock.h"
-#include "google/protobuf/util/json_util.h"
 
 namespace Envoy {
 namespace JwtVerify {
@@ -62,9 +63,9 @@ Status Jwt::parseFromString(const std::string& jwt) {
     return Status::JwtHeaderParseErrorBadBase64;
   }
 
-  ::google::protobuf::util::JsonParseOptions options;
+  Protobuf::util::JsonParseOptions options;
   const auto header_status =
-      ::google::protobuf::util::JsonStringToMessage(header_str_, &header_pb_, options);
+      Protobuf::util::JsonStringToMessage(header_str_, &header_pb_, options);
   if (!header_status.ok()) {
     return Status::JwtHeaderParseErrorBadJson;
   }
@@ -91,7 +92,7 @@ Status Jwt::parseFromString(const std::string& jwt) {
   }
 
   const auto payload_status =
-      ::google::protobuf::util::JsonStringToMessage(payload_str_, &payload_pb_, options);
+      Protobuf::util::JsonStringToMessage(payload_str_, &payload_pb_, options);
   if (!payload_status.ok()) {
     return Status::JwtPayloadParseErrorBadJson;
   }
