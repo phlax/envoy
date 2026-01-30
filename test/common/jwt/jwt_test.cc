@@ -20,7 +20,7 @@
 
 #include "gtest/gtest.h"
 
-using Protobuf::util::MessageDifferencer;
+using Envoy::Protobuf::util::MessageDifferencer;
 
 #include <functional>
 #include <vector>
