@@ -489,11 +489,6 @@ config_setting(
     values = {"define": "force_libcpp=enabled"},
 )
 
-config_setting(
-    name = "boringssl_disabled",
-    values = {"define": "boringssl=disabled"},
-)
-
 # SSL library selection using label_flag and bool_flag
 label_flag(
     name = "ssl",

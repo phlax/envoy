@@ -227,10 +227,10 @@ common:boringssl-fips --//bazel:crypto=@boringssl_fips//:crypto
 common:boringssl-fips --//bazel:fips=True
 
 # AWS-LC FIPS
-build:aws-lc-fips --//bazel:ssl=@aws_lc//:ssl
-build:aws-lc-fips --//bazel:crypto=@aws_lc//:crypto
-build:aws-lc-fips --//bazel:fips=True
-build:aws-lc-fips --//bazel:http3=False
+common:aws-lc-fips --//bazel:ssl=@aws_lc//:ssl
+common:aws-lc-fips --//bazel:crypto=@aws_lc//:crypto
+common:aws-lc-fips --//bazel:fips=True
+common:aws-lc-fips --//bazel:http3=False
 
 
 #############################################################################
