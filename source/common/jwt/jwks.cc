@@ -43,7 +43,7 @@ const char kX509CertPrefix[] = "-----BEGIN CERTIFICATE-----\n";
 // The x509 certificate suffix string
 const char kX509CertSuffix[] = "\n-----END CERTIFICATE-----\n";
 
-// A convinence inline cast function.
+// A convenience inline cast function.
 inline const uint8_t* castToUChar(const std::string& str) {
   return reinterpret_cast<const uint8_t*>(str.c_str());
 }

@@ -449,11 +449,6 @@ public:
   void debugOutput(std::string* output) const;
 
   // Return a std::string that summarizes the contents of the cache.
-  //
-  // The output of this function is not suitable for parsing by borgmon. For an
-  // example of exporting the summary information in a borgmon mapped-value
-  // format, see GFS_CS_BufferCache::ExportSummaryAsMap in
-  // file/gfs/chunkserver/gfs_chunkserver.{cc,h}
   std::string summary() const {
     std::stringstream ss;
     ss << pinnedSize() << "/" << deferredSize() << "/" << size() << " p/d/a";
@@ -492,8 +487,8 @@ protected:
 
   // Override this operation if you want to evict cache entries
   // based on parameters other than the total units stored.
-  // For example, if the cache stores open sstables, where the cost
-  // is the size in bytes of the open sstable, you may want to evict
+  // For example, if the cache stores open file handles, where the cost
+  // is the size in bytes of the open file, you may want to evict
   // entries from the cache not only before the max size in bytes
   // is reached but also before reaching the limit of open file
   // descriptors. Thus, you may want to override this function in a

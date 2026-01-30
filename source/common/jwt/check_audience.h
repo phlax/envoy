@@ -30,8 +30,8 @@ namespace JwtVerify {
 /**
  * RFC for JWT `aud <https://tools.ietf.org/html/rfc7519#section-4.1.3>`_ only
  * specifies case sensitive comparison. But experiences showed that users
- * easily add wrong scheme and tailing slash to cause mis-match.
- * In this implemeation, scheme portion of URI and tailing slash is removed
+ * easily add wrong scheme and trailing slash to cause mis-match.
+ * In this implementation, scheme portion of URI and trailing slash is removed
  * before comparison.
  */
 class CheckAudience {
@@ -39,7 +39,7 @@ public:
   // Construct the object with a list audiences from config.
   CheckAudience(const std::vector<std::string>& config_audiences);
 
-  // Check any of jwt_audiences is matched with one of configurated ones.
+  // Check any of jwt_audiences is matched with one of configured ones.
   bool areAudiencesAllowed(const std::vector<std::string>& jwt_audiences) const;
 
   // check if config audiences is empty

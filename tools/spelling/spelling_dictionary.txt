@@ -48,6 +48,7 @@ CGROUP
 CROSSSLOT
 ECN
 ECS
+EdDSA
 EKS
 Millicores
 NID
@@ -287,6 +288,12 @@ JWKs
 JWS
 JWT
 JWTs
+alg
+aud
+crv
+iat
+iss
+jti
 KB
 KDS
 Karlsson
@@ -360,6 +367,7 @@ Oauth
 OCSP
 OD
 ODCDS
+OKP
 middlewildcard
 monostate
 mpd
@@ -1056,6 +1064,7 @@ mmsg
 mmsghdr
 mongo
 moveable
+mru
 msec
 msg
 msghdr
