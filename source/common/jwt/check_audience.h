@@ -17,7 +17,7 @@ namespace JwtVerify {
 /**
  * RFC for JWT `aud <https://tools.ietf.org/html/rfc7519#section-4.1.3>`_ only
  * specifies case sensitive comparison. But experiences showed that users
- * easily add wrong scheme and trailing slash to cause mis-match.
+ * easily add wrong scheme and trailing slash to cause mismatch.
  * In this implementation, scheme portion of URI and trailing slash is removed
  * before comparison.
  */

@@ -283,6 +283,7 @@ Iters
 JSON
 JSONs
 jsonrpc
+Jwk
 JWKS
 JWKs
 JWS
@@ -299,6 +300,7 @@ KDS
 Karlsson
 KiB
 Kille
+kty
 LBs
 LC
 LCOV
@@ -307,6 +309,7 @@ LEDS
 LEV
 LF
 LHS
+LLC
 hls
 hoo
 iframe
@@ -468,6 +471,7 @@ SIGABRT
 SIGBUS
 SIGFPE
 SIGILL
+SPDX
 SIGINT
 SIGPIPE
 SIGSEGV
@@ -640,6 +644,7 @@ bitset
 bitwise
 blackhole
 blackholed
+bssl
 bookkeep
 bool
 boolean
@@ -957,6 +962,7 @@ interpretable
 intra
 ints
 invariance
+invariants
 invoker
 iov
 iovcnt
@@ -978,6 +984,7 @@ js
 kafka
 keepalive
 keepalives
+keyset
 ketama
 keyder
 kqueue
@@ -1443,6 +1450,7 @@ subtrees
 subtype
 subtypes
 subzone
+sudo
 suf
 superclass
 superroot
@@ -1646,6 +1654,7 @@ nsec
 millicores
 cpuacct
 cpuacct.usage
+cpufreq
 effective_cpus
 cpus
 ja3

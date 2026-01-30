@@ -460,7 +460,7 @@ public:
 protected:
   // Override this operation if you want to control how a value is
   // cleaned up. For example, if the value is a "File", you may want
-  // to "close" it instead of "delete"ing it.
+  // to close it instead of deleting it.
   //
   // Not actually implemented here because often value's destructor is
   // protected, and the derived SimpleLRUCache is declared a friend,
