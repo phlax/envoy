@@ -1,14 +1,6 @@
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2018 Google LLC
+// Copyright Envoy Project Authors
+// SPDX-License-Identifier: Apache-2.0
 
 #include "source/common/jwt/verify.h"
 
@@ -21,7 +13,7 @@ namespace JwtVerify {
 namespace {
 
 // To generate new keys:
-// $ openssl genpkey -algorithm ed25519 -out ed_private.pem
+// ``$ openssl genpkey -algorithm ed25519 -out ed_private.pem``
 // To get the "x" value of the public key:
 // https://mta.openssl.org/pipermail/openssl-users/2018-March/007777.html
 // tr is used to convert to the URL-safe, no padding form of Base64 used by JWKS
@@ -60,32 +52,32 @@ const std::string PublicKeyJwkOKP = R"(
  }
 )";
 
-// Header:  {"alg": "EdDSA", "kid": "abc", typ": "JWT"}
-// Payload: {"iss":"https://example.com", "sub":"test@example.com"}
+// Header:  ``{"alg": "EdDSA", "kid": "abc", "typ": "JWT"}``
+// Payload: ``{"iss":"https://example.com", "sub":"test@example.com"}``
 const std::string JwtJWKEd25519 =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSIsImtpZCI6ImFiYyJ9."
     "eyJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tIiwic3ViIjoidGVzdEBleGFtcGxlLmNvbSJ9."
     "n7Jd_zwXE03FFDrjdxDP3CYJqAlFXCa3jbv8qER_Z5cmisGJ3_"
     "gEb2j1IALPtLA8TsYxQJ4Xxfucen9nFqxUBg";
 
-// Header:  {"alg": "EdDSA", "typ": "JWT"}
-// Payload: {"iss":"https://example.com", "sub":"test@example.com"}
+// Header:  ``{"alg": "EdDSA", "typ": "JWT"}``
+// Payload: ``{"iss":"https://example.com", "sub":"test@example.com"}``
 const std::string JwtJWKEd25519NoKid =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9."
     "eyJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tIiwic3ViIjoidGVzdEBleGFtcGxlLmNvbSJ9."
     "rn-h5xTejtilHiAG6aKJEQ3e5_"
     "aIKC7nwKUPOjBqN8df69JLiFtKxFCDINHtCNhoeLkgcDHHo2SJFincVH_OCg";
 
-// Header:  {"alg": "EdDSA", "kid": "abcdef", typ": "JWT"}
-// Payload: {"iss":"https://example.com", "sub":"test@example.com"}
+// Header:  ``{"alg": "EdDSA", "kid": "abcdef", "typ": "JWT"}``
+// Payload: ``{"iss":"https://example.com", "sub":"test@example.com"}``
 const std::string JwtJWKEd25519NonExistKid =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSIsImtpZCI6ImFiY2RlZiJ9."
     "eyJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tIiwic3ViIjoidGVzdEBleGFtcGxlLmNvbSJ9."
     "dqLWFow63rL9VFsjtea60hZn5wMZJxNM6pGcVcOEOE38HrkY1miLj2ZIavd8P7NkkqEsuZMkZ4"
     "QHcZxm8qRiCA";
 
-// Header:  {"alg": "EdDSA", "kid": "abc", typ": "JWT"}
-// Payload: {"iss":"https://example.com", "sub":"test@example.com"}
+// Header:  ``{"alg": "EdDSA", "kid": "abc", "typ": "JWT"}``
+// Payload: ``{"iss":"https://example.com", "sub":"test@example.com"}``
 // But signed by a different key
 const std::string JwtJWKEd25519WrongSignature =
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSIsImtpZCI6ImFiYyJ9."

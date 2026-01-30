@@ -1,19 +1,6 @@
-#pragma once
-
 // Copyright 2018 Google LLC
-// Copyright The Envoy Project Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright Envoy Project Authors
+// SPDX-License-Identifier: Apache-2.0
 
 #pragma once
 
@@ -64,7 +51,7 @@ Status verifyJwt(const Jwt& jwt, const Jwks& jwks, uint64_t now,
  * checking the "exp" and "nbf" claims against the system's current wall clock
  * as well as validating that one of the entries in the audience list appears
  * as a member in the "aud" claim of the specified JWT. If the supplied
- * audience list is empty, no verification of the JWT's "aud" field is
+ * audience list is empty, no verification of the ``JWT's "aud"`` field is
  * performed. If verification failed, returns the failure reason.
  * @param jwt is Jwt object
  * @param jwks is Jwks object
@@ -78,7 +65,7 @@ Status verifyJwt(const Jwt& jwt, const Jwks& jwks, const std::vector<std::string
  * checking the "exp" and "nbf" claims against the provided time
  * as well as validating that one of the entries in the audience list appears
  * as a member in the "aud" claim of the specified JWT. If the supplied
- * audience list is empty, no verification of the JWT's "aud" field is
+ * audience list is empty, no verification of the ``JWT's "aud"`` field is
  * performed.
  * If verification failed,
  * returns the failure reason.

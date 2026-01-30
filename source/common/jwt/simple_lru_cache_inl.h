@@ -1,17 +1,8 @@
-#pragma once
+// Copyright 2016 Google Inc.
+// Copyright Envoy Project Authors
+// SPDX-License-Identifier: Apache-2.0
 
-/* Copyright 2016 Google Inc. All Rights Reserved.
-Copyright The Envoy Project Authors
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+#pragma once
 
 // A generic LRU cache that maps from type Key to Value*.
 //
@@ -449,11 +440,6 @@ public:
   void debugOutput(std::string* output) const;
 
   // Return a std::string that summarizes the contents of the cache.
-  //
-  // The output of this function is not suitable for parsing by borgmon. For an
-  // example of exporting the summary information in a borgmon mapped-value
-  // format, see GFS_CS_BufferCache::ExportSummaryAsMap in
-  // file/gfs/chunkserver/gfs_chunkserver.{cc,h}
   std::string summary() const {
     std::stringstream ss;
     ss << pinnedSize() << "/" << deferredSize() << "/" << size() << " p/d/a";
@@ -474,7 +460,7 @@ public:
 protected:
   // Override this operation if you want to control how a value is
   // cleaned up. For example, if the value is a "File", you may want
-  // to "close" it instead of "delete"ing it.
+  // to close it instead of deleting it.
   //
   // Not actually implemented here because often value's destructor is
   // protected, and the derived SimpleLRUCache is declared a friend,
@@ -492,8 +478,8 @@ protected:
 
   // Override this operation if you want to evict cache entries
   // based on parameters other than the total units stored.
-  // For example, if the cache stores open sstables, where the cost
-  // is the size in bytes of the open sstable, you may want to evict
+  // For example, if the cache stores open file handles, where the cost
+  // is the size in bytes of the open file, you may want to evict
   // entries from the cache not only before the max size in bytes
   // is reached but also before reaching the limit of open file
   // descriptors. Thus, you may want to override this function in a

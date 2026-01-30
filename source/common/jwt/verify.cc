@@ -1,17 +1,6 @@
 // Copyright 2018 Google LLC
-// Copyright The Envoy Project Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright Envoy Project Authors
+// SPDX-License-Identifier: Apache-2.0
 
 #include "source/common/jwt/verify.h"
 
@@ -78,7 +67,7 @@ bool verifySignatureRSAPSS(RSA* key, const EVP_MD* md, const uint8_t* signature,
   }
 
   bssl::UniquePtr<EVP_MD_CTX> md_ctx(EVP_MD_CTX_create());
-  // pctx is owned by md_ctx, no need to free it separately.
+  // ``pctx`` is owned by ``md_ctx``, no need to free it separately.
   EVP_PKEY_CTX* pctx;
   if (EVP_DigestVerifyInit(md_ctx.get(), &pctx, md, nullptr, evp_pkey.get()) == 1 &&
       EVP_PKEY_CTX_set_rsa_padding(pctx, RSA_PKCS1_PSS_PADDING) == 1 &&
