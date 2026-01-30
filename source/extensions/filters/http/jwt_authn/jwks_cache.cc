@@ -18,18 +18,19 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/time.h"
 #include "absl/types/optional.h"
-#include "jwt_verify_lib/check_audience.h"
+#include "source/common/jwt/check_audience.h"
 
 using envoy::extensions::filters::http::jwt_authn::v3::JwtAuthentication;
 using envoy::extensions::filters::http::jwt_authn::v3::JwtProvider;
-using ::google::jwt_verify::Jwks;
-using ::google::jwt_verify::Status;
 
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
 namespace JwtAuthn {
 namespace {
+
+using JwtVerify::Jwks;
+using JwtVerify::Status;
 
 class JwksDataImpl : public JwksCache::JwksData, public Logger::Loggable<Logger::Id::jwt> {
 public:
@@ -41,7 +42,7 @@ public:
     for (const auto& aud : jwt_provider_.audiences()) {
       audiences.push_back(aud);
     }
-    audiences_ = std::make_unique<::google::jwt_verify::CheckAudience>(audiences);
+    audiences_ = std::make_unique<JwtVerify::CheckAudience>(audiences);
 
     if (jwt_provider_.has_subjects()) {
       sub_matcher_.emplace(jwt_provider_.subjects(), context.serverFactoryContext());
@@ -69,7 +70,7 @@ public:
                               std::string);
     if (!inline_jwks.empty()) {
       auto jwks =
-          ::google::jwt_verify::Jwks::createFrom(inline_jwks, ::google::jwt_verify::Jwks::JWKS);
+          JwtVerify::Jwks::createFrom(inline_jwks, JwtVerify::Jwks::JWKS);
       if (jwks->getStatus() != Status::Ok) {
         ENVOY_LOG(warn, "Invalid inline jwks for issuer: {}, jwks: {}", jwt_provider_.issuer(),
                   inline_jwks);
@@ -113,7 +114,7 @@ public:
       // create async_fetch for remote_jwks, if is no-op if async_fetch is not enabled.
       async_fetcher_ = std::make_unique<JwksAsyncFetcher>(
           jwt_provider_.remote_jwks(), retry_policy_, context, fetcher_cb, stats,
-          [this](google::jwt_verify::JwksPtr&& jwks) { setJwksToAllThreads(std::move(jwks)); });
+          [this](Envoy::JwtVerify::JwksPtr&& jwks) { setJwksToAllThreads(std::move(jwks)); });
     }
   }
 
@@ -158,7 +159,7 @@ public:
 
   bool isExpired() const override { return time_source_.monotonicTime() >= tls_->expire_; }
 
-  const ::google::jwt_verify::Jwks* setRemoteJwks(JwksConstPtr&& jwks) override {
+  const JwtVerify::Jwks* setRemoteJwks(JwksConstPtr&& jwks) override {
     // convert unique_ptr to shared_ptr
     JwksConstSharedPtr shared_jwks = std::move(jwks);
     tls_->jwks_ = shared_jwks;
@@ -198,7 +199,7 @@ private:
   // The retry policy for remote jwks fetcher.
   Router::RetryPolicyConstSharedPtr retry_policy_;
   // Check audience object
-  ::google::jwt_verify::CheckAudiencePtr audiences_;
+  JwtVerify::CheckAudiencePtr audiences_;
   // the time source
   TimeSource& time_source_;
   // the thread local slot for cache

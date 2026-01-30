@@ -27,8 +27,8 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "jwt_verify_lib/jwt.h"
-#include "jwt_verify_lib/status.h"
+#include "source/common/jwt/jwt.h"
+#include "source/common/jwt/status.h"
 #include "openssl/rand.h"
 
 using namespace std::chrono_literals;
@@ -1118,8 +1118,8 @@ std::string
 OAuth2Filter::getExpiresTimeForRefreshToken(const std::string& refresh_token,
                                             const std::chrono::seconds& expires_in) const {
   if (config_->useRefreshToken()) {
-    ::google::jwt_verify::Jwt jwt;
-    if (jwt.parseFromString(refresh_token) == ::google::jwt_verify::Status::Ok && jwt.exp_ != 0) {
+    JwtVerify::Jwt jwt;
+    if (jwt.parseFromString(refresh_token) == JwtVerify::Status::Ok && jwt.exp_ != 0) {
       const std::chrono::seconds expiration_from_jwt = std::chrono::seconds{jwt.exp_};
       const std::chrono::seconds now =
           std::chrono::time_point_cast<std::chrono::seconds>(time_source_.systemTime())
@@ -1149,8 +1149,8 @@ OAuth2Filter::getExpiresTimeForRefreshToken(const std::string& refresh_token,
 std::string OAuth2Filter::getExpiresTimeForIdToken(const std::string& id_token,
                                                    const std::chrono::seconds& expires_in) const {
   if (!id_token.empty()) {
-    ::google::jwt_verify::Jwt jwt;
-    if (jwt.parseFromString(id_token) == ::google::jwt_verify::Status::Ok && jwt.exp_ != 0) {
+    JwtVerify::Jwt jwt;
+    if (jwt.parseFromString(id_token) == JwtVerify::Status::Ok && jwt.exp_ != 0) {
       const std::chrono::seconds expiration_from_jwt = std::chrono::seconds{jwt.exp_};
       const std::chrono::seconds now =
           std::chrono::time_point_cast<std::chrono::seconds>(time_source_.systemTime())
