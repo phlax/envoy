@@ -16,7 +16,9 @@ int main(int argc, char** argv) {
   // Create a Runfiles object for runfiles lookup.
   // https://github.com/bazelbuild/bazel/blob/master/tools/cpp/runfiles/runfiles_src.h#L32
   std::string error;
-  std::unique_ptr<Runfiles> runfiles(Runfiles::Create(argv[0], &error));
+  // Pass BAZEL_CURRENT_REPOSITORY to enable apparent-to-canonical repo name mapping,
+  // required for bzlmod where external-repo runfiles paths use mangled canonical names.
+  std::unique_ptr<Runfiles> runfiles(Runfiles::Create(argv[0], BAZEL_CURRENT_REPOSITORY, &error));
   RELEASE_ASSERT(Envoy::TestEnvironment::getOptionalEnvVar("NORUNFILES").has_value() ||
                      runfiles != nullptr,
                  error);

@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-set -e
+set -eu
 
 TEST_DATA=test/common/runtime/test_data
 
-# Regular runtime tests.
-cd "${TEST_SRCDIR}/envoy"
+# TODO(phlax): Cleanup once bzlmod migration is complete
+ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
+cd "${ENVOY_SRCDIR}"
 rm -rf "${TEST_TMPDIR:?}/${TEST_DATA}"
 mkdir -p "${TEST_TMPDIR}/${TEST_DATA}"
 cp -RfL "${TEST_DATA}"/* "${TEST_TMPDIR}/${TEST_DATA}"
@@ -20,7 +21,7 @@ mkdir -p "${LOOP_PATH}"
 
 # the ln in MSYS2 doesn't handle recursive symlinks correctly,
 # so use the cmd built in mklink instead on Windows
-if [[ -z "${WINDIR}" ]]; then
+if [[ -z "${WINDIR:-}" ]]; then
   ln -sf "${TEST_TMPDIR}/${TEST_DATA}/root" "${TEST_TMPDIR}/${TEST_DATA}/current"
   ln -sf "${TEST_TMPDIR}/${TEST_DATA}/root/envoy/subdir" "${TEST_TMPDIR}/${TEST_DATA}/root/envoy/badlink"
   ln -sf "${LOOP_PATH}" "${LOOP_PATH}"/loop

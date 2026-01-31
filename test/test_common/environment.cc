@@ -1,5 +1,7 @@
 #include "test/test_common/environment.h"
 
+#include <sys/stat.h>
+
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -34,6 +36,7 @@
 #include "absl/debugging/symbolize.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_replace.h"
 #include "gtest/gtest.h"
 #include "spdlog/spdlog.h"
 
@@ -94,6 +97,17 @@ std::string getTemporaryDirectory() {
 // Allow initializeOptions() to remember CLI args for getOptions().
 int argc_;
 char** argv_;
+
+// Returns the workspace name to use for the main repository.
+// Under WORKSPACE mode TEST_WORKSPACE is "envoy"; under bzlmod it is "_main".
+// TEST_WORKSPACE is set by "bazel test" but NOT by "bazel run"; callers that
+// run outside a test context (benchmarks etc.) must not go through this path.
+std::string mainWorkspaceName() {
+  const char* tw = ::getenv("TEST_WORKSPACE");
+  RELEASE_ASSERT(tw != nullptr,
+                 "TEST_WORKSPACE is not set; non-test binaries must resolve runfiles explicitly");
+  return tw;
+}
 
 } // namespace
 
@@ -300,16 +314,40 @@ const std::string& TestEnvironment::temporaryDirectory() {
 
 std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
-  auto path = runfiles_->Rlocation(workspace);
+
+  // For the main repository, TEST_WORKSPACE is authoritative:
+  // it is "envoy" under WORKSPACE mode and "_main" under bzlmod.
+  // TODO(phlax): Cleanup once bzlmod migration is complete
+  if (workspace.empty()) {
+    auto path = runfiles_->Rlocation(mainWorkspaceName());
 #ifdef WIN32
-  path = std::regex_replace(path, std::regex("\\\\"), "/");
+    path = absl::StrReplaceAll(path, {{"\\", "/"}});
+#endif
+    return path;
+  }
+
+  // For external dependencies (e.g. @envoy as a dependency in mobile builds),
+  // TEST_WORKSPACE cannot be used since it names the root module, not the dep.
+  // With BAZEL_CURRENT_REPOSITORY passed to Runfiles::Create, the repo mapping
+  // resolves apparent names (e.g. "envoy") to their canonical form directly,
+  // so the manual "+"/"-" suffix probing is no longer needed.
+  // TODO(phlax): Cleanup once bzlmod migration is complete
+  auto path = runfiles_->Rlocation(workspace);
+  RELEASE_ASSERT(!path.empty(),
+                 absl::StrCat("runfiles path not found for workspace: ", workspace));
+#ifdef WIN32
+  path = absl::StrReplaceAll(path, {{"\\", "/"}});
 #endif
   return path;
 }
 
 std::string TestEnvironment::runfilesPath(const std::string& path, const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
-  return runfiles_->Rlocation(absl::StrCat(workspace, "/", path));
+  // TODO(phlax): Cleanup once bzlmod migration is complete.
+  // When workspace is empty (the default), resolve via TEST_WORKSPACE so that both
+  // WORKSPACE mode ("envoy") and bzlmod ("_main") are handled without hardcoding.
+  const std::string ws = workspace.empty() ? mainWorkspaceName() : workspace;
+  return runfiles_->Rlocation(absl::StrCat(ws, "/", path));
 }
 
 const std::string TestEnvironment::unixDomainSocketDirectory() {
