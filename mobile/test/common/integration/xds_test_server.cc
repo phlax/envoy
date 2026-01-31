@@ -35,6 +35,7 @@ XdsTestServer::XdsTestServer()
                      runfiles_ != nullptr,
                  runfiles_error);
   TestEnvironment::setRunfiles(runfiles_.get());
+  TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
 
   if (!Envoy::Event::Libevent::Global::initialized()) {
     // Required by the Dispatcher.

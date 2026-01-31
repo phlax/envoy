@@ -97,6 +97,7 @@ std::string getTemporaryDirectory() {
 // Allow initializeOptions() to remember CLI args for getOptions().
 int argc_;
 char** argv_;
+std::string main_workspace_;
 
 } // namespace
 
@@ -499,6 +500,10 @@ void TestEnvironment::unsetEnvVar(const std::string& name) {
 }
 
 void TestEnvironment::setRunfiles(Runfiles* runfiles) { runfiles_ = runfiles; }
+
+void TestEnvironment::setMainWorkspace(absl::string_view workspace) {
+  main_workspace_ = std::string(workspace);
+}
 
 Runfiles* TestEnvironment::runfiles_{};
 
