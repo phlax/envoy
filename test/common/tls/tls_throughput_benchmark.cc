@@ -70,14 +70,17 @@ static void testThroughput(benchmark::State& state) {
       bazel::tools::cpp::runfiles::Runfiles::Create("tls_throughput_benchmark",
                                                     BAZEL_CURRENT_REPOSITORY, &error));
   Envoy::TestEnvironment::setRunfiles(runfiles.get());
+  Envoy::TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
 
   int sockets[2];
   socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets);
 
   bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
   bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
-  std::string cert_path = runfiles->Rlocation("envoy/test/common/tls/test_data/san_dns_cert.pem");
-  std::string key_path = runfiles->Rlocation("envoy/test/common/tls/test_data/san_dns_key.pem");
+  std::string cert_path =
+      Envoy::TestEnvironment::runfilesPath("test/common/tls/test_data/san_dns_cert.pem");
+  std::string key_path =
+      Envoy::TestEnvironment::runfilesPath("test/common/tls/test_data/san_dns_key.pem");
   auto err = SSL_CTX_use_certificate_file(server_ctx.get(), cert_path.c_str(), SSL_FILETYPE_PEM);
   drainErrorQueue();
   RELEASE_ASSERT(err > 0, "SSL_CTX_use_certificate_file");
