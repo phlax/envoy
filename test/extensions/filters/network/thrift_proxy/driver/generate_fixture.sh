@@ -59,7 +59,11 @@ shift
 FIXTURE_DIR="${TEST_TMPDIR}"
 mkdir -p "${FIXTURE_DIR}"
 
-DRIVER_DIR="${TEST_SRCDIR}/envoy/test/extensions/filters/network/thrift_proxy/driver"
+# TODO(phlax): Cleanup once bzlmod migration is complete
+# Determine workspace directory (envoy in WORKSPACE mode, _main in bzlmod mode)
+# shellcheck source=test/srcdir.sh
+source "${TEST_SRCDIR}/${TEST_WORKSPACE}/test/srcdir.sh"
+DRIVER_DIR="${ENVOY_SRCDIR}/test/extensions/filters/network/thrift_proxy/driver"
 
 # On UNIX python supports AF_UNIX socket which are more reliable and efficient for communication
 # between the client and the server, so we use it. On Windows, we find a random unused port
