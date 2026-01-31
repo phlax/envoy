@@ -4,7 +4,7 @@
 
 # Usage: generate_fixture.sh <transport> <protocol> -s [multiplex-service] -H [headers] method [param...]
 
-set -e
+set -eu
 
 function usage() {
     echo "Usage: $0 <mode> <transport> <protocol> -s [multiplex-service] -H [headers] -T [TempPath] method [param...]"
@@ -59,7 +59,10 @@ shift
 FIXTURE_DIR="${TEST_TMPDIR}"
 mkdir -p "${FIXTURE_DIR}"
 
-DRIVER_DIR="${TEST_SRCDIR}/envoy/test/extensions/filters/network/thrift_proxy/driver"
+# TODO(phlax): Cleanup once bzlmod migration is complete
+ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
+export ENVOY_SRCDIR
+DRIVER_DIR="${ENVOY_SRCDIR}/test/extensions/filters/network/thrift_proxy/driver"
 
 # On UNIX python supports AF_UNIX socket which are more reliable and efficient for communication
 # between the client and the server, so we use it. On Windows, we find a random unused port
@@ -75,7 +78,7 @@ if [[ "$OSTYPE" == "msys" ]]; then
     done
     SOCKET="127.0.0.1:${port}"
 else
-    if [[ -z "${TEST_UDSDIR}" ]]; then
+    if [[ -z "${TEST_UDSDIR:-}" ]]; then
         TEST_UDSDIR=$(mktemp -d /tmp/envoy_test_thrift.XXXXXX)
     fi
     SOCKET="${TEST_UDSDIR}/fixture.sock"

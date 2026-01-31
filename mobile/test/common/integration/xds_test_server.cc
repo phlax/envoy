@@ -29,11 +29,12 @@ XdsTestServer::XdsTestServer()
       mock_buffer_factory_(new NiceMock<MockBufferFactory>), upstream_config_(time_system_) {
   std::string runfiles_error;
   runfiles_ = std::unique_ptr<bazel::tools::cpp::runfiles::Runfiles>{
-      bazel::tools::cpp::runfiles::Runfiles::Create("", &runfiles_error)};
+      bazel::tools::cpp::runfiles::Runfiles::Create("", BAZEL_CURRENT_REPOSITORY, &runfiles_error)};
   RELEASE_ASSERT(TestEnvironment::getOptionalEnvVar("NORUNFILES").has_value() ||
                      runfiles_ != nullptr,
                  runfiles_error);
   TestEnvironment::setRunfiles(runfiles_.get());
+  TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
 
   if (!Envoy::Event::Libevent::Global::initialized()) {
     // Required by the Dispatcher.

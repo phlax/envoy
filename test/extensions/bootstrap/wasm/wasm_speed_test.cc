@@ -62,8 +62,8 @@ static void bmWasmSimpleCallSpeedTest(benchmark::State& state, std::string test,
   if (runtime == "null") {
     code = "WasmSpeedCpp";
   } else {
-    code = TestEnvironment::readFileToStringForTest(
-        TestEnvironment::runfilesPath("test/extensions/bootstrap/wasm/test_data/speed_cpp.wasm"));
+    code = TestEnvironment::readFileToStringForTest(TestEnvironment::runfilesPath(
+        "test/extensions/bootstrap/wasm/test_data/speed_cpp.wasm", "envoy"));
   }
   EXPECT_FALSE(code.empty());
   EXPECT_TRUE(wasm->load(code, false));
@@ -132,11 +132,12 @@ int main(int argc, char** argv) {
   // Create a Runfiles object for runfiles lookup.
   // https://github.com/bazelbuild/bazel/blob/master/tools/cpp/runfiles/runfiles_src.h#L32
   std::string error;
-  std::unique_ptr<Runfiles> runfiles(Runfiles::Create(argv[0], &error));
+  std::unique_ptr<Runfiles> runfiles(Runfiles::Create(argv[0], BAZEL_CURRENT_REPOSITORY, &error));
   RELEASE_ASSERT(Envoy::TestEnvironment::getOptionalEnvVar("NORUNFILES").has_value() ||
                      runfiles != nullptr,
                  error);
   Envoy::TestEnvironment::setRunfiles(runfiles.get());
+  Envoy::TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
   Envoy::TestEnvironment::setEnvVar("ENVOY_IP_TEST_VERSIONS", "all", 0);
   Envoy::Event::Libevent::Global::initialize();
   if (::benchmark::ReportUnrecognizedArguments(argc, argv)) {
