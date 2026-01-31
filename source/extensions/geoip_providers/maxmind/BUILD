@@ -41,9 +41,15 @@ envoy_cc_library(
     hdrs = ["geoip_provider.h"],
     tags = ["skip_on_windows"],
     deps = [
-        "//bazel/foreign_cc:maxmind_linux_darwin",
         "//envoy/geoip:geoip_provider_driver_interface",
         "//source/common/common:thread_synchronizer_lib",
         "@envoy_api//envoy/extensions/geoip_providers/maxmind/v3:pkg_cc_proto",
-    ],
+    ] + select({
+        # TODO(phlax): Cleanup once bzlmod migration is complete.
+        # This select cannot be folded into //bazel/foreign_cc:maxmind_linux_darwin because
+        # //bazel:bzlmod_mode (bool_flag) and //bazel:linux (platform constraint) are orthogonal
+        # conditions that would cause an ambiguous select error in the combined target.
+        "//bazel:bzlmod_mode": ["@libmaxminddb"],
+        "//conditions:default": ["//bazel/foreign_cc:maxmind_linux_darwin"],
+    }),
 )

@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-export ENVOY_BIN="${TEST_SRCDIR}/envoy/test/integration/hotrestart_small_main"
+# TODO(phlax): Cleanup once bzlmod migration is complete
+# Determine workspace directory (envoy in WORKSPACE mode, _main in bzlmod mode)
+# shellcheck source=test/srcdir.sh
+source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
+
+export ENVOY_BIN="${ENVOY_SRCDIR}/test/integration/hotrestart_small_main"
 
 # shellcheck source=test/integration/test_utility.sh
-source "${TEST_SRCDIR}/envoy/test/integration/test_utility.sh"
+source "${ENVOY_SRCDIR}/test/integration/test_utility.sh"
 
 function expect_fail_with_error() {
   log="${TEST_TMPDIR}/envoy.log"
@@ -48,10 +53,10 @@ start_test "Launching envoy with invalid component."
 expect_fail_with_error "error: invalid component specified" --component-log-level foo:debug
 
 start_test "Launching envoy with empty config and validate."
-expect_ok -c "${TEST_SRCDIR}/envoy/test/config/integration/empty.yaml" --mode validate
+expect_ok -c "${ENVOY_SRCDIR}/test/config/integration/empty.yaml" --mode validate
 
 start_test "Launching envoy with empty config."
-run_in_background_saving_pid "${ENVOY_BIN}" -c "${TEST_SRCDIR}/envoy/test/config/integration/empty.yaml" --use-dynamic-base-id
+run_in_background_saving_pid "${ENVOY_BIN}" -c "${ENVOY_SRCDIR}/test/config/integration/empty.yaml" --use-dynamic-base-id
 # binary instrumented with coverage is linked dynamically and takes a long time to start.
 sleep 120
 kill "${BACKGROUND_PID}"

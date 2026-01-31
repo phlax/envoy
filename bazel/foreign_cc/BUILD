@@ -176,7 +176,7 @@ cc_library(
 )
 
 configure_make(
-    name = "luajit",
+    name = "_luajit_foreign_cc",
     configure_command = "luajit_build.sh",
     env = select({
         # This shouldn't be needed! See
@@ -194,6 +194,16 @@ configure_make(
         "//conditions:default": ["libluajit-5.1.a"],
     }),
     targets = [],
+)
+
+# TODO(phlax): Cleanup once bzlmod migration is complete
+# In bzlmod mode use the module-provided @luajit; otherwise build via foreign_cc.
+alias(
+    name = "luajit",
+    actual = select({
+        "//bazel:bzlmod_mode": "@luajit",
+        "//conditions:default": ":_luajit_foreign_cc",
+    }),
 )
 
 configure_make(
@@ -333,7 +343,7 @@ envoy_cmake(
 )
 
 envoy_cmake(
-    name = "event",
+    name = "_event_foreign_cc",
     build_args = select({
         "//bazel/foreign_cc:parallel_builds_enabled": ["-j"],
         "//conditions:default": ["-j1"],
@@ -385,6 +395,16 @@ envoy_cmake(
             "libevent_pthreads.a",
             "libevent_core.a",
         ],
+    }),
+)
+
+# TODO(phlax): Cleanup once bzlmod migration is complete
+# In bzlmod mode use the module-provided @libevent; otherwise build via foreign_cc.
+alias(
+    name = "event",
+    actual = select({
+        "//bazel:bzlmod_mode": "@libevent",
+        "//conditions:default": ":_event_foreign_cc",
     }),
 )
 

@@ -35,6 +35,7 @@ envoy_sh_test(
     data = [
         ":test_server_files",
         "//source/server/admin/html:admin_web_files",
+        "//test:srcdir.sh",
         "//test/integration:test_utility.sh",
     ],
     rbe_pool = "6gig",

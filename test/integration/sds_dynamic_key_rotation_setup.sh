@@ -2,7 +2,11 @@
 
 set -e
 
-TEST_CERTS="${TEST_SRCDIR}"/envoy/test/config/integration/certs
+# TODO(phlax): Cleanup once bzlmod migration is complete
+# Determine workspace directory (envoy in WORKSPACE mode, _main in bzlmod mode)
+# shellcheck source=test/srcdir.sh
+source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
+TEST_CERTS="${ENVOY_SRCDIR}/test/config/integration/certs"
 
 ROOT="${TEST_TMPDIR}"/root
 SERVER_KEYCERT="${ROOT}"/server

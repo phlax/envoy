@@ -10,6 +10,8 @@ licenses(["notice"])  # Apache 2
 
 envoy_package()
 
+exports_files(["srcdir.sh"])
+
 yq(
     name = "coverage_config",
     srcs = [":coverage.yaml"],
