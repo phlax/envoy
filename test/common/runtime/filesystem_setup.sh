@@ -4,8 +4,10 @@ set -e
 
 TEST_DATA=test/common/runtime/test_data
 
-# Regular runtime tests.
-cd "${TEST_SRCDIR}/envoy"
+# TODO(phlax): Cleanup once bzlmod migration is complete
+ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
+export ENVOY_SRCDIR
+cd "${ENVOY_SRCDIR}"
 rm -rf "${TEST_TMPDIR:?}/${TEST_DATA}"
 mkdir -p "${TEST_TMPDIR}/${TEST_DATA}"
 cp -RfL "${TEST_DATA}"/* "${TEST_TMPDIR}/${TEST_DATA}"
