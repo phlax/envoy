@@ -21,6 +21,7 @@ envoy_mobile_android_test(
     native_lib_name = "envoy_jni_with_test_extensions",
     test_class = "test.java.integration.AndroidEngineStartUpTest",
     deps = [
+        "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
     ],
 )

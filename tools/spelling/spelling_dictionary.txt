@@ -964,6 +964,7 @@ hackery
 hacky
 handoff
 handshaker
+hardcode
 hardcoded
 hardcodes
 hardcoding
