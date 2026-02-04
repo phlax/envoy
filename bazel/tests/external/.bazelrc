@@ -13,8 +13,10 @@ build --color=yes
 fetch --color=yes
 run --color=yes
 
-common --enable_workspace
-common --noenable_bzlmod
+ommon --enable_bzlmod
+common --noenable_workspace
+common --registry=https://bcr.bazel.build/
+common --registry=https://raw.githubusercontent.com/envoyproxy/toolshed/6048b9fc5427b78da7434d1340a2b3de968711d6/bazel-registry
 common --noincompatible_disallow_empty_glob
 
 build --workspace_status_command="bash get_workspace_status"
