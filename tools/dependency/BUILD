@@ -1,5 +1,6 @@
 load("@base_pip3//:requirements.bzl", "requirement")
 load("@envoy_repo//:path.bzl", "PATH")
+load("@envoy_toolshed//dependency:reachability.bzl", "dependency_reachability")
 load("@envoy_toolshed//:utils.bzl", "json_merge")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
@@ -260,4 +261,11 @@ sh_test(
     },
     tags = ["no-remote-exec"],
     toolchains = ["@jq_toolchains//:resolved_toolchain"],
+)
+
+dependency_reachability(
+    name = "dep-reachability",
+    roots = [
+        "//source/exe:envoy_main_common_with_core_extensions_lib",
+    ],
 )

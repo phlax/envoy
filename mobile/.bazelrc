@@ -9,6 +9,8 @@ try-import ../.bazelrc
 #############################################################################
 
 common --repo_env=ANDROID_HOME
+common --noenable_bzlmod
+common --enable_workspace
 
 # Common flags for all builds
 build --define=hot_restart=disabled
@@ -49,7 +51,7 @@ build --cxxopt=-Wno-nullability-completeness
 build --define=signal_trace=disabled
 
 # Override PGV validation with NOP functions for binary size savings.
-build --@com_envoyproxy_protoc_gen_validate//bazel:template-flavor=nop
+build --com_envoyproxy_protoc_gen_validate//bazel:template-flavor=nop
 
 # Instrument Envoy Mobile's C++ code for coverage
 coverage --instrumentation_filter="//library/common[/:]"
