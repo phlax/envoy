@@ -1,3 +1,4 @@
+load("//bazel:compat.bzl", "NO_HTTP3_SKIP_TARGETS", "PPC_SKIP_TARGETS", "WINDOWS_SKIP_TARGETS")
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_cc_binary",
@@ -11,7 +12,6 @@ load(
     "envoy_select_enable_http3",
     "envoy_select_signal_trace",
 )
-load("//bazel:repositories.bzl", "NO_HTTP3_SKIP_TARGETS", "PPC_SKIP_TARGETS", "WINDOWS_SKIP_TARGETS")
 load("//source/extensions:all_extensions.bzl", "envoy_all_core_extensions", "envoy_all_extensions")
 
 licenses(["notice"])  # Apache 2

@@ -1,3 +1,4 @@
+load("//bazel:compat.bzl", "PPC_SKIP_TARGETS", "WINDOWS_SKIP_TARGETS")
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_benchmark_test",
@@ -9,7 +10,6 @@ load(
     "envoy_select_admin_functionality",
     "envoy_select_hot_restart",
 )
-load("//bazel:repositories.bzl", "PPC_SKIP_TARGETS", "WINDOWS_SKIP_TARGETS")
 load("//source/extensions:all_extensions.bzl", "envoy_all_extensions")
 
 licenses(["notice"])  # Apache 2
