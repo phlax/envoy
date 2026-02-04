@@ -9,5 +9,9 @@ local_path_override(
     module_name = "envoy",
     path = "../",
 )
+local_path_override(
+    module_name = "envoy_api",
+    path = "../api",
+)
 
-bazel_dep(name = "envoy-examples", version = "0.2.4")
+bazel_dep(name = "envoy-examples", version = "0.2.4.envoy")
