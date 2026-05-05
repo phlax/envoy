@@ -289,7 +289,7 @@ fn build_resolver(config: &HickoryConfig) -> TokioResolver {
   let provider = hickory_resolver::net::runtime::TokioRuntimeProvider::default();
   let mut builder = hickory_resolver::Resolver::builder_with_config(resolver_config, provider);
   *builder.options_mut() = opts;
-  builder.build().expect("failed to build DNS resolver")
+  builder.build().unwrap_or_else(|e| panic!("failed to build DNS resolver: {e}"))
 }
 
 impl DnsResolverInstance for HickoryDnsResolverImpl {
