@@ -1099,6 +1099,10 @@ platformdirs==4.3.6 \
     --hash=sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907 \
     --hash=sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb
     # via yapf
+ply==3.11 \
+    --hash=sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3 \
+    --hash=sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce
+    # via -r tools/base/requirements.in
 propcache==0.3.1 \
     --hash=sha256:050b571b2e96ec942898f8eb46ea4bfbb19bd5502424747e83badc2d4a99a44e \
     --hash=sha256:05543250deac8e61084234d5fc54f8ebd254e8f2b39a16b1dce48904f45b744b \

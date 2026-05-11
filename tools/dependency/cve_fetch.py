@@ -19,7 +19,7 @@ MAX_RETRIES = 10
 BACKOFF_BASE = 10
 
 
-class NvdDownloaderException(Exception):
+class NvdDownloaderError(Exception):
     pass
 
 
@@ -156,7 +156,7 @@ class NvdDownloader(runner.Runner):
                     current = datetime(current.year, current.month + 1, 1)
 
     @runner.cleansup
-    @runner.catches(NvdDownloaderException)
+    @runner.catches(NvdDownloaderError)
     async def run(self):
         tempdir = pathlib.Path(self.tempdir.name)
         months = {}
@@ -182,7 +182,7 @@ class NvdDownloader(runner.Runner):
             output_file = self.output_path / f"{month}.json"
             if output_file.exists():
                 if not self.overwrite:
-                    raise NvdDownloaderException(
+                    raise NvdDownloaderError(
                         f"File {output_file} exists and overwrite was not specfied")
                 output_file.unlink()
 
