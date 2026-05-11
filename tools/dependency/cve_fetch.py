@@ -183,7 +183,7 @@ class NvdDownloader(runner.Runner):
             if output_file.exists():
                 if not self.overwrite:
                     raise NvdDownloaderError(
-                        f"File {output_file} exists and overwrite was not specfied")
+                        f"File {output_file} exists and overwrite was not specified")
                 output_file.unlink()
 
             with output_file.open("a", encoding="utf-8") as outfile:
