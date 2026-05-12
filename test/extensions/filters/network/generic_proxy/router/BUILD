@@ -39,6 +39,8 @@ envoy_cc_test(
         "//test/extensions/filters/network/generic_proxy/mocks:filter_mocks",
         "//test/extensions/filters/network/generic_proxy/mocks:route_mocks",
         "//test/extensions/filters/network/generic_proxy:fake_codec_lib",
+        "//test/mocks/network:connection_mocks",
+        "//test/mocks/upstream:thread_local_cluster_mocks",
         "//test/test_common:utility_lib",
     ],
 )

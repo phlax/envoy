@@ -1,4 +1,5 @@
 #include "source/common/buffer/buffer_impl.h"
+#include "source/common/stats/isolated_store_impl.h"
 #include "source/server/admin/admin.h"
 #include "source/server/admin/admin_filter.h"
 
