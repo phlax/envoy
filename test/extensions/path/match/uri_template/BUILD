@@ -30,5 +30,6 @@ envoy_extension_cc_test(
     deps = [
         "//source/extensions/path/match/uri_template:config",
         "//source/extensions/path/match/uri_template:uri_template_match_lib",
+        "//test/test_common:utility_lib",
     ],
 )
