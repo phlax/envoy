@@ -18,6 +18,7 @@ envoy_extension_cc_test(
     rbe_pool = "6gig",
     deps = [
         "//source/extensions/path/rewrite/uri_template:config",
+        "//test/test_common:utility_lib",
     ],
 )
 

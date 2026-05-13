@@ -6,6 +6,7 @@
 
 #include "envoy/extensions/common/async_files/v3/async_file_manager.pb.h"
 
+#include "source/common/api/os_sys_calls_impl.h"
 #include "source/common/singleton/manager_impl.h"
 #include "source/extensions/common/async_files/async_file_action.h"
 #include "source/extensions/common/async_files/async_file_handle.h"

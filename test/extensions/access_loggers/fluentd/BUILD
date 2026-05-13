@@ -33,8 +33,9 @@ envoy_extension_cc_test(
     extension_names = ["envoy.access_loggers.fluentd"],
     rbe_pool = "6gig",
     deps = [
-        "//source/common/formatter:formatter_extension_lib",
+        "//source/common/formatter:substitution_format_string_lib",
         "//source/extensions/access_loggers/fluentd:substitution_formatter_lib",
+        "//test/mocks/stream_info:stream_info_mocks",
         "//test/test_common:environment_lib",
         "//test/test_common:utility_lib",
     ],

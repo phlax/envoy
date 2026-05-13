@@ -33,6 +33,7 @@ envoy_cc_test(
     rbe_pool = "6gig",
     tags = ["skip_on_windows"],
     deps = [
+        "//source/common/api:os_sys_calls_lib",
         "//source/common/singleton:manager_impl_lib",
         "//source/extensions/common/async_files",
         "//test/mocks/api:api_mocks",
@@ -49,6 +50,7 @@ envoy_cc_test(
     rbe_pool = "6gig",
     tags = ["skip_on_windows"],
     deps = [
+        "//source/common/singleton:manager_impl_lib",
         "//source/extensions/common/async_files",
         "//test/mocks/api:api_mocks",
         "//test/test_common:status_utility_lib",

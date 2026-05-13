@@ -1,7 +1,7 @@
 #include "source/common/config/utility.h"
 #include "source/extensions/path/rewrite/uri_template/config.h"
 
-#include "test/test_common/environment.h"
+#include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
 
