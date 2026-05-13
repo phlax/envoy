@@ -3,7 +3,7 @@
 #include "source/extensions/path/rewrite/uri_template/config.h"
 #include "source/extensions/path/rewrite/uri_template/uri_template_rewrite.h"
 
-#include "test/test_common/environment.h"
+#include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
 

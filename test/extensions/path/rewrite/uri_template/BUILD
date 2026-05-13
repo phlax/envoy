@@ -32,5 +32,6 @@ envoy_extension_cc_test(
         "//source/extensions/path/match/uri_template:uri_template_match_lib",
         "//source/extensions/path/rewrite/uri_template:config",
         "//source/extensions/path/rewrite/uri_template:uri_template_rewrite_lib",
+        "//test/test_common:utility_lib",
     ],
 )
