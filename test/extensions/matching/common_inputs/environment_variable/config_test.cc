@@ -2,6 +2,7 @@
 #include "source/extensions/matching/common_inputs/environment_variable/config.h"
 
 #include "test/test_common/environment.h"
+#include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
 
