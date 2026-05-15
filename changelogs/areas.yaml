@@ -1,0 +1,49 @@
+# NB: areas listed here are the canonical set accepted by per-entry changelog
+#     filenames in changelogs/current/
+
+access_log:
+  title: access_log
+attributes:
+  title: attributes
+build:
+  title: build
+composite:
+  title: composite
+dynamic_modules:
+  title: dynamic_modules
+golang:
+  title: golang
+http_inspector:
+  title: http_inspector
+jwt_authn:
+  title: jwt_authn
+load_report:
+  title: load_report
+logging:
+  title: logging
+mysql_proxy:
+  title: mysql_proxy
+oauth2:
+  title: oauth2
+quic:
+  title: quic
+rbac:
+  title: rbac
+resource_monitors:
+  title: resource_monitors
+router:
+  title: router
+set_metadata_filter:
+  title: set_metadata_filter
+spiffe_validator:
+  title: spiffe_validator
+stat_sinks:
+  title: stat_sinks
+stats:
+  title: stats
+tcp_proxy:
+  title: tcp_proxy
+tls:
+  title: tls
+wasm:
+  title: wasm
