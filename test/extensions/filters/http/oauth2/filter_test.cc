@@ -307,26 +307,14 @@ public:
   // *derived* from OAuth2Test, and C++ friendship is not inherited — so the
   // test bodies cannot call the privates directly. These wrappers bridge that.
   //
-  // We also prime `filter_->config_` here. In production it is set inside
-  // resolveAndSetActiveConfig() which only runs from decodeHeaders(); the tests
-  // below (DecryptTokenSameSecret, DecryptTokenDecryptionFails,
-  // DecryptTokenSpuriousSuccessReturnsOriginalInput, GarbagePlaintextCookieDoesNotCrash)
-  // call encryptToken/decryptToken directly without first going through
-  // decodeHeaders, so without this priming they would dereference a null
-  // config_ inside encryptToken/decryptToken (segfault at small offset, e.g. 0x318).
-  // DecryptTokenEmpty doesn't crash because decryptToken early-returns on empty
-  // input before touching config_.
-  void primeActiveConfigForTest() const {
-    if (filter_->config_ == nullptr) {
-      filter_->resolveAndSetActiveConfig();
-    }
-  }
+  // Unlike the equivalent helpers on main, no `config_` priming is needed here:
+  // on release/v1.37 OAuth2Filter::config_ is set in the constructor (there is
+  // no per-route config-resolution path), so it is always non-null by
+  // the time these helpers are invoked from a test body.
   std::string encryptTokenForTest(const std::string& token) const {
-    primeActiveConfigForTest();
     return filter_->encryptToken(token);
   }
   std::string decryptTokenForTest(const std::string& ct) const {
-    primeActiveConfigForTest();
     return filter_->decryptToken(ct);
   }
 
