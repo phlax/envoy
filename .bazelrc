@@ -100,6 +100,7 @@ build:linux --cxxopt=-fsized-deallocation --host_cxxopt=-fsized-deallocation
 build:linux --conlyopt=-fexceptions
 build:linux --fission=dbg,opt
 build:linux --features=per_object_debug_info
+build:linux --@rules_rust//rust/settings:extra_rustc_flags=-Clink-self-contained=no
 
 # macOS
 build:macos --action_env=PATH=/opt/homebrew/bin:/opt/local/bin:/usr/local/bin:/usr/bin:/bin
