@@ -79,7 +79,9 @@ def envoy_dependency_imports(
     )
     rules_rust_dependencies()
     rust_register_toolchains(
-        versions = ["1.88.0"],
+        versions = ["1.93.0"],
+        # TODO(phlax): Switch to rust-ldd
+        extra_exec_rustc_flags = ["-Clink-self-contained=no"],
         extra_target_triples = [
             "wasm32-unknown-unknown",
             "wasm32-wasip1",

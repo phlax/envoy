@@ -86,6 +86,7 @@ coverage --build_tests_only
 
 # Specifies the rustfmt.toml for all rustfmt_test targets.
 build --@rules_rust//rust/settings:rustfmt.toml=@envoy//:rustfmt.toml
+build --@rules_rust//rust/settings:extra_rustc_flags=-Clink-self-contained=no
 
 
 #############################################################################
