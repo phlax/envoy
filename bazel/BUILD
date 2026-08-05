@@ -1113,3 +1113,13 @@ config_setting(
         ":libstdc++": "True",
     },
 )
+
+# Re-export @llvm_toolchain//:redacted_dates.h so that crate_universe-generated
+# repositories (which cannot resolve bare apparent-name labels like @llvm_toolchain
+# under bzlmod) can reference it via an Envoy-owned label that is visible in
+# the root module's repo-mapping.
+filegroup(
+    name = "redacted_dates_h",
+    srcs = ["@llvm_toolchain//:redacted_dates.h"],
+    visibility = ["//visibility:public"],
+)
