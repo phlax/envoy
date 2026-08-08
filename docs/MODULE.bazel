@@ -4,6 +4,7 @@ module(
 )
 
 bazel_dep(name = "envoy")
+bazel_dep(name = "rules_python", version = "2.2.0")
 
 local_path_override(
     module_name = "envoy",
@@ -15,3 +16,22 @@ local_path_override(
 )
 
 bazel_dep(name = "envoy-examples", version = "0.2.4.envoy")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.12",
+)
+use_repo(
+    python,
+    "python_3_12",
+    python = "python_versions",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "docs_pip3",
+    python_version = "3.12",
+    requirements_lock = "//tools/python:requirements.txt",
+)
+use_repo(pip, "docs_pip3")
