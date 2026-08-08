@@ -1,2 +1,4 @@
 
-try-import ../.bazelrc
+common --enable_bzlmod
+common --registry=https://bcr.bazel.build/
+common --registry=https://raw.githubusercontent.com/envoyproxy/toolshed/e7e49bc10ebfa375110a54a4a666a84fef7cdb2f/bazel-registry
