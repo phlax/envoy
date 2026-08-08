@@ -92,7 +92,7 @@ def envoy_dependency_imports(
     crates_repositories(cargo_bazel_lockfile = cargo_bazel_lockfile)
     grcov_repository()
     shellcheck_dependencies()
-    proxy - wasm - rust - sdk_dependencies()
+    proxy_wasm_rust_sdk_dependencies()
     rules_fuzzing_dependencies(
         oss_fuzz = True,
         honggfuzz = False,
