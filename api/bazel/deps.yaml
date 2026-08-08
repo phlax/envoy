@@ -7,7 +7,7 @@ bazel_skylib:
   - api
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/bazel-skylib/blob/{version}/LICENSE"
-com_envoyproxy_protoc_gen_validate:
+protoc-gen-validate:
   project_name: "protoc-gen-validate (PGV)"
   project_desc: "protoc plugin to generate polyglot message validators"
   project_url: "https://github.com/bufbuild/protoc-gen-validate"
@@ -96,7 +96,7 @@ opentelemetry_proto:
   - api
   license: "Apache-2.0"
   license_url: "https://github.com/open-telemetry/opentelemetry-proto/blob/v{version}/LICENSE"
-prometheus_metrics_model:
+prometheus-metrics-model:
   project_name: "Prometheus client model"
   project_desc: "Data model artifacts for Prometheus"
   project_url: "https://github.com/prometheus/client_model"
