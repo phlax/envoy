@@ -39,7 +39,8 @@ def api_proto_plugin_impl(target, ctx, output_group, mnemonic, output_suffixes, 
         if ((f.path.startswith("external/envoy_api") and not f.path.startswith("external/envoy_api~~")) or
             f.path.startswith("tools/testdata/protoxform/envoy") or
             f.path.startswith("external/xds/xds") or
-            f.path.startswith("external/xds~"))
+            f.path.startswith("external/xds~") or
+            f.path.startswith("external/xds+"))
     ]
 
     # If this proto_library doesn't actually name any sources, e.g. //api:api,

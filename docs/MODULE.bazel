@@ -31,6 +31,9 @@ local_path_override(
 
 bazel_dep(name = "envoy-examples", version = "0.2.4.envoy")
 
+envoy_examples_ext = use_extension("@envoy-examples//bazel:extensions.bzl", "envoy_examples_extension")
+use_repo(envoy_examples_ext, "envoy-example-wasm-cc")
+
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     is_default = True,

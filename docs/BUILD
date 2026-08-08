@@ -239,6 +239,7 @@ pkg_tar(
         ":extensions_security_rst",
         ":external_deps_rst",
         ":version_history_rst",
+        "@envoy-example-wasm-cc//:docs",
         "@envoy-examples//:docs",
     ],
 )
