@@ -8,7 +8,9 @@ aspect_bazel_lib:
   - test_only
   license: "Apache-2.0"
   license_url: "https://github.com/aspect-build/bazel-lib/blob/v{version}/LICENSE"
-
+  version: "2.22.0"
+  urls:
+  - "https://github.com/bazel-contrib/bazel-lib/releases/download/v2.22.0/bazel-lib-v2.22.0.tar.gz"
 bazel_compdb:
   project_name: "bazel-compilation-database"
   project_desc: "Clang JSON compilation database support for Bazel"
@@ -18,7 +20,7 @@ bazel_compdb:
   - build
   license: "Apache-2.0"
   license_url: "https://github.com/grailbio/bazel-compilation-database/blob/{version}/LICENSE"
-
+  version: "0.0.0-20220906-4086479.envoy"
 bazel_features:
   project_name: "Bazel features"
   project_desc: "Support Bazel feature detection from starlark"
@@ -28,7 +30,9 @@ bazel_features:
   - build
   license: "Apache-2.0"
   license_url: "https://github.com/bazel-contrib/bazel_features/blob/v{version}/LICENSE"
-
+  version: "1.50.0"
+  urls:
+  - "https://github.com/bazel-contrib/bazel_features/releases/download/v1.50.0/bazel_features-v1.50.0.tar.gz"
 gazelle:
   project_name: "Gazelle"
   project_desc: "Bazel BUILD file generator for Go projects"
@@ -38,7 +42,9 @@ gazelle:
   - build
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/bazel-gazelle/blob/v{version}/LICENSE"
-
+  version: "0.47.0"
+  urls:
+  - "https://github.com/bazel-contrib/bazel-gazelle/releases/download/v0.47.0/bazel-gazelle-v0.47.0.tar.gz"
 boringssl:
   project_name: "BoringSSL"
   project_desc: "Minimal OpenSSL fork"
@@ -50,7 +56,9 @@ boringssl:
   cpe: "cpe:2.3:a:google:boringssl:*"
   license: "Mixed"
   license_url: "https://github.com/google/boringssl/blob/{version}/LICENSE"
-
+  version: "0.20260413.0"
+  urls:
+  - "https://github.com/google/boringssl/releases/download/0.20260413.0/boringssl-0.20260413.0.tar.gz"
 openssl:
   project_name: "OpenSSL"
   project_desc: "TLS/SSL and crypto library"
@@ -96,7 +104,9 @@ hessian2-codec:
   - envoy.generic_proxy.codecs.dubbo
   license: "Apache-2.0"
   license_url: "https://github.com/alibaba/hessian2-codec/blob/{version}/LICENSE"
-
+  version: "0.0.0-250114-6f5a647.envoy"
+  urls:
+  - "https://github.com/alibaba/hessian2-codec/archive/6f5a64770f0374a761eece13c8863b80dc5adcd8.tar.gz"
 aws-c-auth-testdata:
   project_name: "aws-c-auth-testdata"
   project_desc: "C99 library implementation of AWS client-side authentication: standard credentials providers and signing"
@@ -108,7 +118,9 @@ aws-c-auth-testdata:
   - envoy.filters.http.aws_request_signing
   license: "Apache-2.0"
   license_url: "https://github.com/awslabs/aws-c-auth/blob/v{version}/LICENSE"
-
+  version: "0.9.5.envoy"
+  urls:
+  - "https://github.com/awslabs/aws-c-auth/archive/refs/tags/v0.9.5.tar.gz"
 liburing:
   project_name: "liburing"
   project_desc: "C helpers to set up and tear down io_uring instances"
@@ -117,7 +129,9 @@ liburing:
   use_category:
   - dataplane_core
   - controlplane
-
+  version: "2.13.envoy"
+  urls:
+  - "https://github.com/axboe/liburing/archive/refs/tags/liburing-2.13.tar.gz"
 elfutils:
   project_name: "elfutils"
   project_desc: "Utilities and libraries for handling ELF files, providing libelf for libbpf"
@@ -141,7 +155,9 @@ libbpf:
   - envoy.extensions.network.socket_interface.sockmap
   license: "LGPL-2.1-only OR BSD-2-Clause"
   license_url: "https://github.com/libbpf/libbpf/blob/v{version}/LICENSE"
-
+  version: "1.7.0.envoy"
+  urls:
+  - "https://github.com/libbpf/libbpf/archive/refs/tags/v1.7.0.tar.gz"
 buildtools:
   project_name: "Bazel build tools"
   project_desc: "Developer tools for working with Google's bazel buildtool."
@@ -161,7 +177,9 @@ c_ares:
   cpe: "cpe:2.3:a:c-ares_project:c-ares:*"
   license: "c-ares"
   license_url: "https://github.com/c-ares/c-ares/blob/cares-{underscore_version}/LICENSE.md"
-
+  version: "1.34.6"
+  urls:
+  - "https://github.com/c-ares/c-ares/releases/download/v1.34.5/c-ares-1.34.5.tar.gz"
 xxhash:
   project_name: "xxHash"
   project_desc: "Extremely fast hash algorithm"
@@ -172,7 +190,9 @@ xxhash:
   - controlplane
   license: "BSD-2-Clause"
   license_url: "https://github.com/Cyan4973/xxHash/blob/v{version}/LICENSE"
-
+  version: "0.8.3"
+  urls:
+  - "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz"
 dd_trace_cpp:
   project_name: "Datadog C++ Tracing Library"
   project_desc: "Datadog distributed tracing for C++"
@@ -184,7 +204,9 @@ dd_trace_cpp:
   - envoy.tracers.datadog
   license: "Apache-2.0"
   license_url: "https://github.com/DataDog/dd-trace-cpp/blob/v{version}/LICENSE.md"
-
+  version: "2.0.0.envoy"
+  urls:
+  - "https://github.com/DataDog/dd-trace-cpp/archive/v2.0.0.tar.gz"
 sql-parser:
   project_name: "C++ SQL Parser Library"
   project_desc: "Forked from Hyrise SQL Parser"
@@ -197,7 +219,9 @@ sql-parser:
   - envoy.filters.network.postgres_proxy
   license: "MIT"
   license_url: "https://github.com/envoyproxy/sql-parser/blob/{version}/LICENSE"
-
+  version: "0.0.0-260715-52e5ad1.envoy"
+  urls:
+  - "https://github.com/envoyproxy/sql-parser/archive/52e5ad1f4fbb21301fcee7f9d18eef7e6ae6ab3e.tar.gz"
 fmt:
   project_name: "fmt"
   project_desc: "{fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and C++ iostreams"
@@ -209,7 +233,9 @@ fmt:
   cpe: "cpe:2.3:a:fmt:fmt:*"
   license: "fmt"
   license_url: "https://github.com/fmtlib/fmt/blob/{version}/LICENSE"
-
+  version: "12.1.0"
+  urls:
+  - "https://github.com/fmtlib/fmt/releases/download/12.1.0/fmt-12.1.0.zip"
 spdlog:
   project_name: "spdlog"
   project_desc: "Very fast, header-only/compiled, C++ logging library"
@@ -220,7 +246,9 @@ spdlog:
   - controlplane
   license: "MIT"
   license_url: "https://github.com/gabime/spdlog/blob/v{version}/LICENSE"
-
+  version: "1.16.0"
+  urls:
+  - "https://github.com/gabime/spdlog/archive/refs/tags/v1.16.0.tar.gz"
 benchmark:
   project_name: "Benchmark"
   project_desc: "Library to benchmark code snippets"
@@ -262,7 +290,9 @@ flatbuffers:
   cpe: "cpe:2.3:a:google:flatbuffers:*"
   license: "Apache-2.0"
   license_url: "https://github.com/google/flatbuffers/blob/v{version}/LICENSE"
-
+  version: "25.12.19.envoy"
+  urls:
+  - "https://github.com/google/flatbuffers/archive/refs/tags/v25.12.19.tar.gz"
 libprotobuf_mutator:
   project_name: "libprotobuf-mutator"
   project_desc: "Library to randomly mutate protobuffers"
@@ -272,7 +302,9 @@ libprotobuf_mutator:
   - test_only
   license: "Apache-2.0"
   license_url: "https://github.com/google/libprotobuf-mutator/blob/v{version}/LICENSE"
-
+  version: "1.5.bcr.1"
+  urls:
+  - "https://github.com/google/libprotobuf-mutator/archive/refs/tags/v1.5.tar.gz"
 libsxg:
   project_name: "libsxg"
   project_desc: "Signed HTTP Exchange library"
@@ -284,7 +316,9 @@ libsxg:
   - envoy.filters.http.sxg
   license: "Apache-2.0"
   license_url: "https://github.com/google/libsxg/blob/{version}/LICENSE"
-
+  version: "0.0.0-210708-beaa393.envoy"
+  urls:
+  - "https://github.com/google/libsxg/archive/beaa3939b76f8644f6833267e9f2462760838f18.tar.gz"
 perfetto:
   project_name: "Perfetto"
   project_desc: "Perfetto Tracing SDK"
@@ -295,7 +329,9 @@ perfetto:
   - controlplane
   license: "Apache-2.0"
   license_url: "https://github.com/google/perfetto/blob/v{version}/LICENSE"
-
+  version: "53.0.envoy"
+  urls:
+  - "https://github.com/google/perfetto/archive/refs/tags/v53.0.tar.gz"
 quiche:
   project_name: "QUICHE"
   project_desc: "QUICHE (QUIC, HTTP/2, Etc) is Google‘s implementation of QUIC and related protocols"
@@ -306,7 +342,9 @@ quiche:
   - dataplane_core
   license: "BSD-3-Clause"
   license_url: "https://github.com/google/quiche/blob/{version}/LICENSE"
-
+  version: "89d6d17edc0f0b79f38edf6fac9e5c8bf5f3cfd7"
+  urls:
+  - "https://github.com/google/quiche/archive/89d6d17edc0f0b79f38edf6fac9e5c8bf5f3cfd7.tar.gz"
 tcmalloc:
   project_name: "tcmalloc"
   project_desc: "Fast, multi-threaded malloc implementation"
@@ -317,7 +355,9 @@ tcmalloc:
   - controlplane
   license: "Apache-2.0"
   license_url: "https://github.com/google/tcmalloc/blob/{version}/LICENSE"
-
+  version: "0.0.0-20241022-5da4a88.envoy"
+  urls:
+  - "https://github.com/google/tcmalloc/archive/5da4a882003102fba0c0c0e8f6372567057332eb.tar.gz"
 com_github_grpc_grpc:
   project_name: "gRPC"
   project_desc: "gRPC C core library"
@@ -380,7 +420,9 @@ yaml_cpp:
   cpe: "cpe:2.3:a:yaml-cpp_project:yaml-cpp:*"
   license: "MIT"
   license_url: "https://github.com/jbeder/yaml-cpp/blob/{version}/LICENSE"
-
+  version: "0.8.0"
+  urls:
+  - "https://github.com/stonier/yaml-cpp/releases/download/0.8.0/yaml-cpp-0.8.0.tar.gz"
 libevent:
   project_name: "libevent"
   project_desc: "Event notification library"
@@ -392,7 +434,9 @@ libevent:
   cpe: "cpe:2.3:a:libevent_project:libevent:*"
   license: "BSD-3-Clause"
   license_url: "https://github.com/libevent/libevent/blob/{version}/LICENSE"
-
+  version: "2.1.12-stable.bcr.0.200728-62c152d.envoy"
+  urls:
+  - "https://github.com/libevent/libevent/archive/62c152d9a7cd264b993dad730c4163c6ede2e0a3.tar.gz"
 luajit:
   project_name: "LuaJIT"
   project_desc: "Just-In-Time compiler for Lua"
@@ -407,7 +451,9 @@ luajit:
   cpe: "cpe:2.3:a:luajit:luajit:*"
   license: "MIT"
   license_url: "https://github.com/LuaJIT/LuaJIT/blob/{version}/COPYRIGHT"
-
+  version: "0.0.0-260126-871db2c.envoy"
+  urls:
+  - "https://github.com/LuaJIT/LuaJIT/archive/871db2c.tar.gz"
 lz4:
   project_name: "LZ4"
   project_desc: "Extremely Fast Compression algorithm"
@@ -417,7 +463,9 @@ lz4:
   - dataplane_ext
   extensions:
   - envoy.compression.qatzip.compressor
-
+  version: "1.10.0.bcr.2.envoy"
+  urls:
+  - "https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz"
 libmaxminddb:
   project_name: "maxmind_libmaxminddb"
   project_desc: "C library for reading MaxMind DB files"
@@ -430,7 +478,9 @@ libmaxminddb:
   cpe: "cpe:2.3:a:maxmind:libmaxminddb:*"
   license: "Apache-2.0"
   license_url: "https://github.com/maxmind/libmaxminddb/blob/{version}/LICENSE"
-
+  version: "1.12.2"
+  urls:
+  - "https://github.com/maxmind/libmaxminddb/releases/download/1.12.2/libmaxminddb-1.12.2.tar.gz"
 tclap:
   project_name: "tclap"
   project_desc: "Small, flexible library that provides a simple interface for defining and accessing command line arguments"
@@ -441,7 +491,9 @@ tclap:
   cpe: "cpe:2.3:a:tclap_project:tclap:*"
   license: "MIT"
   license_url: "https://github.com/mirror/tclap/blob/v{version}/COPYING"
-
+  version: "1.2.5"
+  urls:
+  - "https://github.com/mirror/tclap/archive/refs/tags/v1.2.5.tar.gz"
 msgpack-cxx:
   project_name: "msgpack for C/C++"
   project_desc: "MessagePack is an efficient binary serialization format"
@@ -455,7 +507,9 @@ msgpack-cxx:
   cpe: "cpe:2.3:a:messagepack:messagepack:*"
   license: "Boost"
   license_url: "https://github.com/msgpack/msgpack-c/blob/cpp-{version}/LICENSE_1_0.txt"
-
+  version: "7.0.0.envoy"
+  urls:
+  - "https://github.com/msgpack/msgpack-c/releases/download/cpp-7.0.0/msgpack-cxx-7.0.0.tar.gz"
 su_exec:
   project_name: "su-exec"
   project_desc: "Utility to switch user and group id, setgroups and exec"
@@ -465,7 +519,9 @@ su_exec:
   - other
   license: "MIT"
   license_url: "https://github.com/ncopa/su-exec/blob/v{version}/LICENSE"
-
+  version: "0.3"
+  urls:
+  - "https://github.com/ncopa/su-exec/archive/refs/tags/v0.3.tar.gz"
 nghttp2:
   project_name: "Nghttp2"
   project_desc: "Implementation of HTTP/2 and its header compression algorithm HPACK in C"
@@ -477,7 +533,9 @@ nghttp2:
   cpe: "cpe:2.3:a:nghttp2:nghttp2:*"
   license: "MIT"
   license_url: "https://github.com/nghttp2/nghttp2/blob/v{version}/LICENSE"
-
+  version: "1.66.0.envoy"
+  urls:
+  - "https://github.com/nghttp2/nghttp2/releases/download/v1.66.0/nghttp2-1.66.0.tar.gz"
 nlohmann_json:
   project_name: "nlohmann JSON"
   project_desc: "Fast JSON parser/generator for C++"
@@ -489,7 +547,9 @@ nlohmann_json:
   cpe: "cpe:2.3:a:json-for-modern-cpp_project:json-for-modern-cpp:*"
   license: "MIT"
   license_url: "https://github.com/nlohmann/json/blob/v{version}/LICENSE.MIT"
-
+  version: "3.12.0"
+  urls:
+  - "https://github.com/nlohmann/json/releases/download/v3.12.0/include.zip"
 libcircllhist:
   project_name: "libcircllhist"
   project_desc: "An implementation of OpenHistogram log-linear histograms"
@@ -501,7 +561,9 @@ libcircllhist:
   - dataplane_core
   license: "Apache-2.0"
   license_url: "https://github.com/openhistogram/libcircllhist/blob/{version}/LICENSE"
-
+  version: "0.3.2.envoy"
+  urls:
+  - "https://github.com/openhistogram/libcircllhist/archive/refs/tags/py-0.3.2.tar.gz"
 cpp2sky:
   project_name: "cpp2sky"
   project_desc: "C++ SDK for Apache SkyWalking"
@@ -513,7 +575,9 @@ cpp2sky:
   - envoy.tracers.skywalking
   license: "Apache-2.0"
   license_url: "https://github.com/SkyAPM/cpp2sky/blob/v{version}/LICENSE"
-
+  version: "0.6.0.envoy"
+  urls:
+  - "https://github.com/SkyAPM/cpp2sky/archive/v0.6.0.tar.gz"
 icu:
   project_name: "ICU Library"
   project_desc: "Development files for International Components for Unicode"
@@ -525,7 +589,9 @@ icu:
   - envoy.filters.http.language
   license: "ICU"
   license_url: "https://github.com/unicode-org/icu/blob/release-{version}/icu4c/LICENSE"
-
+  version: "78.2.envoy"
+  urls:
+  - "https://github.com/unicode-org/icu/releases/download/release-78.2/icu4c-78.2-sources.tgz"
 wamr:
   project_name: "Webassembly Micro Runtime"
   project_desc: "A standalone runtime with a small footprint for WebAssembly"
@@ -537,7 +603,9 @@ wamr:
   - envoy.wasm.runtime.wamr
   license: "Apache-2.0"
   license_url: "https://github.com/bytecodealliance/wasm-micro-runtime/blob/{version}/LICENSE"
-
+  version: "2.4.4.envoy"
+  urls:
+  - "https://github.com/bytecodealliance/wasm-micro-runtime/archive/refs/tags/WAMR-2.4.4.tar.gz"
 wasmtime:
   project_name: "wasmtime"
   project_desc: "A standalone runtime for WebAssembly"
@@ -550,7 +618,9 @@ wasmtime:
   cpe: "cpe:2.3:a:bytecodealliance:wasmtime:*"
   license: "Apache-2.0"
   license_url: "https://github.com/bytecodealliance/wasmtime/blob/v{version}/LICENSE"
-
+  version: "45.0.2.envoy"
+  urls:
+  - "https://github.com/bytecodealliance/wasmtime/archive/refs/tags/v45.0.2.tar.gz"
 wuffs:
   project_name: "Wuffs"
   project_desc: "Memory-safe, high-performance JSON (and other format) parser written in a memory-safe subset of C"
@@ -560,7 +630,9 @@ wuffs:
   - dataplane_ext
   license: "Apache-2.0"
   license_url: "https://github.com/google/wuffs-mirror-release-c/blob/v{version}/LICENSE"
-
+  version: "0.4.0-alpha.9.envoy"
+  urls:
+  - "https://github.com/google/wuffs-mirror-release-c/archive/refs/tags/v0.4.0-alpha.9.tar.gz"
 abseil_cpp:
   project_name: "Abseil"
   project_desc: "Open source collection of C++ libraries drawn from the most fundamental pieces of Google’s internal codebase"
@@ -571,7 +643,9 @@ abseil_cpp:
   - controlplane
   license: "Apache-2.0"
   license_url: "https://github.com/abseil/abseil-cpp/blob/{version}/LICENSE"
-
+  version: "20260107.1"
+  urls:
+  - "https://github.com/abseil/abseil-cpp/releases/download/20260107.1/abseil-cpp-20260107.1.tar.gz"
 cel_cpp:
   project_name: "Common Expression Language (CEL) C++ library"
   project_desc: "Common Expression Language (CEL) C++ library"
@@ -600,7 +674,9 @@ cel_cpp:
   - envoy.tracers.opentelemetry.samplers.cel
   license: "Apache-2.0"
   license_url: "https://github.com/google/cel-cpp/blob/v{version}/LICENSE"
-
+  version: "0.14.0.envoy"
+  urls:
+  - "https://github.com/google/cel-cpp/archive/439003a0016ed7ace068cffdf494357a3f75e3b2.tar.gz"
 cel_spec:
   project_name: "Common Expression Language (CEL) spec"
   project_desc: "Common Expression Language (CEL) spec and conformance tests"
@@ -629,7 +705,9 @@ cel_spec:
   - envoy.tracers.opentelemetry.samplers.cel
   license: "Apache-2.0"
   license_url: "https://github.com/google/cel-spec/blob/v{version}/LICENSE"
-
+  version: "0.25.2"
+  urls:
+  - "https://github.com/google/cel-spec/archive/refs/tags/v0.25.2.tar.gz"
 googletest:
   project_name: "Google Test"
   project_desc: "Google's C++ test framework"
@@ -640,7 +718,9 @@ googletest:
   cpe: "cpe:2.3:a:google:google_test:*"
   license: "BSD-3-Clause"
   license_url: "https://github.com/google/googletest/blob/{version}/LICENSE"
-
+  version: "1.17.0.bcr.2"
+  urls:
+  - "https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz"
 com_google_protobuf:
   project_name: "Protocol Buffers"
   project_desc: "Language-neutral, platform-neutral extensible mechanism for serializing structured data"
@@ -672,7 +752,9 @@ proto_converter:
   - envoy.filters.http.grpc_json_reverse_transcoder
   license: "Apache-2.0"
   license_url: "https://github.com/grpc-ecosystem/proto-converter/blob/{version}/LICENSE"
-
+  version: "0.0.0-20240625-1db7653.envoy"
+  urls:
+  - "https://github.com/grpc-ecosystem/proto-converter/archive/1db76535b86b80aa97489a1edcc7009e18b67ab7.zip"
 proto-field-extraction:
   project_name: "proto-field-extraction"
   project_desc: "Library that supports the extraction from protobuf binary"
@@ -687,7 +769,9 @@ proto-field-extraction:
   - envoy.filters.http.proto_api_scrubber
   license: "Apache-2.0"
   license_url: "https://github.com/grpc-ecosystem/proto-field-extraction/blob/{version}/LICENSE"
-
+  version: "0.0.0-240710-d5d39f0.envoy"
+  urls:
+  - "https://github.com/grpc-ecosystem/proto-field-extraction/archive/d5d39f0373e9b6691c32c85929838b1006bcb3fb.zip"
 proto-processing:
   project_name: "proto-processing"
   project_desc: "Library that provides utility functionality for proto field scrubbing"
@@ -702,7 +786,9 @@ proto-processing:
   - envoy.filters.http.proto_api_scrubber
   license: "Apache-2.0"
   license_url: "https://github.com/grpc-ecosystem/proto_processing_lib/blob/{version}/LICENSE"
-
+  version: "0.0.0-250110-279353c.envoy"
+  urls:
+  - "https://github.com/grpc-ecosystem/proto_processing_lib/archive/279353cfab372ac7f268ae529df29c4d546ca18d.zip"
 re2:
   project_name: "RE2"
   project_desc: "RE2, a regular expression library"
@@ -713,7 +799,9 @@ re2:
   - dataplane_core
   license: "BSD-3-Clause"
   license_url: "https://github.com/google/re2/blob/{version}/LICENSE"
-
+  version: "2025-08-12.bcr.1"
+  urls:
+  - "https://github.com/google/re2/releases/download/2025-08-12/re2-2025-08-12.zip"
 librdkafka:
   project_name: "Kafka (C/C++ client)"
   project_desc: "C/C++ client for Apache Kafka (open-source distributed event streaming platform)"
@@ -725,7 +813,9 @@ librdkafka:
   - envoy.filters.network.kafka_mesh
   license: "librdkafka"
   license_url: "https://github.com/confluentinc/librdkafka/blob/v{version}/LICENSE"
-
+  version: "2.6.0.envoy"
+  urls:
+  - "https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.6.0.tar.gz"
 dragonbox:
   project_name: "Dragonbox"
   project_desc: |
@@ -747,7 +837,9 @@ emsdk:
   - test_only
   license: "Emscripten SDK"
   license_url: "https://github.com/emscripten-core/emsdk/blob/{version}/LICENSE"
-
+  version: "4.0.23.envoy"
+  urls:
+  - "https://github.com/emscripten-core/emsdk/archive/c0bb220cb6e6f4e0fabb6f6db9efd53390ef5e56.tar.gz"
 envoy_toolshed:
   project_name: "envoy_toolshed"
   project_desc: "Tooling, libraries, runners and checkers for Envoy proxy's CI"
@@ -764,7 +856,9 @@ envoy_toolshed:
   - msan_libs
   license: "Apache-2.0"
   license_url: "https://github.com/envoyproxy/toolshed/blob/bazel-v{version}/LICENSE"
-
+  version: "0.4.4.envoy"
+  urls:
+  - "https://github.com/envoyproxy/toolshed/releases/download/bazel-v0.4.4/toolshed-bazel-v0.4.4.tar.gz"
 fips_cmake_linux_aarch64:
   project_name: "CMake (Linux aarch64)"
   project_desc: "Cross-platform family of tools designed to build, test and package software"
@@ -850,7 +944,9 @@ googleurl:
   - dataplane_core
   license: "BSD-3-Clause"
   license_url: "https://github.com/google/gurl/blob/{version}/LICENSE"
-
+  version: "0.0.0-221103-dd4080f.envoy"
+  urls:
+  - "https://github.com/google/gurl/archive/dd4080fec0b443296c0ed0036e1e776df8813aa7.tar.gz"
 gperftools:
   project_name: "gperftools"
   project_desc: "tcmalloc and profiling libraries"
@@ -862,7 +958,9 @@ gperftools:
   cpe: "cpe:2.3:a:gperftools_project:gperftools:*"
   license: "BSD-3-Clause"
   license_url: "https://github.com/gperftools/gperftools/blob/gperftools-{version}/COPYING"
-
+  version: "2.17.2"
+  urls:
+  - "https://github.com/gperftools/gperftools/releases/download/gperftools-2.17.2/gperftools-2.17.2.tar.gz"
 jemalloc:
   project_name: "jemalloc"
   project_desc: "General-purpose scalable concurrent memory allocator"
@@ -874,7 +972,9 @@ jemalloc:
   cpe: "N/A"
   license: "BSD-2-Clause"
   license_url: "https://github.com/jemalloc/jemalloc/blob/{version}/COPYING"
-
+  version: "5.3.0-bcr.4"
+  urls:
+  - "https://github.com/sallustfire/jemalloc/releases/download/5.3.0-bcr.4/jemalloc-5.3.0-bcr.4.tar.gz"
 grpc_httpjson_transcoding:
   project_name: "grpc-httpjson-transcoding"
   project_desc: "Library that supports transcoding so that HTTP/JSON can be converted to gRPC"
@@ -891,7 +991,9 @@ grpc_httpjson_transcoding:
   - envoy.filters.http.mcp
   license: "Apache-2.0"
   license_url: "https://github.com/grpc-ecosystem/grpc-httpjson-transcoding/blob/{version}/LICENSE"
-
+  version: "0.0.0-20250507-a6e226f.envoy"
+  urls:
+  - "https://github.com/grpc-ecosystem/grpc-httpjson-transcoding/archive/a6e226f9a2e656a973df3ad48f0ee5efacce1a28.tar.gz"
 dlb:
   project_name: "Intel Dlb"
   project_desc: "Dlb"
@@ -936,7 +1038,9 @@ hyperscan:
   - envoy.regex_engines.hyperscan
   license: "BSD-3-Clause"
   license_url: "https://github.com/intel/hyperscan/blob/v{version}/LICENSE"
-
+  version: "5.4.2.envoy"
+  urls:
+  - "https://github.com/intel/hyperscan/archive/v5.4.2.tar.gz"
 opentelemetry-cpp:
   project_name: "OpenTelemetry"
   project_desc: "Observability framework and toolkit designed to create and manage telemetry data such as traces, metrics, and logs."
@@ -954,7 +1058,9 @@ opentelemetry-cpp:
   - envoy.tracers.zipkin
   license: "Apache-2.0"
   license_url: "https://github.com/open-telemetry/opentelemetry-cpp/blob/v{version}/LICENSE"
-
+  version: "1.24.0.envoy"
+  urls:
+  - "https://github.com/open-telemetry/opentelemetry-cpp/archive/refs/tags/v1.24.0.tar.gz"
 vectorscan:
   project_name: "Vectorscan"
   project_desc: "Hyperscan port for additional CPU architectures"
@@ -967,6 +1073,9 @@ vectorscan:
   - envoy.regex_engines.hyperscan
   license: "BSD-3-Clause"
   license_url: "https://github.com/VectorCamp/vectorscan/blob/vectorscan/{version}/LICENSE"
+  version: "5.4.11.envoy"
+  urls:
+  - "https://github.com/VectorCamp/vectorscan/archive/refs/tags/vectorscan/5.4.11.tar.gz"
 ipp-crypto:
   project_name: "libipp-crypto"
   project_desc: "Intel® Integrated Performance Primitives Cryptography"
@@ -979,6 +1088,9 @@ ipp-crypto:
   cpe: "cpe:2.3:a:intel:cryptography_for_intel_integrated_performance_primitives:*"
   license: "Apache-2.0"
   license_url: "https://github.com/intel/cryptography-primitives/blob/ippcp_{version}/LICENSE"
+  version: "1.3.0.envoy"
+  urls:
+  - "https://github.com/intel/cryptography-primitives/archive/refs/tags/v1.3.0.tar.gz"
 kafka_message:
   project_name: "Kafka (source)"
   project_desc: "Open-source distributed event streaming platform"
@@ -992,7 +1104,9 @@ kafka_message:
   cpe: "cpe:2.3:a:apache:kafka:*"
   license: "Apache-2.0"
   license_url: "https://github.com/apache/kafka/blob/{version}/LICENSE"
-
+  version: "3.9.1.envoy"
+  urls:
+  - "https://github.com/apache/kafka/archive/3.9.1.zip"
 libpfm:
   project_name: "libpfm"
   project_desc: "A helper library to develop monitoring tools"
@@ -1013,7 +1127,9 @@ colm:
   - envoy.regex_engines.hyperscan
   license: "MIT"
   license_url: "https://github.com/adrian-thurston/colm/blob/{version}/COPYING"
-
+  version: "0.14.7-211228-2d8ba76.envoy"
+  urls:
+  - "https://github.com/adrian-thurston/colm-suite/archive/2d8ba76ddaf6634f285d0a81ee42d5ee77d084cf.tar.gz"
 ragel:
   project_name: "Ragel"
   project_desc: "Ragel State Machine Compiler"
@@ -1026,7 +1142,9 @@ ragel:
   - envoy.regex_engines.hyperscan
   license: "MIT"
   license_url: "https://github.com/adrian-thurston/ragel/blob/{version}/COPYING"
-
+  version: "7.0.4-211228-d4577c9.envoy"
+  urls:
+  - "https://github.com/adrian-thurston/ragel/archive/d4577c924451b331c73c8ed0af04f6efd35ac0b4.tar.gz"
 numactl:
   project_name: "numactl"
   project_desc: "NUMA support for Linux "
@@ -1040,7 +1158,9 @@ numactl:
   - envoy.compression.qatzstd.compressor
   license: "LGPL-2.1"
   license_url: "https://github.com/numactl/numactl/blob/{version}/LICENSE.LGPL2.1"
-
+  version: "2.0.19"
+  urls:
+  - "https://github.com/numactl/numactl/releases/download/v2.0.19/numactl-2.0.19.tar.gz"
 ocp:
   project_name: "ocp"
   project_desc: "Libraries used in gRPC field extraction library"
@@ -1083,7 +1203,9 @@ brotli:
   cpe: "cpe:2.3:a:google:brotli:*"
   license: "MIT"
   license_url: "https://github.com/google/brotli/blob/v{version}/LICENSE"
-
+  version: "1.2.0"
+  urls:
+  - "https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz"
 platforms:
   project_name: "platforms"
   project_desc: "Constraint values for specifying platforms and toolchains"
@@ -1093,7 +1215,9 @@ platforms:
   - build
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/platforms/blob/{version}/LICENSE"
-
+  version: "1.0.0"
+  urls:
+  - "https://github.com/bazelbuild/platforms/releases/download/1.0.0/platforms-1.0.0.tar.gz"
 proxy-wasm-cpp-host:
   project_name: "WebAssembly for Proxies (C++ host implementation)"
   project_desc: "WebAssembly for Proxies (C++ host implementation)"
@@ -1113,7 +1237,9 @@ proxy-wasm-cpp-host:
   - envoy.wasm.runtime.wasmtime
   license: "Apache-2.0"
   license_url: "https://github.com/proxy-wasm/proxy-wasm-cpp-host/blob/{version}/LICENSE"
-
+  version: "0.0.0-260704-f2db56a.envoy"
+  urls:
+  - "https://github.com/proxy-wasm/proxy-wasm-cpp-host/archive/f2db56af443571e92a31c0b877106d9ea96e19ef.tar.gz"
 proxy-wasm-cpp-sdk:
   project_name: "WebAssembly for Proxies (C++ SDK)"
   project_desc: "WebAssembly for Proxies (C++ SDK)"
@@ -1133,7 +1259,9 @@ proxy-wasm-cpp-sdk:
   - envoy.wasm.runtime.wasmtime
   license: "Apache-2.0"
   license_url: "https://github.com/proxy-wasm/proxy-wasm-cpp-sdk/blob/{version}/LICENSE"
-
+  version: "0.0.0-250925-e5256b0.envoy"
+  urls:
+  - "https://github.com/proxy-wasm/proxy-wasm-cpp-sdk/archive/e5256b0c5463ea9961965ad5de3e379e00486640.tar.gz"
 proxy-wasm-rust-sdk:
   project_name: "WebAssembly for Proxies (Rust SDK)"
   project_desc: "WebAssembly for Proxies (Rust SDK)"
@@ -1143,7 +1271,9 @@ proxy-wasm-rust-sdk:
   - test_only
   license: "Apache-2.0"
   license_url: "https://github.com/proxy-wasm/proxy-wasm-rust-sdk/blob/v{version}/LICENSE"
-
+  version: "0.2.4-251205-5283e57.envoy"
+  urls:
+  - "https://github.com/proxy-wasm/proxy-wasm-rust-sdk/archive/5283e57e503c8d4773b4bc8a51e1ff486bff981c.tar.gz"
 qatlib:
   project_name: "qatlib"
   project_desc: "Intel QuickAssist Technology Library"
@@ -1157,7 +1287,9 @@ qatlib:
   - envoy.compression.qatzstd.compressor
   license: "BSD-3-Clause"
   license_url: "https://github.com/intel/qatlib/blob/{version}/LICENSE"
-
+  version: "25.08.0.envoy"
+  urls:
+  - "https://github.com/intel/qatlib/archive/refs/tags/25.08.0.tar.gz"
 qatzip:
   project_name: "qatzip"
   project_desc: "Intel QuickAssist Technology QATzip Library"
@@ -1169,7 +1301,9 @@ qatzip:
   - envoy.compression.qatzip.compressor
   license: "BSD-3-Clause"
   license_url: "https://github.com/intel/QATzip/blob/v{version}/LICENSE"
-
+  version: "1.3.1.envoy"
+  urls:
+  - "https://github.com/intel/QATzip/archive/refs/tags/v1.3.1.tar.gz"
 qat-zstd:
   project_name: "QAT-ZSTD-Plugin"
   project_desc: "Intel® QuickAssist Technology ZSTD Plugin (QAT ZSTD Plugin)"
@@ -1179,7 +1313,9 @@ qat-zstd:
   - dataplane_ext
   extensions:
   - envoy.compression.qatzstd.compressor
-
+  version: "1.0.0.envoy"
+  urls:
+  - "https://github.com/intel/QAT-ZSTD-Plugin/archive/refs/tags/v1.0.0.tar.gz"
 rules_apple:
   project_name: "Apple Rules for Bazel"
   project_desc: "Bazel rules for Apple platforms"
@@ -1189,7 +1325,9 @@ rules_apple:
   - build
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_apple/blob/{version}/LICENSE"
-
+  version: "3.20.1.envoy"
+  urls:
+  - "https://github.com/bazelbuild/rules_apple/releases/download/3.20.1/rules_apple.3.20.1.tar.gz"
 rules_cc:
   project_name: "C++ rules for Bazel"
   project_desc: "Bazel rules for the C++ language"
@@ -1201,7 +1339,9 @@ rules_cc:
   - dataplane_core
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_cc/blob/{version}/LICENSE"
-
+  version: "0.2.22"
+  urls:
+  - "https://github.com/bazelbuild/rules_cc/releases/download/0.2.22/rules_cc-0.2.22.tar.gz"
 rules_foreign_cc:
   project_name: "Rules for using foreign build systems in Bazel"
   project_desc: "Rules for using foreign build systems in Bazel"
@@ -1213,7 +1353,9 @@ rules_foreign_cc:
   - controlplane
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_foreign_cc/blob/{version}/LICENSE"
-
+  version: "0.15.1"
+  urls:
+  - "https://github.com/bazel-contrib/rules_foreign_cc/releases/download/0.15.1/rules_foreign_cc-0.15.1.tar.gz"
 rules_fuzzing:
   project_name: "Fuzzing Rules for Bazel"
   project_desc: "Bazel rules for fuzz tests"
@@ -1225,7 +1367,9 @@ rules_fuzzing:
   - rules_fuzzing_oss_fuzz
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_fuzzing/blob/v{version}/LICENSE"
-
+  version: "0.6.0"
+  urls:
+  - "https://github.com/bazel-contrib/rules_fuzzing/releases/download/v0.6.0/rules_fuzzing-v0.6.0.tar.gz"
 rules_java:
   project_name: "Java rules for Bazel"
   project_desc: "Bazel rules for the Java language"
@@ -1241,7 +1385,9 @@ rules_java:
   - other
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_java/blob/{version}/LICENSE"
-
+  version: "9.3.0"
+  urls:
+  - "https://github.com/bazelbuild/rules_java/releases/download/9.3.0/rules_java-9.3.0.tar.gz"
 rules_license:
   project_name: "rules_license"
   project_desc: "Bazel rules for checking open source licenses"
@@ -1253,7 +1399,9 @@ rules_license:
   - controlplane
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_license/blob/{version}/LICENSE"
-
+  version: "1.0.0"
+  urls:
+  - "https://github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz"
 rules_pkg:
   project_name: "Packaging rules for Bazel"
   project_desc: "Bazel rules for the packaging distributions"
@@ -1263,7 +1411,9 @@ rules_pkg:
   - build
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_pkg/blob/{version}/LICENSE"
-
+  version: "1.1.0"
+  urls:
+  - "https://github.com/bazelbuild/rules_pkg/releases/download/1.1.0/rules_pkg-1.1.0.tar.gz"
 rules_proto_grpc:
   project_name: "Protobuf and gRPC rules for Bazel"
   project_desc: "Bazel rules for building Protobuf and gRPC code and libraries from proto_library targets"
@@ -1275,7 +1425,9 @@ rules_proto_grpc:
   - envoy.transport_sockets.alts
   license: "Apache-2.0"
   license_url: "https://github.com/rules-proto-grpc/rules_proto_grpc/blob/{version}/LICENSE"
-
+  version: "5.8.0"
+  urls:
+  - "https://github.com/rules-proto-grpc/rules_proto_grpc/releases/download/5.8.0/rules_proto_grpc-5.8.0.tar.gz"
 rules_python:
   project_name: "Python rules for Bazel"
   project_desc: "Bazel rules for the Python language"
@@ -1287,7 +1439,9 @@ rules_python:
   - dataplane_core
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_python/blob/{version}/LICENSE"
-
+  version: "2.2.0"
+  urls:
+  - "https://github.com/bazel-contrib/rules_python/releases/download/2.2.0/rules_python-2.2.0.tar.gz"
 rules_ruby:
   project_name: "Ruby rules for Bazel"
   project_desc: "Bazel rules for the Ruby language"
@@ -1312,7 +1466,9 @@ rules_rust:
   - envoy.wasm.runtime.wasmtime
   license: "Apache-2.0"
   license_url: "https://github.com/bazelbuild/rules_rust/blob/{version}/LICENSE.txt"
-
+  version: "0.69.0.envoy"
+  urls:
+  - "https://github.com/bazelbuild/rules_rust/releases/download/0.69.0/rules_rust-0.69.0.tar.gz"
 rules_shell:
   project_name: "Shell script rules for Bazel"
   project_desc: "Bazel rules for shell scripts"
@@ -1328,7 +1484,9 @@ rules_shell:
   - other
   license: "Apache-2.0"
   license_url: "https://github.com/protocolbuffers/rules_shell/blob/{version}/LICENSE"
-
+  version: "0.8.0"
+  urls:
+  - "https://github.com/bazel-contrib/rules_shell/releases/download/v0.8.0/rules_shell-v0.8.0.tar.gz"
 simdutf:
   project_name: "Unicode validation and transcoding at billions of characters per second"
   project_desc: |
@@ -1364,7 +1522,9 @@ thrift:
   cpe: "cpe:2.3:a:apache:thrift:*"
   license: "Apache-2.0"
   license_url: "https://github.com/apache/thrift/blob/v{version}/LICENSE"
-
+  version: "0.22.0.envoy"
+  urls:
+  - "https://github.com/apache/thrift/archive/refs/tags/v0.22.0.tar.gz"
 toolchains_llvm:
   project_name: "LLVM toolchain for Bazel"
   project_desc: "LLVM toolchain for Bazel"
@@ -1379,7 +1539,9 @@ toolchains_llvm:
   - llvm_toolchain_llvm
   license: "Apache-2.0"
   license_url: "https://github.com/bazel-contrib/toolchains_llvm/blob/v{version}/LICENSE"
-
+  version: "1.8.0.envoy"
+  urls:
+  - "https://github.com/bazel-contrib/toolchains_llvm/releases/download/v1.8.0/toolchains_llvm-v1.8.0.tar.gz"
 uadk:
   project_name: "uadk"
   project_desc: "User space Accelerator Development Kit"
@@ -1391,7 +1553,9 @@ uadk:
   - envoy.tls.key_providers.kae
   license: "Apache-2.0"
   license_url: "https://github.com/Linaro/uadk/blob/v{version}/LICENSE"
-
+  version: "2.9.envoy"
+  urls:
+  - "https://github.com/Linaro/uadk/archive/refs/tags/v2.9.tar.gz"
 v8:
   project_name: "V8"
   project_desc: "Google’s open source high-performance JavaScript and WebAssembly engine, written in C++"
@@ -1402,7 +1566,9 @@ v8:
   extensions:
   - envoy.wasm.runtime.v8
   cpe: "cpe:2.3:a:google:v8:*"
-
+  version: "14.6.202.10.envoy"
+  urls:
+  - "https://github.com/v8/v8/archive/refs/tags/14.6.202.10.tar.gz"
 vpp-vcl:
   project_name: "VPP Comms Library"
   project_desc: "FD.io Vector Packet Processor (VPP) Comms Library"
@@ -1414,7 +1580,9 @@ vpp-vcl:
   - envoy.bootstrap.vcl
   license: "Apache-2.0"
   license_url: "https://github.com/FDio/vpp/blob/{version}/LICENSE"
-
+  version: "26.02-dev-85abefb.envoy"
+  urls:
+  - "https://github.com/FDio/vpp/archive/85abefb55ee931fa4e45c0b6a9fc8c43118651b3.tar.gz"
 yq_bzl:
   project_name: "yq.bzl"
   project_desc: "Bazel rules for yq"
@@ -1425,7 +1593,9 @@ yq_bzl:
   cpe: "N/A"
   license: "Apache-2.0"
   license_url: "https://github.com/bazel-contrib/yq.bzl/blob/v{version}/LICENSE"
-
+  version: "0.1.1.envoy"
+  urls:
+  - "https://github.com/bazel-contrib/yq.bzl/releases/download/v0.1.1/yq.bzl-v0.1.1.tar.gz"
 zlib-ng:
   project_name: "zlib-ng"
   project_desc: "zlib fork (higher performance)"
@@ -1436,7 +1606,9 @@ zlib-ng:
   - dataplane_core
   license: "zlib"
   license_url: "https://github.com/zlib-ng/zlib-ng/blob/{version}/LICENSE.md"
-
+  version: "2.3.2.envoy"
+  urls:
+  - "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.3.2.tar.gz"
 zstd:
   project_name: "zstd"
   project_desc: "zstd compression library"
@@ -1448,3 +1620,329 @@ zstd:
   - envoy.compression.zstd.compressor
   - envoy.compression.zstd.decompressor
   cpe: "cpe:2.3:a:facebook:zstandard:*"
+  version: "1.5.7"
+  urls:
+  - "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
+antlr4-cpp-runtime:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "4.13.2"
+  urls:
+  - "https://github.com/antlr/antlr4/archive/refs/tags/4.13.2.tar.gz"
+apple_support:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "2.3.0"
+  urls:
+  - "https://github.com/bazelbuild/apple_support/releases/download/2.3.0/apple_support.2.3.0.tar.gz"
+aspect_rules_js:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "2.5.0"
+  urls:
+  - "https://github.com/aspect-build/rules_js/releases/download/v2.5.0/rules_js-v2.5.0.tar.gz"
+bazel_skylib:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.9.0"
+  urls:
+  - "https://github.com/bazelbuild/bazel-skylib/releases/download/1.9.0/bazel-skylib-1.9.0.tar.gz"
+boost.headers:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.89.0.envoy"
+  urls:
+  - "https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.gz"
+boringssl-fips:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.20250107.0.envoy"
+  urls:
+  - "https://github.com/google/boringssl/archive/298ac78507178d1e7d058eee1e52333f760eb0c1.tar.gz"
+buildifier_prebuilt:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "8.2.1.1"
+  urls:
+  - "https://github.com/keith/buildifier-prebuilt/archive/refs/tags/8.2.1.1.tar.gz"
+com_envoyproxy_protoc_gen_validate:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.3.0.envoy"
+  urls:
+  - "https://github.com/bufbuild/protoc-gen-validate/archive/refs/tags/v1.3.0.tar.gz"
+envoy_api:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.40.0-dev"
+google_benchmark:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.9.5"
+  urls:
+  - "https://github.com/google/benchmark/archive/refs/tags/v1.9.5.tar.gz"
+googleapis:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.0.0-20251003-2193a2bf"
+  urls:
+  - "https://github.com/googleapis/googleapis/archive/2193a2bfcecb92b92aad7a4d81baa428cafd7dfd.zip"
+googleapis-cc:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.0.0"
+  urls:
+  - "https://github.com/fmeum/googleapis-rules-registry/releases/download/v1.0.0/googleapis-rules-registry-v1.0.0.tar.gz"
+googleapis-python:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.0.0"
+  urls:
+  - "https://github.com/fmeum/googleapis-rules-registry/releases/download/v1.0.0/googleapis-rules-registry-v1.0.0.tar.gz"
+grpc:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.83.0.envoy"
+  urls:
+  - "https://github.com/grpc/grpc/archive/v1.83.0.tar.gz"
+ocp-diag-core:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.0.0-230505-e965ac0.envoy"
+  urls:
+  - "https://github.com/opencomputeproject/ocp-diag-core/archive/e965ac0ac6db6686169678e2a6c77ede904fa82c.zip"
+opentelemetry-proto:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.8.0"
+  urls:
+  - "https://github.com/open-telemetry/opentelemetry-proto/archive/refs/tags/v1.8.0.tar.gz"
+prometheus-metrics-model:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.6.2.envoy"
+  urls:
+  - "https://github.com/prometheus/client_model/archive/v0.6.2.tar.gz"
+protobuf:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "35.1.bcr.envoy"
+  urls:
+  - "https://github.com/protocolbuffers/protobuf/releases/download/v35.1/protobuf-35.1.tar.gz"
+rules_buf:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.5.2"
+  urls:
+  - "https://github.com/bufbuild/rules_buf/releases/download/v0.5.2/rules_buf-0.5.2.tar.gz"
+rules_go:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.59.0"
+  urls:
+  - "https://github.com/bazel-contrib/rules_go/releases/download/v0.59.0/rules_go-v0.59.0.zip"
+rules_proto:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "7.1.0"
+  urls:
+  - "https://github.com/bazelbuild/rules_proto/releases/download/7.1.0/rules_proto-7.1.0.tar.gz"
+rules_proto_grpc_cpp:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "5.8.0"
+  urls:
+  - "https://github.com/rules-proto-grpc/rules_proto_grpc/releases/download/5.8.0/rules_proto_grpc_cpp-5.8.0.tar.gz"
+rules_shellcheck:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.4.0"
+  urls:
+  - "https://github.com/aignas/rules_shellcheck/releases/download/0.4.0/rules_shellcheck-0.4.0.tar.gz"
+xds:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "0.0.1-20251110-8bfbf64.envoy"
+  urls:
+  - "https://github.com/cncf/xds/archive/8bfbf64dc13ee1a570be4fbdcfccbdd8532463f0.tar.gz"
+zipkin-api:
+  project_name: "MISSING"
+  project_desc: "MISSING"
+  project_url: "MISSING"
+  release_date: "MISSING"
+  cpe: "MISSING"
+  license: "MISSING"
+  license_url: "MISSING"
+  use_category:
+  - "MISSING"
+  version: "1.0.0.envoy"
+  urls:
+  - "https://github.com/openzipkin/zipkin-api/archive/refs/tags/1.0.0.tar.gz"
