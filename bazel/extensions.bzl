@@ -33,21 +33,7 @@ def _module_dep_from_lock_entry(url):
     )
 
 def _envoy_mod_graph_repo_impl(repository_ctx):
-    repository_ctx.file(
-        "BUILD.bazel",
-        "exports_files([\"deps.json\"], visibility = [\"//visibility:public\"])\n",
-    )
-    repository_ctx.file("deps.json", repository_ctx.attr.deps_json)
-
-_envoy_mod_graph_repo = repository_rule(
-    implementation = _envoy_mod_graph_repo_impl,
-    attrs = {
-        "deps_json": attr.string(mandatory = True),
-    },
-)
-
-def _envoy_module_graph_impl(module_ctx):
-    lockfile = json.decode(module_ctx.read(_LOCKFILE_LABEL, watch = "yes"))
+    lockfile = json.decode(repository_ctx.read(repository_ctx.attr.lockfile))
     registry_file_hashes = lockfile.get("registryFileHashes", {})
     deps = {}
 
@@ -66,9 +52,23 @@ def _envoy_module_graph_impl(module_ctx):
             "version": module_dep.version,
         }
 
+    repository_ctx.file(
+        "BUILD.bazel",
+        "exports_files([\"deps.json\"], visibility = [\"//visibility:public\"])\n",
+    )
+    repository_ctx.file("deps.json", json.encode(deps))
+
+_envoy_mod_graph_repo = repository_rule(
+    implementation = _envoy_mod_graph_repo_impl,
+    attrs = {
+        "lockfile": attr.label(allow_single_file = True, mandatory = True),
+    },
+)
+
+def _envoy_module_graph_impl(module_ctx):
     _envoy_mod_graph_repo(
         name = "envoy_mod_graph",
-        deps_json = json.encode(deps),
+        lockfile = _LOCKFILE_LABEL,
     )
 
 def _envoy_build_config_impl(module_ctx):

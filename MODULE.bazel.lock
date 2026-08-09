@@ -867,7 +867,7 @@
     },
     "//bazel:extensions.bzl%envoy_build_config_ext": {
       "general": {
-        "bzlTransitiveDigest": "A4a4TBLqg15YnVinsgh4p6QIvHWjnZyRzPmfbrtekow=",
+        "bzlTransitiveDigest": "YEH1naogoP6YHiCqEHSuCU316K3U7rk/5haVNbb5eO4=",
         "usagesDigest": "Ki8UiMOZAl4sfg+8nSoLQiJLtF+pQMRvya2CswetpjI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -909,7 +909,7 @@
     },
     "//bazel:extensions.bzl%envoy_dependencies_extension": {
       "general": {
-        "bzlTransitiveDigest": "A4a4TBLqg15YnVinsgh4p6QIvHWjnZyRzPmfbrtekow=",
+        "bzlTransitiveDigest": "Km7ydXT3VmaVS/i4isA9jS5mez8xz6eXhLENxse9FFM=",
         "usagesDigest": "XS0XFq1FugdQWfH8UMH9tgvBPH4TvjQdK+6pGoPNl+A=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -965,9 +965,53 @@
         ]
       }
     },
+    "//bazel:extensions.bzl%envoy_module_graph_extension": {
+      "general": {
+        "bzlTransitiveDigest": "YEH1naogoP6YHiCqEHSuCU316K3U7rk/5haVNbb5eO4=",
+        "usagesDigest": "iRpQJOqX12zbONHAB+NFsEKb48f9iVLeUE7NpqAUQmg=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "envoy_mod_graph": {
+            "repoRuleId": "@@//bazel:extensions.bzl%_envoy_mod_graph_repo",
+            "attributes": {
+              "lockfile": "@@//:MODULE.bazel.lock"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ],
+          [
+            "",
+            "envoy_api",
+            "envoy_api+"
+          ],
+          [
+            "",
+            "envoy_toolshed",
+            "envoy_toolshed+"
+          ],
+          [
+            "envoy_api+",
+            "bazel_tools",
+            "bazel_tools"
+          ],
+          [
+            "envoy_api+",
+            "envoy_api",
+            "envoy_api+"
+          ]
+        ]
+      }
+    },
     "//bazel:extensions.bzl%envoy_repo_extension": {
       "general": {
-        "bzlTransitiveDigest": "A4a4TBLqg15YnVinsgh4p6QIvHWjnZyRzPmfbrtekow=",
+        "bzlTransitiveDigest": "YEH1naogoP6YHiCqEHSuCU316K3U7rk/5haVNbb5eO4=",
         "usagesDigest": "uNNgGVy3oEqx02LQDoh8xBvWcqC2ZbgajBLD+KJj4B4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1009,7 +1053,7 @@
     },
     "//bazel:extensions.bzl%envoy_toolchains_extension": {
       "general": {
-        "bzlTransitiveDigest": "A4a4TBLqg15YnVinsgh4p6QIvHWjnZyRzPmfbrtekow=",
+        "bzlTransitiveDigest": "YEH1naogoP6YHiCqEHSuCU316K3U7rk/5haVNbb5eO4=",
         "usagesDigest": "8YsnJ46nn5aj82a391+N/P89HyS3Fn79vFEezle6aVk=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

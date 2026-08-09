@@ -11,6 +11,7 @@ load("@rules_shell//shell:sh_library.bzl", "sh_library")
 load("//bazel:envoy_build_system.bzl", "envoy_package")
 load(":deprecated_features.bzl", "check_removed_fips_define")
 load(":repository_locations.bzl", "REPOSITORY_LOCATIONS_SPEC")
+load(":repository_locations_aliases.bzl", "MODULE_NAME_ALIASES")
 
 licenses(["notice"])  # Apache 2
 
@@ -1018,39 +1019,28 @@ json_merge(
 
 json_data(
     name = "all_repository_locations_module_name_aliases",
-    data = {
-        "benchmark": "google_benchmark",
-        "boost": "boost.headers",
-        "build_bazel_rules_apple": "rules_apple",
-        "buildtools": "buildifier_prebuilt",
-        "com_github_grpc_grpc": "grpc",
-        "com_google_protobuf": "protobuf",
-        "dev_cel": "cel-spec",
-        "io_bazel_rules_go": "rules_go",
-        "ocp": "ocp-diag-core",
-        "protoc-gen-validate": "com_envoyproxy_protoc_gen_validate",
-        "shellcheck": "rules_shellcheck",
-        "yq_bzl": "yq.bzl",
-    },
+    data = MODULE_NAME_ALIASES,
 )
 
 json_merge(
     name = "all_repository_locations",
     srcs = [
-        "@envoy_mod_graph//:deps.json",
         ":all_repository_locations_legacy_version_info",
         ":all_repository_locations_module_name_aliases",
+        "@envoy_mod_graph//:deps.json",
     ],
     filter = """
-    .[0] as $modules
-    | .[1] as $non_modules
-    | .[2] as $module_aliases
+    .[0] as $non_modules
+    | .[1] as $module_aliases
+    | .[2] as $modules
     | .[3] as $metadata1
     | .[4] as $metadata2
     | ($metadata1 * $metadata2) as $metadata
     | def module_source($dep):
         if $modules[$dep] then
           ($modules[$dep] + {module_name: $dep})
+        elif ($dep | startswith("com_google_")) and $modules[$dep | sub("^com_google_"; "")] then
+          (($dep | sub("^com_google_"; "")) as $module_name | $modules[$module_name] + {module_name: $module_name})
         else
           ($module_aliases[$dep] // ($dep | gsub("_"; "-"))) as $module_name
           | if $modules[$module_name] then
