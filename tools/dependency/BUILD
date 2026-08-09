@@ -82,6 +82,21 @@ py_binary(
 )
 
 py_binary(
+    name = "update_deps",
+    srcs = ["update_deps.py"],
+    deps = [requirement("pyyaml")],
+)
+
+py_binary(
+    name = "update_deps_test",
+    srcs = ["update_deps_test.py"],
+    deps = [
+        ":update_deps",
+        requirement("pyyaml"),
+    ],
+)
+
+py_binary(
     name = "validate_test",
     srcs = ["validate_test.py"],
     deps = [":validate"],
