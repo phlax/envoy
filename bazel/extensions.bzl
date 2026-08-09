@@ -9,11 +9,81 @@ load("//bazel/external/cargo:crates.bzl", "raze_fetch_remote_crates")
 load(":repo.bzl", "envoy_repo")
 load(":repositories.bzl", "default_envoy_build_config", "envoy_dependencies", "external_http_archive")
 
+_LOCKFILE_LABEL = Label("//:MODULE.bazel.lock")
+_MODULES_SEGMENT = "/modules/"
+_SOURCE_JSON_SUFFIX = "/source.json"
+
+def _module_dep_from_lock_entry(url):
+    if not url.endswith(_SOURCE_JSON_SUFFIX):
+        return None
+
+    parts = url.split(_MODULES_SEGMENT)
+    if len(parts) != 2:
+        fail("Unexpected module registry URL in MODULE.bazel.lock: %s" % url)
+
+    registry = parts[0] + "/"
+    module_parts = parts[1][:-len(_SOURCE_JSON_SUFFIX)].split("/")
+    if len(module_parts) != 2:
+        fail("Unexpected module registry URL in MODULE.bazel.lock: %s" % url)
+
+    return struct(
+        module_name = module_parts[0],
+        registry = registry,
+        version = module_parts[1],
+    )
+
+def _envoy_mod_graph_repo_impl(repository_ctx):
+    repository_ctx.file(
+        "BUILD.bazel",
+        "exports_files([\"deps.json\"], visibility = [\"//visibility:public\"])\n",
+    )
+    repository_ctx.file("deps.json", repository_ctx.attr.deps_json)
+
+_envoy_mod_graph_repo = repository_rule(
+    implementation = _envoy_mod_graph_repo_impl,
+    attrs = {
+        "deps_json": attr.string(mandatory = True),
+    },
+)
+
+def _envoy_module_graph_impl(module_ctx):
+    lockfile = json.decode(module_ctx.read(_LOCKFILE_LABEL, watch = "yes"))
+    registry_file_hashes = lockfile.get("registryFileHashes", {})
+    deps = {}
+
+    for url in registry_file_hashes:
+        module_dep = _module_dep_from_lock_entry(url)
+        if module_dep == None:
+            continue
+        if module_dep.module_name in deps:
+            fail("MODULE.bazel.lock has multiple source.json entries for module %s" % module_dep.module_name)
+
+        module_url = "%smodules/%s/%s/" % (module_dep.registry, module_dep.module_name, module_dep.version)
+        deps[module_dep.module_name] = {
+            "module_url": module_url,
+            "registry": module_dep.registry,
+            "urls": [module_url],
+            "version": module_dep.version,
+        }
+
+    _envoy_mod_graph_repo(
+        name = "envoy_mod_graph",
+        deps_json = json.encode(deps),
+    )
+
 def _envoy_build_config_impl(module_ctx):
     default_envoy_build_config(name = "envoy_build_config")
 
 envoy_build_config_ext = module_extension(
     implementation = _envoy_build_config_impl,
+)
+
+envoy_module_graph_extension = module_extension(
+    implementation = _envoy_module_graph_impl,
+    doc = """
+    Extension that watches MODULE.bazel.lock and materializes resolved module
+    dependency metadata as @envoy_mod_graph//:deps.json.
+    """,
 )
 
 def _envoy_dependencies_impl(module_ctx):

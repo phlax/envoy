@@ -979,7 +979,7 @@ json_merge(
 )
 
 json_data(
-    name = "all_repository_locations_version_info",
+    name = "all_repository_locations_legacy_version_info",
     data = merge_dicts(
         load_repository_locations_spec(REPOSITORY_LOCATIONS_SPEC),
         load_repository_locations_spec(API_REPOSITORY_LOCATIONS_SPEC),
@@ -987,8 +987,8 @@ json_data(
 )
 
 json_merge(
-    name = "all_repository_locations",
-    srcs = [":all_repository_locations_version_info"],
+    name = "all_repository_locations_legacy",
+    srcs = [":all_repository_locations_legacy_version_info"],
     filter = """
     .[0] as $versions
     | .[1] as $metadata1
@@ -1014,6 +1014,83 @@ json_merge(
         ":deps.yaml",
         "@envoy_api//bazel:deps.yaml",
     ],
+)
+
+json_data(
+    name = "all_repository_locations_module_name_aliases",
+    data = {
+        "benchmark": "google_benchmark",
+        "boost": "boost.headers",
+        "build_bazel_rules_apple": "rules_apple",
+        "buildtools": "buildifier_prebuilt",
+        "com_github_grpc_grpc": "grpc",
+        "com_google_protobuf": "protobuf",
+        "dev_cel": "cel-spec",
+        "io_bazel_rules_go": "rules_go",
+        "ocp": "ocp-diag-core",
+        "protoc-gen-validate": "com_envoyproxy_protoc_gen_validate",
+        "shellcheck": "rules_shellcheck",
+        "yq_bzl": "yq.bzl",
+    },
+)
+
+json_merge(
+    name = "all_repository_locations",
+    srcs = [
+        "@envoy_mod_graph//:deps.json",
+        ":all_repository_locations_legacy_version_info",
+        ":all_repository_locations_module_name_aliases",
+    ],
+    filter = """
+    .[0] as $modules
+    | .[1] as $non_modules
+    | .[2] as $module_aliases
+    | .[3] as $metadata1
+    | .[4] as $metadata2
+    | ($metadata1 * $metadata2) as $metadata
+    | def module_source($dep):
+        if $modules[$dep] then
+          ($modules[$dep] + {module_name: $dep})
+        else
+          ($module_aliases[$dep] // ($dep | gsub("_"; "-"))) as $module_name
+          | if $modules[$module_name] then
+              ($modules[$module_name] + {module_name: $module_name})
+            else null end
+        end;
+      def dependency_source($dep):
+        module_source($dep) // $non_modules[$dep];
+      $metadata
+      | keys
+      | reduce .[] as $k ({};
+          (dependency_source($k)) as $source
+          | if $source then
+              . + {($k): (
+                ($source + ($metadata[$k] // {}))
+                | .version as $ver
+                | if .license_url and $ver then
+                    .license_url |= (
+                      gsub("{version}"; $ver)
+                      | gsub("{dash_version}"; ($ver | gsub("[.]"; "-")))
+                      | gsub("{underscore_version}"; ($ver | gsub("[.]"; "_")))
+                    )
+                  else . end
+              )}
+            else .
+            end
+        )
+    """,
+    visibility = ["//visibility:public"],
+    yaml_srcs = [
+        ":deps.yaml",
+        "@envoy_api//bazel:deps.yaml",
+    ],
+)
+
+sh_test(
+    name = "all_repository_locations_test",
+    srcs = ["all_repository_locations_test.sh"],
+    args = ["$(location :all_repository_locations)"],
+    data = [":all_repository_locations"],
 )
 
 # A dependency required by python protobuf

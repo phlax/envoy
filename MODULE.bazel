@@ -404,3 +404,6 @@ use_repo(envoy_toolchains_ext, "clang_platform")
 
 envoy_build_config_ext = use_extension("//bazel:extensions.bzl", "envoy_build_config_ext")
 use_repo(envoy_build_config_ext, "envoy_build_config")
+
+envoy_module_graph_ext = use_extension("//bazel:extensions.bzl", "envoy_module_graph_extension")
+use_repo(envoy_module_graph_ext, "envoy_mod_graph")
