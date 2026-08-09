@@ -1,7 +1,7 @@
 load("@base_pip3//:requirements.bzl", "requirement")
 load("@envoy_repo//:path.bzl", "PATH")
 load("@envoy_toolshed//:utils.bzl", "json_merge")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
@@ -81,17 +81,35 @@ py_binary(
     ],
 )
 
-py_binary(
-    name = "update_deps",
+py_library(
+    name = "update_deps_lib",
     srcs = ["update_deps.py"],
     deps = [requirement("pyyaml")],
 )
 
 py_binary(
+    name = "update_deps_bin",
+    srcs = ["update_deps.py"],
+    main = "update_deps.py",
+    deps = [":update_deps_lib"],
+)
+
+sh_binary(
+    name = "update_deps",
+    srcs = ["update_deps.sh"],
+    data = [":update_deps_bin"],
+    env = {
+        "ENVOY_WORKSPACE_PATH": PATH,
+        "UPDATE_DEPS_BIN": "$(location :update_deps_bin)",
+    },
+    tags = ["skip_on_windows"],
+)
+
+py_test(
     name = "update_deps_test",
     srcs = ["update_deps_test.py"],
     deps = [
-        ":update_deps",
+        ":update_deps_lib",
         requirement("pyyaml"),
     ],
 )

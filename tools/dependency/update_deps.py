@@ -17,26 +17,21 @@ that a human can grep for gaps.
 Usage examples::
 
     # Update root module deps
-    python tools/dependency/update_deps.py
+    bazel run //tools/dependency:update_deps
 
     # Update api module deps
-    python tools/dependency/update_deps.py \\
-        --module api/MODULE.bazel \\
-        --deps    api/bazel/deps.yaml
-
-    # Via Bazel
-    bazel run //tools/dependency:update_deps
     bazel run //tools/dependency:update_deps -- --module api/MODULE.bazel --deps api/bazel/deps.yaml
 """
 
 import argparse
+import ast
 import json
 import os
 import pathlib
 import re
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 
 import yaml
 
@@ -63,8 +58,211 @@ LIST_FIELDS = ["use_category"]
 # Parsing helpers
 # ---------------------------------------------------------------------------
 
-_BAZEL_DEP_BLOCK_RE = re.compile(r'bazel_dep\s*\(([^)]+)\)', re.DOTALL)
-_ATTR_RE = re.compile(r'(\w+)\s*=\s*"([^"]*)"')
+_WHITESPACE = " \t\r\n"
+
+
+def _skip_ignored(text: str, index: int) -> int:
+    while index < len(text):
+        if text[index] in _WHITESPACE:
+            index += 1
+            continue
+        if text[index] == "#":
+            while index < len(text) and text[index] != "\n":
+                index += 1
+            continue
+        break
+    return index
+
+
+def _consume_string(text: str, index: int) -> int:
+    quote = text[index]
+    index += 1
+    while index < len(text):
+        if text[index] == "\\":
+            index += 2
+            continue
+        if text[index] == quote:
+            return index + 1
+        index += 1
+    raise ValueError("unterminated string literal")
+
+
+def _find_matching_paren(text: str, open_index: int) -> int:
+    depth = 0
+    index = open_index
+    while index < len(text):
+        char = text[index]
+        if char in "\"'":
+            index = _consume_string(text, index)
+            continue
+        if char == "#":
+            while index < len(text) and text[index] != "\n":
+                index += 1
+            continue
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    raise ValueError("unmatched '('")
+
+
+def _iter_call_bodies(text: str, call_name: str):
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char in "\"'":
+            index = _consume_string(text, index)
+            continue
+        if char == "#":
+            while index < len(text) and text[index] != "\n":
+                index += 1
+            continue
+        if char.isalpha() or char == "_":
+            start = index
+            index += 1
+            while index < len(text) and (text[index].isalnum() or text[index] == "_"):
+                index += 1
+            ident = text[start:index]
+            if ident != call_name:
+                continue
+            index = _skip_ignored(text, index)
+            if index >= len(text) or text[index] != "(":
+                continue
+            end = _find_matching_paren(text, index)
+            yield text[index + 1:end]
+            index = end + 1
+            continue
+        index += 1
+
+
+def _split_top_level_items(text: str) -> list[str]:
+    items = []
+    start = 0
+    depth = 0
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char in "\"'":
+            index = _consume_string(text, index)
+            continue
+        if char == "#":
+            while index < len(text) and text[index] != "\n":
+                index += 1
+            continue
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+        elif char == "," and depth == 0:
+            item = text[start:index].strip()
+            if item:
+                items.append(item)
+            start = index + 1
+        index += 1
+    tail = text[start:].strip()
+    if tail:
+        items.append(tail)
+    return items
+
+
+def _split_assignment(text: str) -> tuple[str, str] | tuple[None, None]:
+    depth = 0
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char in "\"'":
+            index = _consume_string(text, index)
+            continue
+        if char == "#":
+            while index < len(text) and text[index] != "\n":
+                index += 1
+            continue
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+        elif char == "=" and depth == 0:
+            return text[:index].strip(), text[index + 1:].strip()
+        index += 1
+    return None, None
+
+
+def _parse_starlark_value(text: str, index: int):
+    index = _skip_ignored(text, index)
+    if index >= len(text):
+        raise ValueError("expected value")
+    char = text[index]
+    if text.startswith("dict", index) and index + 4 < len(text) and text[index + 4] == "(":
+        index += 5
+        result = {}
+        while True:
+            index = _skip_ignored(text, index)
+            if index >= len(text):
+                raise ValueError("unterminated dict()")
+            if text[index] == ")":
+                return result, index + 1
+            key_start = index
+            if not (text[index].isalpha() or text[index] == "_"):
+                raise ValueError("expected dict() key")
+            index += 1
+            while index < len(text) and (text[index].isalnum() or text[index] == "_"):
+                index += 1
+            key = text[key_start:index]
+            index = _skip_ignored(text, index)
+            if index >= len(text) or text[index] != "=":
+                raise ValueError("expected '=' in dict()")
+            value, index = _parse_starlark_value(text, index + 1)
+            result[key] = value
+            index = _skip_ignored(text, index)
+            if index < len(text) and text[index] == ",":
+                index += 1
+                continue
+            if index < len(text) and text[index] == ")":
+                return result, index + 1
+            raise ValueError("expected ',' or ')' in dict()")
+    if char == "[":
+        index += 1
+        result = []
+        while True:
+            index = _skip_ignored(text, index)
+            if index >= len(text):
+                raise ValueError("unterminated list")
+            if text[index] == "]":
+                return result, index + 1
+            value, index = _parse_starlark_value(text, index)
+            result.append(value)
+            index = _skip_ignored(text, index)
+            if index < len(text) and text[index] == ",":
+                index += 1
+                continue
+            if index < len(text) and text[index] == "]":
+                return result, index + 1
+            raise ValueError("expected ',' or ']' in list")
+    if char in "\"'":
+        end = _consume_string(text, index)
+        return ast.literal_eval(text[index:end]), end
+    if char.isdigit() or char == "-":
+        end = index + 1
+        while end < len(text) and text[end] not in _WHITESPACE + ",)]}":
+            end += 1
+        return ast.literal_eval(text[index:end]), end
+    if char.isalpha() or char == "_":
+        start = index
+        index += 1
+        while index < len(text) and (text[index].isalnum() or text[index] == "_"):
+            index += 1
+        ident = text[start:index]
+        if ident == "True":
+            return True, index
+        if ident == "False":
+            return False, index
+        if ident == "None":
+            return None, index
+        return ident, index
+    raise ValueError(f"unsupported Starlark value starting with {char!r}")
 
 
 def parse_module_bazel(path: pathlib.Path) -> dict:
@@ -73,9 +271,14 @@ def parse_module_bazel(path: pathlib.Path) -> dict:
     If a bazel_dep has no version attribute the value will be ``""``."""
     text = path.read_text()
     deps = {}
-    for block_m in _BAZEL_DEP_BLOCK_RE.finditer(text):
-        block = block_m.group(1)
-        attrs = dict(_ATTR_RE.findall(block))
+    for block in _iter_call_bodies(text, "bazel_dep"):
+        attrs = {}
+        for item in _split_top_level_items(block):
+            key, value_text = _split_assignment(item)
+            if key is None:
+                continue
+            value, _ = _parse_starlark_value(value_text, 0)
+            attrs[key] = value
         name = attrs.get("name", "")
         if not name:
             continue
@@ -85,12 +288,12 @@ def parse_module_bazel(path: pathlib.Path) -> dict:
 
 
 def parse_lockfile(path: pathlib.Path) -> dict:
-    """Return {module_name: source_json_url} from MODULE.bazel.lock.
+    """Return ({module_name: source_json_url}, extension_repo_specs) from lockfile.
 
-    Scans ``registryFileHashes`` for keys of the form
-    ``…/modules/{name}/{version}/source.json`` and returns the URL keyed by
-    module name.  When multiple registry entries exist for the same module
-    (e.g. BCR and toolshed both provide it) the first one found is used.
+    Registry module entries in current lockfiles expose ``source.json`` locations
+    but not the final upstream archive URL, so network-free callers can only
+    use this map for optional follow-up fetching. Non-module extension repos
+    still expose their resolved ``urls`` and ``version`` inline.
     """
     data = json.loads(path.read_text())
     registry_hashes = data.get("registryFileHashes", {})
@@ -136,34 +339,20 @@ def parse_repository_locations(path: pathlib.Path) -> dict:
     if not path.exists():
         return {}
     text = path.read_text()
-    # Extract the REPOSITORY_LOCATIONS_SPEC dict using a regex-based approach
-    # that handles the Starlark dict()-of-dict() style.
-    m = re.search(r'REPOSITORY_LOCATIONS_SPEC\s*=\s*dict\((.*)\)', text, re.DOTALL)
+    m = re.search(r"\bREPOSITORY_LOCATIONS_SPEC\b\s*=", text)
     if not m:
         return {}
-    inner = m.group(1).strip()
-    # Convert top-level Starlark keyword args to Python dict entries:
-    # "key = dict(...)" → '"key": dict(...)'
-    # We handle this by finding top-level key=dict( pairs
-    result = {}
-    # Find each top-level entry: identifier = dict(...)
-    entry_re = re.compile(r'(\w+)\s*=\s*dict\(', re.DOTALL)
-    # Build a simple Starlark->Python conversion by replacing
-    # identifier = dict( with "identifier": dict(
-    py_inner = entry_re.sub(r'"\1": dict(', inner)
-    # Remove trailing commas before closing braces/parens (Python doesn't allow them in older ver)
-    py_inner = re.sub(r',\s*\)', ')', py_inner)
     try:
-        parsed = eval(f'{{{py_inner}}}', {"__builtins__": {}}, {"dict": dict})  # noqa: S307
-    except Exception:
+        parsed, _ = _parse_starlark_value(text, m.end())
+    except (SyntaxError, ValueError):
+        print(f"WARNING: failed to parse {path}", file=sys.stderr)
         return {}
-    # Expand url templates
     for name, spec in parsed.items():
         version = spec.get("version", "")
         raw_urls = spec.get("urls", [])
-        urls = [u.replace("{version}", version) for u in raw_urls]
-        result[name] = {"version": version, "urls": urls}
-    return result
+        urls = [u.replace("{version}", version) for u in raw_urls if isinstance(u, str)]
+        parsed[name] = {"version": version, "urls": urls}
+    return parsed
 
 
 # ---------------------------------------------------------------------------
@@ -360,7 +549,7 @@ def update_deps_yaml(
     ext_repo_specs: dict,
     repo_locations: dict,
     *,
-    fetch_urls: bool = True,
+    fetch_urls: bool = False,
     verbose: bool = True,
 ) -> None:
     """Update deps_path in-place with version/urls from the module graph."""
@@ -378,7 +567,14 @@ def update_deps_yaml(
         for n, v in repo_locations.items()
         if _normalize_name(n) not in module_norms
     }
-    all_names = set(module_deps) | set(filtered_repo_locations)
+    ext_fallback_norms = {_normalize_name(n) for n in filtered_repo_locations}
+    ext_fallback_norms.update(_normalize_name(n) for n in deps_data)
+    filtered_ext_repo_specs = {
+        n: v
+        for n, v in ext_repo_specs.items()
+        if _normalize_name(n) not in module_norms and _normalize_name(n) in ext_fallback_norms
+    }
+    all_names = set(module_deps) | set(filtered_repo_locations) | set(filtered_ext_repo_specs)
 
     # Collect changes: updates to existing entries and completely new entries
     field_updates: dict = {}   # {existing_key: {field: value}}
@@ -389,20 +585,29 @@ def update_deps_yaml(
         version = ""
         urls: list = []
 
-        if name in filtered_repo_locations:
-            spec = filtered_repo_locations[name]
-            version = spec.get("version", "")
-            urls = spec.get("urls", [])
-        elif name in module_deps:
+        if name in module_deps:
             version = module_deps[name]
             if fetch_urls and name in source_json_map:
                 src_url = fetch_source_json_url(source_json_map[name])
                 if src_url:
                     urls = [src_url]
                 elif verbose:
-                    print(f"  [warn] could not fetch source.json for {name}", file=sys.stderr)
-        elif name in ext_repo_specs:
-            spec = ext_repo_specs[name]
+                    print(
+                        f"  [warn] could not resolve source.json for {name}",
+                        file=sys.stderr,
+                    )
+            elif not fetch_urls and name in source_json_map and verbose:
+                print(
+                    f"  [warn] {name} urls not updated offline; "
+                    "re-run with --fetch-registry to resolve source.json",
+                    file=sys.stderr,
+                )
+        elif name in filtered_repo_locations:
+            spec = filtered_repo_locations[name]
+            version = spec.get("version", "")
+            urls = spec.get("urls", [])
+        elif name in filtered_ext_repo_specs:
+            spec = filtered_ext_repo_specs[name]
             version = spec.get("version", "")
             urls = spec.get("urls", [])
 
@@ -449,15 +654,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--module",
         default="MODULE.bazel",
-        help="Path to MODULE.bazel (default: MODULE.bazel in cwd)",
+        help="Path to MODULE.bazel relative to the workspace root",
     )
     parser.add_argument(
         "--deps",
         default=None,
         help=(
             "Path to deps.yaml to update "
-            "(default: <module_dir>/../bazel/deps.yaml for nested modules, "
-            "or bazel/deps.yaml for the root module)"
+            "(default: bazel/deps.yaml for the root module, or api/bazel/deps.yaml "
+            "for api/MODULE.bazel)"
         ),
     )
     parser.add_argument(
@@ -469,16 +674,19 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--repository-locations",
         default=None,
         help=(
-            "Path to repository_locations.bzl (default: "
-            "<module_dir>/../bazel/repository_locations.bzl or "
-            "<module_dir>/bazel/repository_locations.bzl)"
+            "Path to repository_locations.bzl relative to the workspace root "
+            "(default: bazel/repository_locations.bzl or "
+            "api/bazel/repository_locations.bzl)"
         ),
     )
     parser.add_argument(
-        "--no-fetch",
+        "--fetch-registry",
         action="store_true",
         default=False,
-        help="Skip fetching source.json URLs from registries (urls will not be updated)",
+        help=(
+            "Resolve module urls by fetching source.json from registries recorded in "
+            "the lockfile. This is non-hermetic and disabled by default."
+        ),
     )
     parser.add_argument(
         "--quiet",
@@ -490,44 +698,38 @@ def build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def resolve_paths(args) -> tuple:
+def _resolve_workspace_path(workspace_root: pathlib.Path, path: str | None) -> pathlib.Path | None:
+    if path is None:
+        return None
+    candidate = pathlib.Path(path)
+    if candidate.is_absolute():
+        return candidate
+    return workspace_root / candidate
+
+
+def resolve_paths(args, workspace_root: pathlib.Path) -> tuple:
     """Return (module_path, deps_path, lockfile_path, repo_locations_path)."""
-    module_path = pathlib.Path(args.module).resolve()
+    module_path = _resolve_workspace_path(workspace_root, args.module)
     module_dir = module_path.parent
 
-    # Deps yaml: try to detect whether this is a nested module (api/) or root
     if args.deps:
-        deps_path = pathlib.Path(args.deps).resolve()
+        deps_path = _resolve_workspace_path(workspace_root, args.deps)
+    elif module_dir == workspace_root / "api":
+        deps_path = workspace_root / "api" / "bazel" / "deps.yaml"
     else:
-        # Heuristic: if the parent dir is named 'api' or similar, look for
-        # <parent>/bazel/deps.yaml, otherwise bazel/deps.yaml relative to cwd.
-        candidate = module_dir / "bazel" / "deps.yaml"
-        if candidate.exists() or (module_dir / "bazel").is_dir():
-            deps_path = candidate
-        else:
-            # root module: bazel/deps.yaml relative to MODULE.bazel location
-            deps_path = module_dir / "bazel" / "deps.yaml"
+        deps_path = workspace_root / "bazel" / "deps.yaml"
 
-    # Lockfile
     if args.lockfile:
-        lockfile_path = pathlib.Path(args.lockfile).resolve()
+        lockfile_path = _resolve_workspace_path(workspace_root, args.lockfile)
     else:
         lockfile_path = module_path.with_suffix(".bazel.lock")
 
-    # repository_locations.bzl
     if args.repository_locations:
-        repo_loc_path = pathlib.Path(args.repository_locations).resolve()
+        repo_loc_path = _resolve_workspace_path(workspace_root, args.repository_locations)
+    elif module_dir == workspace_root / "api":
+        repo_loc_path = workspace_root / "api" / "bazel" / "repository_locations.bzl"
     else:
-        # Try <module_dir>/bazel/repository_locations.bzl (nested api/ module)
-        candidate1 = module_dir / "bazel" / "repository_locations.bzl"
-        # Try <module_dir>/../bazel/repository_locations.bzl (root)
-        candidate2 = module_dir.parent / "bazel" / "repository_locations.bzl"
-        if candidate1.exists():
-            repo_loc_path = candidate1
-        elif candidate2.exists():
-            repo_loc_path = candidate2
-        else:
-            repo_loc_path = candidate1  # will be absent, gracefully handled
+        repo_loc_path = workspace_root / "bazel" / "repository_locations.bzl"
 
     return module_path, deps_path, lockfile_path, repo_loc_path
 
@@ -537,8 +739,18 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     verbose = not args.quiet
+    workspace_directory = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
+    if not workspace_directory:
+        print(
+            "ERROR: BUILD_WORKSPACE_DIRECTORY is not set. "
+            "Run this tool via `bazel run //tools/dependency:update_deps` so it can "
+            "update files in the real workspace.",
+            file=sys.stderr,
+        )
+        return 1
+    workspace_root = pathlib.Path(workspace_directory).resolve()
 
-    module_path, deps_path, lockfile_path, repo_loc_path = resolve_paths(args)
+    module_path, deps_path, lockfile_path, repo_loc_path = resolve_paths(args, workspace_root)
 
     if verbose:
         print(f"Module:               {module_path}")
@@ -571,7 +783,7 @@ def main(argv=None) -> int:
         source_json_map,
         ext_repo_specs,
         repo_locations,
-        fetch_urls=not args.no_fetch,
+        fetch_urls=args.fetch_registry,
         verbose=verbose,
     )
 

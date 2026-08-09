@@ -6,6 +6,8 @@ import os
 import pathlib
 import tempfile
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 
 import yaml
 
@@ -48,8 +50,13 @@ class ParseModuleBazelTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             p = self._write(
                 td,
-                'bazel_dep(name = "protobuf", version = "35.1.bcr.envoy",'
-                ' repo_name = "com_google_protobuf")\n',
+                """
+                bazel_dep(
+                    name = "protobuf",
+                    version = "35.1.bcr.envoy",
+                    repo_name = "com_google_protobuf",
+                )
+                """,
             )
             deps = update_deps.parse_module_bazel(p)
         self.assertIn("protobuf", deps)
@@ -59,8 +66,13 @@ class ParseModuleBazelTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             p = self._write(
                 td,
-                'bazel_dep(name = "googletest", version = "1.17.0",'
-                ' dev_dependency = True)\n',
+                """
+                bazel_dep(
+                    name = "googletest",
+                    version = "1.17.0",
+                    dev_dependency = True,
+                )
+                """,
             )
             deps = update_deps.parse_module_bazel(p)
         self.assertIn("googletest", deps)
@@ -175,6 +187,16 @@ class ParseRepositoryLocationsTest(unittest.TestCase):
     def test_absent_file(self):
         result = update_deps.parse_repository_locations(pathlib.Path("/nonexistent.bzl"))
         self.assertEqual(result, {})
+
+    def test_malformed_file_returns_empty_without_eval(self):
+        with tempfile.TemporaryDirectory() as td:
+            p = pathlib.Path(td) / "repository_locations.bzl"
+            p.write_text('REPOSITORY_LOCATIONS_SPEC = dict(quiche = nope("boom"))\n')
+            stderr = StringIO()
+            with redirect_stderr(stderr):
+                result = update_deps.parse_repository_locations(p)
+        self.assertEqual(result, {})
+        self.assertIn("failed to parse", stderr.getvalue())
 
 
 class UpdateDepsYamlTest(unittest.TestCase):
@@ -301,6 +323,80 @@ class UpdateDepsYamlTest(unittest.TestCase):
             result["quiche"]["urls"],
         )
 
+    def test_url_from_extension_repo_specs(self):
+        with tempfile.TemporaryDirectory() as td:
+            deps_path = self._make_deps_file(
+                td,
+                {"quiche": {
+                    "project_name": "QUICHE",
+                    "project_desc": "QUIC impl",
+                    "project_url": "https://quiche.googlesource.com/quiche",
+                    "release_date": "2024-01-01",
+                    "use_category": ["dataplane_core"],
+                    "license": "BSD-3-Clause",
+                    "license_url": "...",
+                    "cpe": "N/A",
+                }},
+            )
+            update_deps.update_deps_yaml(
+                deps_path,
+                module_deps={},
+                source_json_map={},
+                ext_repo_specs={
+                    "quiche": {
+                        "version": "deadbeef",
+                        "urls": ["https://github.com/google/quiche/archive/deadbeef.tar.gz"],
+                    },
+                    "system_python": {
+                        "version": "3.11.0",
+                        "urls": ["https://example.invalid/system_python.tar.gz"],
+                    },
+                },
+                repo_locations={},
+                fetch_urls=False,
+                verbose=False,
+            )
+            result = _yaml_load(deps_path.read_text())
+        self.assertEqual(result["quiche"]["version"], "deadbeef")
+        self.assertEqual(
+            result["quiche"]["urls"],
+            ["https://github.com/google/quiche/archive/deadbeef.tar.gz"],
+        )
+        self.assertNotIn("system_python", result)
+
+    def test_module_dep_takes_precedence_over_repo_locations(self):
+        with tempfile.TemporaryDirectory() as td:
+            deps_path = self._make_deps_file(
+                td,
+                {"googleapis": {
+                    "project_name": "Google APIs",
+                    "project_desc": "Desc",
+                    "project_url": "https://example.com",
+                    "release_date": "2024-01-01",
+                    "use_category": ["build"],
+                    "license": "Apache-2.0",
+                    "license_url": "...",
+                    "cpe": "N/A",
+                }},
+            )
+            update_deps.update_deps_yaml(
+                deps_path,
+                module_deps={"googleapis": "module-version"},
+                source_json_map={},
+                ext_repo_specs={},
+                repo_locations={
+                    "googleapis": {
+                        "version": "repo-version",
+                        "urls": ["https://wrong.invalid/googleapis.tar.gz"],
+                    },
+                },
+                fetch_urls=False,
+                verbose=False,
+            )
+            result = _yaml_load(deps_path.read_text())
+        self.assertEqual(result["googleapis"]["version"], "module-version")
+        self.assertNotIn("urls", result["googleapis"])
+
     def test_idempotent(self):
         """Running twice with no dependency changes produces no diff."""
         with tempfile.TemporaryDirectory() as td:
@@ -321,8 +417,27 @@ class UpdateDepsYamlTest(unittest.TestCase):
         self.assertEqual(content1, content2)
 
     def test_url_from_lock_not_registry(self):
-        """URLs written to deps.yaml must be upstream archive URLs, not bcr URLs."""
+        """Fetched source.json data writes upstream archive URLs, never registry URLs."""
         with tempfile.TemporaryDirectory() as td:
+            registry_dir = pathlib.Path(td) / "registry" / "modules" / "abseil-cpp" / "20260107.1"
+            registry_dir.mkdir(parents=True)
+            source_json = registry_dir / "source.json"
+            upstream_url = (
+                "https://github.com/abseil/abseil-cpp/releases/download/"
+                "20260107.1/abseil-cpp-20260107.1.tar.gz"
+            )
+            source_json.write_text(json.dumps({"url": upstream_url}))
+            lockfile = pathlib.Path(td) / "MODULE.bazel.lock"
+            lockfile.write_text(
+                json.dumps({
+                    "lockFileVersion": 1,
+                    "registryFileHashes": {
+                        source_json.as_uri(): "abc123",
+                    },
+                    "selectedYankedVersions": {},
+                    "moduleExtensions": {},
+                }))
+            source_json_map, _ext_specs = update_deps.parse_lockfile(lockfile)
             deps_path = self._make_deps_file(
                 td,
                 {"abseil-cpp": {
@@ -336,41 +451,90 @@ class UpdateDepsYamlTest(unittest.TestCase):
                     "cpe": "N/A",
                 }},
             )
-            # Simulate: source_json_map points to a BCR URL.
-            # When fetch_source_json_url is called it returns the upstream URL,
-            # not the BCR URL itself.  We patch the function for the test.
-            upstream_url = (
-                "https://github.com/abseil/abseil-cpp/releases/download/"
-                "20260107.1/abseil-cpp-20260107.1.tar.gz"
+            update_deps.update_deps_yaml(
+                deps_path,
+                module_deps={"abseil-cpp": "20260107.1"},
+                source_json_map=source_json_map,
+                ext_repo_specs={},
+                repo_locations={},
+                fetch_urls=True,
+                verbose=False,
             )
-            orig = update_deps.fetch_source_json_url
-
-            def fake_fetch(url):
-                # The tool passes the source_json_url (BCR or toolshed) to us;
-                # we return the upstream GitHub URL (not the registry URL).
-                return upstream_url
-
-            update_deps.fetch_source_json_url = fake_fetch
-            try:
-                update_deps.update_deps_yaml(
-                    deps_path,
-                    module_deps={"abseil-cpp": "20260107.1"},
-                    source_json_map={
-                        "abseil-cpp":
-                        "https://bcr.bazel.build/modules/abseil-cpp/20260107.1/source.json"
-                    },
-                    ext_repo_specs={},
-                    repo_locations={},
-                    fetch_urls=True,
-                    verbose=False,
-                )
-            finally:
-                update_deps.fetch_source_json_url = orig
 
             result = _yaml_load(deps_path.read_text())
         self.assertEqual(result["abseil-cpp"]["urls"], [upstream_url])
         for u in result["abseil-cpp"]["urls"]:
             self.assertNotIn("bcr.bazel.build", u)
+
+
+class ResolvePathsTest(unittest.TestCase):
+
+    def test_api_paths_resolve_from_workspace_root(self):
+        with tempfile.TemporaryDirectory() as td:
+            workspace = pathlib.Path(td)
+            args = update_deps.build_arg_parser().parse_args(["--module", "api/MODULE.bazel"])
+            paths = update_deps.resolve_paths(args, workspace)
+        self.assertEqual(paths[0], workspace / "api" / "MODULE.bazel")
+        self.assertEqual(paths[1], workspace / "api" / "bazel" / "deps.yaml")
+        self.assertEqual(paths[2], workspace / "api" / "MODULE.bazel.lock")
+        self.assertEqual(
+            paths[3],
+            workspace / "api" / "bazel" / "repository_locations.bzl",
+        )
+
+
+class MainTest(unittest.TestCase):
+
+    def test_main_requires_build_workspace_directory(self):
+        old_workspace = os.environ.pop("BUILD_WORKSPACE_DIRECTORY", None)
+        stderr = StringIO()
+        try:
+            with redirect_stderr(stderr):
+                rc = update_deps.main(["--quiet"])
+        finally:
+            if old_workspace is not None:
+                os.environ["BUILD_WORKSPACE_DIRECTORY"] = old_workspace
+        self.assertEqual(rc, 1)
+        self.assertIn("bazel run //tools/dependency:update_deps", stderr.getvalue())
+
+    def test_main_updates_workspace_relative_paths(self):
+        with tempfile.TemporaryDirectory() as td:
+            workspace = pathlib.Path(td)
+            (workspace / "bazel").mkdir()
+            (workspace / "MODULE.bazel").write_text(
+                'bazel_dep(name = "abseil-cpp", version = "20260107.1")\n')
+            (workspace / "bazel" / "repository_locations.bzl").write_text(
+                "REPOSITORY_LOCATIONS_SPEC = dict()\n")
+            deps_path = workspace / "bazel" / "deps.yaml"
+            deps_path.write_text(
+                yaml.dump({
+                    "abseil-cpp": {
+                        "project_name": "Abseil",
+                        "project_desc": "Desc",
+                        "project_url": "https://abseil.io",
+                        "release_date": "2026-01-07",
+                        "use_category": ["dataplane_core"],
+                        "license": "Apache-2.0",
+                        "license_url": "...",
+                        "cpe": "N/A",
+                        "version": "old",
+                    },
+                },
+                          default_flow_style=False,
+                          sort_keys=False,
+                          allow_unicode=True))
+            old_workspace = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
+            os.environ["BUILD_WORKSPACE_DIRECTORY"] = str(workspace)
+            try:
+                rc = update_deps.main(["--quiet"])
+            finally:
+                if old_workspace is None:
+                    del os.environ["BUILD_WORKSPACE_DIRECTORY"]
+                else:
+                    os.environ["BUILD_WORKSPACE_DIRECTORY"] = old_workspace
+            result = _yaml_load(deps_path.read_text())
+        self.assertEqual(rc, 0)
+        self.assertEqual(result["abseil-cpp"]["version"], "20260107.1")
 
 
 if __name__ == "__main__":
