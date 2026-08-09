@@ -65,6 +65,14 @@ py_console_script_binary(
 )
 
 py_binary(
+    name = "update_deps_yaml",
+    srcs = ["update_deps_yaml.py"],
+    deps = [
+        requirement("pyyaml"),
+    ],
+)
+
+py_binary(
     name = "validate",
     srcs = ["validate.py"],
     args = [
