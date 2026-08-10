@@ -150,7 +150,7 @@ buildtools:
   use_category:
   - test_only
 
-c_ares:
+c-ares:
   project_name: "c-ares"
   project_desc: "C library for asynchronous DNS requests"
   project_url: "https://c-ares.haxx.se/"
@@ -318,7 +318,7 @@ tcmalloc:
   license: "Apache-2.0"
   license_url: "https://github.com/google/tcmalloc/blob/{version}/LICENSE"
 
-com_github_grpc_grpc:
+grpc:
   project_name: "gRPC"
   project_desc: "gRPC C core library"
   project_url: "https://grpc.io"
@@ -343,7 +343,7 @@ ipp_crypto:
   license: "Apache-2.0"
   license_url: "https://github.com/intel/cryptography-primitives/blob/ippcp_{version}/LICENSE"
 
-yaml_cpp:
+yaml-cpp:
   project_name: "yaml-cpp"
   project_desc: "YAML parser and emitter in C++ matching the YAML 1.2 spec"
   project_url: "https://github.com/jbeder/yaml-cpp"
@@ -535,7 +535,7 @@ wuffs:
   license: "Apache-2.0"
   license_url: "https://github.com/google/wuffs-mirror-release-c/blob/v{version}/LICENSE"
 
-abseil_cpp:
+abseil-cpp:
   project_name: "Abseil"
   project_desc: "Open source collection of C++ libraries drawn from the most fundamental pieces of Google’s internal codebase"
   project_url: "https://abseil.io/"
@@ -575,7 +575,7 @@ cel_cpp:
   license: "Apache-2.0"
   license_url: "https://github.com/google/cel-cpp/blob/v{version}/LICENSE"
 
-cel_spec:
+cel-spec:
   project_name: "Common Expression Language (CEL) spec"
   project_desc: "Common Expression Language (CEL) spec and conformance tests"
   project_url: "https://opensource.google/projects/cel"
@@ -615,7 +615,7 @@ googletest:
   license: "BSD-3-Clause"
   license_url: "https://github.com/google/googletest/blob/{version}/LICENSE"
 
-com_google_protobuf:
+protobuf:
   project_name: "Protocol Buffers"
   project_desc: "Language-neutral, platform-neutral extensible mechanism for serializing structured data"
   project_url: "https://developers.google.com/protocol-buffers"
@@ -629,7 +629,7 @@ com_google_protobuf:
   license: "Protocol Buffers"
   license_url: "https://github.com/protocolbuffers/protobuf/blob/v{version}/LICENSE"
 
-proto_converter:
+proto-converter:
   project_name: "proto-converter"
   project_desc: "Library that supports the conversion between protobuf binary and json"
   project_url: "https://github.com/grpc-ecosystem/proto-converter"

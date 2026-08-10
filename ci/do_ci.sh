@@ -663,8 +663,8 @@ case $CI_TARGET in
         # echo "verifying dependencies..."
 
         # Validate dependency relationships between core/extensions and external deps.
-        time bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
-             //tools/dependency:validate
+        time bazel test "${BAZEL_BUILD_OPTIONS[@]}" \
+             //tools/dependency:validate_reachability_test
         # Validate repository metadata.
         echo "check repositories..."
         "${ENVOY_SRCDIR}/tools/check_repositories.sh"

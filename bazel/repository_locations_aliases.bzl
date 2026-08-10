@@ -3,7 +3,6 @@ MODULE_NAME_ALIASES = {
     "boost": "boost.headers",
     "build_bazel_rules_apple": "rules_apple",
     "buildtools": "buildifier_prebuilt",
-    "com_github_grpc_grpc": "grpc",
     "dev_cel": "cel-spec",
     "io_bazel_rules_go": "rules_go",
     "ocp": "ocp-diag-core",
