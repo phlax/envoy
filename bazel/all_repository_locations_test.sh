@@ -9,12 +9,12 @@ import sys
 
 deps = json.loads(pathlib.Path(sys.argv[1]).read_text())
 
-abseil = deps["abseil_cpp"]
+abseil = deps["abseil-cpp"]
 assert abseil["version"] == "20260107.1", abseil
 assert abseil["module_url"] == "https://bcr.bazel.build/modules/abseil-cpp/20260107.1/", abseil
 assert abseil["urls"] == [abseil["module_url"]], abseil
 
-protobuf = deps["com_google_protobuf"]
+protobuf = deps["protobuf"]
 assert protobuf["version"] == "35.1.bcr.envoy", protobuf
 assert protobuf["module_url"].endswith("/modules/protobuf/35.1.bcr.envoy/"), protobuf
 assert "raw.githubusercontent.com/envoyproxy/toolshed/" in protobuf["module_url"], protobuf

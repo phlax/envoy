@@ -94,7 +94,7 @@ opentelemetry_proto:
   - api
   license: "Apache-2.0"
   license_url: "https://github.com/open-telemetry/opentelemetry-proto/blob/v{version}/LICENSE"
-prometheus_metrics_model:
+prometheus-metrics-model:
   project_name: "Prometheus client model"
   project_desc: "Data model artifacts for Prometheus"
   project_url: "https://github.com/prometheus/client_model"
