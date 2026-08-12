@@ -24,8 +24,9 @@ bazel_dep(name = "protobuf", version = "35.1.bcr.envoy", repo_name = "com_google
 bazel_dep(name = "proxy-wasm-cpp-host", version = "0.0.0-260704-f2db56a.envoy")
 bazel_dep(name = "pybind11_bazel", version = "2.12.0")
 bazel_dep(name = "re2", version = "2025-08-12.bcr.1")
-bazel_dep(name = "rules_android", version = "0.7.2")
-bazel_dep(name = "rules_android_ndk", version = "0.1.2")
+bazel_dep(name = "rules_android", version = "0.7.3")
+bazel_dep(name = "rules_android_ndk", version = "0.1.5")
+bazel_dep(name = "hermetic_android_toolchains", version = "0.0.0")
 bazel_dep(name = "rules_apple", version = "3.20.1.envoy", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "rules_robolectric", version = "4.16")
 bazel_dep(name = "rules_cc", version = "0.2.22")
@@ -55,6 +56,12 @@ local_path_override(
 local_path_override(
     module_name = "envoy_build_config",
     path = "envoy_build_config",
+)
+
+git_override(
+    module_name = "hermetic_android_toolchains",
+    remote = "https://github.com/keith/hermetic_android_toolchains",
+    commit = "c6a9f203fbe1d4e72ecfc8d6ea47b81c844435ff",
 )
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -93,16 +100,26 @@ remote_android_extensions = use_extension(
 )
 use_repo(remote_android_extensions, "android_gmaven_r8", "android_tools")
 
-android_sdk_repository_extension = use_extension(
-    "@rules_android//rules/android_sdk_repository:rule.bzl",
-    "android_sdk_repository_extension",
+android = use_extension("@hermetic_android_toolchains//:extensions.bzl", "android")
+android.sdk(
+    version = "30",
+    build_tools_version = "35.0.0",
 )
-use_repo(android_sdk_repository_extension, "androidsdk")
-register_toolchains("@androidsdk//:sdk-toolchain", "@androidsdk//:all")
+android.ndk(
+    api_level = 23,
+    version = "r29",
+)
+use_repo(android, "androidndk", "androidsdk")
 
-android_ndk = use_extension("//bazel:extensions.bzl", "android_ndk_extension")
-use_repo(android_ndk, "androidndk")
-register_toolchains("@androidndk//:all")
+# Make @rules_android's @androidsdk labels resolve to the hermetic SDK.
+rules_android_sdk = use_extension("@rules_android//rules/android_sdk_repository:rule.bzl", "android_sdk_repository_extension")
+override_repo(rules_android_sdk, "androidsdk")
+
+# Make @rules_android_ndk's @androidndk labels resolve to the hermetic NDK.
+rules_android_ndk = use_extension("@rules_android_ndk//:extension.bzl", "android_ndk_repository_extension")
+override_repo(rules_android_ndk, "androidndk")
+
+register_toolchains("@androidndk//:all", "@androidsdk//:all")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
