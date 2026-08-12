@@ -26,7 +26,7 @@ bazel_dep(name = "pybind11_bazel", version = "2.12.0")
 bazel_dep(name = "re2", version = "2025-08-12.bcr.1")
 bazel_dep(name = "rules_android", version = "0.7.3")
 bazel_dep(name = "rules_android_ndk", version = "0.1.5")
-bazel_dep(name = "hermetic_android_toolchains", version = "0.0.0")
+bazel_dep(name = "hermetic_android_toolchains", version = "0.0.0", dev_dependency = True)
 bazel_dep(name = "rules_apple", version = "3.20.1.envoy", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "rules_robolectric", version = "4.16")
 bazel_dep(name = "rules_cc", version = "0.2.22")
@@ -100,7 +100,7 @@ remote_android_extensions = use_extension(
 )
 use_repo(remote_android_extensions, "android_gmaven_r8", "android_tools")
 
-android = use_extension("@hermetic_android_toolchains//:extensions.bzl", "android")
+android = use_extension("@hermetic_android_toolchains//:extensions.bzl", "android", dev_dependency = True)
 android.sdk(
     version = "30",
     build_tools_version = "35.0.0",
@@ -112,14 +112,14 @@ android.ndk(
 use_repo(android, "androidndk", "androidsdk")
 
 # Make @rules_android's @androidsdk labels resolve to the hermetic SDK.
-rules_android_sdk = use_extension("@rules_android//rules/android_sdk_repository:rule.bzl", "android_sdk_repository_extension")
+rules_android_sdk = use_extension("@rules_android//rules/android_sdk_repository:rule.bzl", "android_sdk_repository_extension", dev_dependency = True)
 override_repo(rules_android_sdk, "androidsdk")
 
 # Make @rules_android_ndk's @androidndk labels resolve to the hermetic NDK.
-rules_android_ndk = use_extension("@rules_android_ndk//:extension.bzl", "android_ndk_repository_extension")
+rules_android_ndk = use_extension("@rules_android_ndk//:extension.bzl", "android_ndk_repository_extension", dev_dependency = True)
 override_repo(rules_android_ndk, "androidndk")
 
-register_toolchains("@androidndk//:all", "@androidsdk//:all")
+register_toolchains("@androidndk//:all", "@androidsdk//:all", dev_dependency = True)
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
