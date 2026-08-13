@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-set -e
-
+set -eu
 
 # env vars dont really work in bazels env - so replace with correct var
+LLVM_DIRECTORY="${LLVM_DIRECTORY:-}"
+OBJDUMP="${OBJDUMP:-}"
 OBJDUMP="${OBJDUMP//\$\{LLVM_DIRECTORY\}/$LLVM_DIRECTORY}"
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
 ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
-export ENVOY_SRCDIR
 ENVOY_BIN="${ENVOY_SRCDIR}/test/exe/all_extensions_build_test"
 
 # FIPS requires a consistency self-test. In practice, the FIPS binary has
