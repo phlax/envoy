@@ -511,16 +511,6 @@ envoy_cmake(
     tags = ["skip_on_windows"],
 )
 
-envoy_cc_library(
-    name = "maxmind_linux_darwin",
-    srcs = [],
-    deps = select({
-        "//bazel:linux": ["//bazel:libmaxminddb"],
-        "//bazel:darwin_any": ["//bazel:libmaxminddb"],
-        "//conditions:default": [],
-    }),
-)
-
 configure_make(
     name = "jemalloc",
     configure_options = [

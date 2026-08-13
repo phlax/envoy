@@ -3,9 +3,8 @@
 set -e
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
-# Detect workspace directory (bzlmod vs WORKSPACE mode)
-# shellcheck source=test/srcdir.sh
-source "${TEST_SRCDIR}/${TEST_WORKSPACE}/test/srcdir.sh"
+ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
+export ENVOY_SRCDIR
 
 # Router_check_tool binary path
 PATH_BIN="${ENVOY_SRCDIR}"/test/tools/router_check/router_check_tool

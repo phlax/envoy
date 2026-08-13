@@ -16,7 +16,6 @@ envoy_sh_test(
     cc_binary = ["//test/tools/router_check:router_check_tool"],
     data = [
         ":configs",
-        "//test:srcdir.sh",
     ],
     rbe_pool = "6gig",
     tags = ["nocoverage"],

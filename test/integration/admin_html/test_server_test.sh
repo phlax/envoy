@@ -3,9 +3,8 @@
 tmp="${TEST_TMPDIR}/test/integration/admin_html/tempfiles"
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
-# shellcheck source=test/srcdir.sh
-# Determine workspace directory first
-source "${TEST_SRCDIR}/${TEST_WORKSPACE}/test/srcdir.sh"
+ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
+export ENVOY_SRCDIR
 
 export ENVOY_BIN="${ENVOY_SRCDIR}/test/integration/admin_html/test_server"
 source "${ENVOY_SRCDIR}/test/integration/test_utility.sh"

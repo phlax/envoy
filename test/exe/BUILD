@@ -161,7 +161,6 @@ envoy_cc_test(
     data = [
         "fips_check.sh",
         "//source/extensions:extensions_metadata.yaml",
-        "//test:srcdir.sh",
         "@llvm_toolchain_llvm//:objdump",
     ],
     env = select({

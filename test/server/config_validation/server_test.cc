@@ -445,8 +445,7 @@ public:
   }
 
   static void setupTestDirectory() {
-    directory_ =
-        TestEnvironment::runfilesPath("test/server/config_validation/test_data/");
+    directory_ = TestEnvironment::runfilesPath("test/server/config_validation/test_data/");
   }
 
   static const std::vector<std::string> getAllConfigFiles() {

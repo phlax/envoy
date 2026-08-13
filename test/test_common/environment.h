@@ -123,16 +123,21 @@ public:
   /**
    * Obtain read-only test input data directory.
    * @param workspace the name of the Bazel workspace where the input data is.
+   *        Empty string (default) resolves to TEST_WORKSPACE, which is authoritative
+   *        for the main repository ("envoy" in WORKSPACE mode, "_main" in bzlmod).
    * @return const std::string& with the path to the read-only test input directory.
    */
-  static std::string runfilesDirectory(const std::string& workspace = "envoy");
+  static std::string runfilesDirectory(const std::string& workspace = "");
 
   /**
    * Prefix a given path with the read-only test input data directory.
    * @param path path suffix.
+   * @param workspace the name of the Bazel workspace. Empty string (default) resolves to
+   *        TEST_WORKSPACE for the main repository. Pass an explicit workspace name to
+   *        resolve files from an external dependency (e.g. "aws-c-auth-testdata").
    * @return std::string path qualified with read-only test input data directory.
    */
-  static std::string runfilesPath(const std::string& path, const std::string& workspace = "envoy");
+  static std::string runfilesPath(const std::string& path, const std::string& workspace = "");
 
   /**
    * Obtain Unix Domain Socket temporary directory.

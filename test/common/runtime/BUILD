@@ -34,7 +34,6 @@ envoy_cc_test(
     srcs = ["runtime_impl_test.cc"],
     data = glob(["test_data/**"]) + [
         "filesystem_setup.sh",
-        "//test:srcdir.sh",
     ],
     rbe_pool = "6gig",
     deps = [

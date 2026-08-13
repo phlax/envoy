@@ -1124,6 +1124,7 @@ alias(
         ":bzlmod_mode": "@libevent",
         "//conditions:default": "//bazel/foreign_cc:_event_foreign_cc",
     }),
+    visibility = ["//visibility:public"],
 )
 
 alias(
@@ -1132,6 +1133,7 @@ alias(
         ":bzlmod_mode": "@luajit",
         "//conditions:default": "//bazel/foreign_cc:_luajit_foreign_cc",
     }),
+    visibility = ["//visibility:public"],
 )
 
 alias(
@@ -1140,4 +1142,18 @@ alias(
         ":bzlmod_mode": "@libmaxminddb",
         "//conditions:default": "//bazel/foreign_cc:maxmind",
     }),
+    visibility = ["//visibility:public"],
 )
+
+# TODO(phlax): Cleanup once bzlmod migration is complete.
+# Platform-gated wrapper for libmaxminddb; only links on Linux and macOS.
+cc_library(
+    name = "maxmind_linux_darwin",
+    deps = select({
+        "//bazel:linux": [":libmaxminddb"],
+        "//bazel:darwin_any": [":libmaxminddb"],
+        "//conditions:default": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+

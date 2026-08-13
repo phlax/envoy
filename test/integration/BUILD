@@ -508,7 +508,6 @@ envoy_sh_test(
     coverage = False,
     data = [
         "test_utility.sh",
-        "//test:srcdir.sh",
         "//test/config/integration:server_config_files",
         "//tools/socket_passing",
     ],
@@ -523,7 +522,6 @@ envoy_sh_test(
     cc_binary = [":hotrestart_small_main"],
     data = [
         "test_utility.sh",
-        "//test:srcdir.sh",
         "//test/config/integration:server_config_files",
     ],
     rbe_pool = "6gig",
@@ -2062,7 +2060,6 @@ envoy_cc_test(
     ],
     data = [
         "sds_dynamic_key_rotation_setup.sh",
-        "//test:srcdir.sh",
         "//test/config/integration/certs",
     ],
     rbe_pool = "6gig",
