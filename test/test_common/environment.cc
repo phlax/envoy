@@ -99,13 +99,13 @@ int argc_;
 char** argv_;
 
 // Returns the stat for path p, or nullopt if stat fails or p is empty.
-absl::optional<struct stat> pathStat(const std::string& p) {
+std::optional<struct stat> pathStat(const std::string& p) {
   if (p.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   struct stat info;
   if (::stat(p.c_str(), &info) != 0) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return info;
 }
