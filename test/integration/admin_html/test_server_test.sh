@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -u
+
 tmp="${TEST_TMPDIR}/test/integration/admin_html/tempfiles"
 
 # TODO(phlax): Cleanup once bzlmod migration is complete

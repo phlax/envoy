@@ -5,6 +5,8 @@
 # for Matt Klein.)
 # ulimit -c unlimited
 
+set -u
+
 # TODO(phlax): Cleanup once bzlmod migration is complete
 ENVOY_SRCDIR="${TEST_SRCDIR}/${TEST_WORKSPACE}"
 export ENVOY_SRCDIR

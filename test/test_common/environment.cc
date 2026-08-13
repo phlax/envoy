@@ -100,12 +100,13 @@ char** argv_;
 
 // Returns the workspace name to use for the main repository.
 // Under WORKSPACE mode TEST_WORKSPACE is "envoy"; under bzlmod it is "_main".
-// Falls back to "envoy" if TEST_WORKSPACE is not set.
+// TEST_WORKSPACE is set by "bazel test" but NOT by "bazel run"; callers that
+// run outside a test context (benchmarks etc.) must not go through this path.
 std::string mainWorkspaceName() {
-  if (const char* tw = ::getenv("TEST_WORKSPACE")) {
-    return tw;
-  }
-  return "envoy";
+  const char* tw = ::getenv("TEST_WORKSPACE");
+  RELEASE_ASSERT(tw != nullptr,
+                 "TEST_WORKSPACE is not set; non-test binaries must resolve runfiles explicitly");
+  return tw;
 }
 
 } // namespace
@@ -327,18 +328,13 @@ std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
 
   // For external dependencies (e.g. @envoy as a dependency in mobile builds),
   // TEST_WORKSPACE cannot be used since it names the root module, not the dep.
-  // Under bzlmod the canonical name carries a "+" or "~" separator.
-  // Bazel 7+ uses "+"; older bzlmod used "~".
+  // With BAZEL_CURRENT_REPOSITORY passed to Runfiles::Create, the repo mapping
+  // resolves apparent names (e.g. "envoy") to their canonical form directly,
+  // so the manual "+"/"-" suffix probing is no longer needed.
   // TODO(phlax): Cleanup once bzlmod migration is complete
   auto path = runfiles_->Rlocation(workspace);
-  for (const char* sep : {"+", "~"}) {
-    auto canonical = runfiles_->Rlocation(workspace + sep);
-    struct stat st;
-    if (::stat(canonical.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
-      path = canonical;
-      break;
-    }
-  }
+  RELEASE_ASSERT(!path.empty(),
+                 absl::StrCat("runfiles path not found for workspace: ", workspace));
 #ifdef WIN32
   path = absl::StrReplaceAll(path, {{"\\", "/"}});
 #endif

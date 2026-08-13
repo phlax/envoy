@@ -75,10 +75,13 @@ static void testThroughput(benchmark::State& state) {
 
   bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
   bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
+  // Resolve cert and key paths directly via the runfiles object with repo mapping.
+  // "envoy" is the apparent module name; with BAZEL_CURRENT_REPOSITORY the repo mapping
+  // resolves it correctly under both WORKSPACE and bzlmod without needing TEST_WORKSPACE.
   std::string cert_path =
-      TestEnvironment::substitute("{{ test_rundir }}/test/common/tls/test_data/san_dns_cert.pem");
+      runfiles->Rlocation("envoy/test/common/tls/test_data/san_dns_cert.pem");
   std::string key_path =
-      TestEnvironment::substitute("{{ test_rundir }}/test/common/tls/test_data/san_dns_key.pem");
+      runfiles->Rlocation("envoy/test/common/tls/test_data/san_dns_key.pem");
   auto err = SSL_CTX_use_certificate_file(server_ctx.get(), cert_path.c_str(), SSL_FILETYPE_PEM);
   drainErrorQueue();
   RELEASE_ASSERT(err > 0, "SSL_CTX_use_certificate_file");
