@@ -97,16 +97,21 @@ std::string getTemporaryDirectory() {
 // Allow initializeOptions() to remember CLI args for getOptions().
 int argc_;
 char** argv_;
+std::string main_workspace_;
 
 // Returns the workspace name to use for the main repository.
 // Under WORKSPACE mode TEST_WORKSPACE is "envoy"; under bzlmod it is "_main".
-// TEST_WORKSPACE is set by "bazel test" but NOT by "bazel run"; callers that
-// run outside a test context (benchmarks etc.) must not go through this path.
 std::string mainWorkspaceName() {
-  const char* tw = ::getenv("TEST_WORKSPACE");
-  RELEASE_ASSERT(tw != nullptr,
-                 "TEST_WORKSPACE is not set; non-test binaries must resolve runfiles explicitly");
-  return tw;
+  if (const char* tw = ::getenv("TEST_WORKSPACE")) {
+    return tw;
+  }
+  if (!main_workspace_.empty()) {
+    return main_workspace_;
+  }
+  RELEASE_ASSERT(false,
+                 "Unable to resolve main workspace: TEST_WORKSPACE is unset and no fallback was "
+                 "provided. Non-test binaries must call TestEnvironment::setMainWorkspace("
+                 "BAZEL_CURRENT_REPOSITORY) after setRunfiles().");
 }
 
 } // namespace
@@ -330,11 +335,10 @@ std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
   // TEST_WORKSPACE cannot be used since it names the root module, not the dep.
   // With BAZEL_CURRENT_REPOSITORY passed to Runfiles::Create, the repo mapping
   // resolves apparent names (e.g. "envoy") to their canonical form directly,
-  // so the manual "+"/"-" suffix probing is no longer needed.
+  // so the manual "+"/"~" suffix probing is no longer needed.
   // TODO(phlax): Cleanup once bzlmod migration is complete
   auto path = runfiles_->Rlocation(workspace);
-  RELEASE_ASSERT(!path.empty(),
-                 absl::StrCat("runfiles path not found for workspace: ", workspace));
+  RELEASE_ASSERT(!path.empty(), absl::StrCat("runfiles path not found for workspace: ", workspace));
 #ifdef WIN32
   path = absl::StrReplaceAll(path, {{"\\", "/"}});
 #endif
@@ -527,6 +531,10 @@ void TestEnvironment::unsetEnvVar(const std::string& name) {
 }
 
 void TestEnvironment::setRunfiles(Runfiles* runfiles) { runfiles_ = runfiles; }
+
+void TestEnvironment::setMainWorkspace(absl::string_view workspace) {
+  main_workspace_ = std::string(workspace);
+}
 
 Runfiles* TestEnvironment::runfiles_{};
 

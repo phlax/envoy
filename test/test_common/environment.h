@@ -270,6 +270,12 @@ public:
    */
   static void setRunfiles(bazel::tools::cpp::runfiles::Runfiles* runfiles);
 
+  /**
+   * Set the workspace/repository name used for main-repo runfile lookups when TEST_WORKSPACE is
+   * unavailable (e.g. under bazel run).
+   */
+  static void setMainWorkspace(absl::string_view workspace);
+
 private:
   static bazel::tools::cpp::runfiles::Runfiles* runfiles_;
 };

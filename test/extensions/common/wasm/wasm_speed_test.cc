@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
                      runfiles != nullptr,
                  error);
   Envoy::TestEnvironment::setRunfiles(runfiles.get());
+  Envoy::TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
   Envoy::TestEnvironment::setEnvVar("ENVOY_IP_TEST_VERSIONS", "all", 0);
   Envoy::Event::Libevent::Global::initialize();
   if (::benchmark::ReportUnrecognizedArguments(argc, argv)) {

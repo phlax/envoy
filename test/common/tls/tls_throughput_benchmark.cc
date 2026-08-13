@@ -67,8 +67,10 @@ static void addFullSlices(Buffer::Instance& output_buffer, unsigned num_slices, 
 static void testThroughput(benchmark::State& state) {
   std::string error;
   std::unique_ptr<bazel::tools::cpp::runfiles::Runfiles> runfiles(
-      bazel::tools::cpp::runfiles::Runfiles::Create("tls_throughput_benchmark", BAZEL_CURRENT_REPOSITORY, &error));
+      bazel::tools::cpp::runfiles::Runfiles::Create("tls_throughput_benchmark",
+                                                    BAZEL_CURRENT_REPOSITORY, &error));
   Envoy::TestEnvironment::setRunfiles(runfiles.get());
+  Envoy::TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
 
   int sockets[2];
   socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets);
