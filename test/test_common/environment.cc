@@ -350,12 +350,15 @@ std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
 
 std::string TestEnvironment::runfilesPath(const std::string& path, const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
-  // TODO(phlax): Cleanup once bzlmod migration is complete
-  // In bzlmod mode the envoy workspace is named "_main"; try that first.
+  // TODO(phlax): Cleanup once bzlmod migration is complete.
+  // Prefer resolving via TEST_WORKSPACE so that both WORKSPACE mode ("envoy") and bzlmod
+  // ("_main") are handled automatically, matching what runfilesDirectory() does.
   if (workspace == "envoy") {
-    auto result = runfiles_->Rlocation(absl::StrCat("_main/", path));
-    if (pathStat(result).has_value()) {
-      return result;
+    if (const char* test_workspace = ::getenv("TEST_WORKSPACE")) {
+      auto result = runfiles_->Rlocation(absl::StrCat(test_workspace, "/", path));
+      if (pathStat(result).has_value()) {
+        return result;
+      }
     }
   }
   return runfiles_->Rlocation(absl::StrCat(workspace, "/", path));

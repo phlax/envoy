@@ -6,7 +6,7 @@ TEST_DATA=test/common/runtime/test_data
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
 # shellcheck source=test/srcdir.sh
-source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
+source "${TEST_SRCDIR}/${TEST_WORKSPACE}/test/srcdir.sh"
 cd "${ENVOY_SRCDIR}"
 rm -rf "${TEST_TMPDIR:?}/${TEST_DATA}"
 mkdir -p "${TEST_TMPDIR}/${TEST_DATA}"

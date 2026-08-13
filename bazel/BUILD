@@ -1113,3 +1113,31 @@ config_setting(
         ":libstdc++": "True",
     },
 )
+
+# TODO(phlax): Cleanup once bzlmod migration is complete.
+# Compatibility aliases: select between the foreign_cc build and the module-provided library.
+# Once bzlmod is the only supported mode these become plain aliases to the module (or can
+# be removed entirely along with //bazel/foreign_cc).
+alias(
+    name = "libevent",
+    actual = select({
+        ":bzlmod_mode": "@libevent",
+        "//conditions:default": "//bazel/foreign_cc:_event_foreign_cc",
+    }),
+)
+
+alias(
+    name = "luajit",
+    actual = select({
+        ":bzlmod_mode": "@luajit",
+        "//conditions:default": "//bazel/foreign_cc:_luajit_foreign_cc",
+    }),
+)
+
+alias(
+    name = "libmaxminddb",
+    actual = select({
+        ":bzlmod_mode": "@libmaxminddb",
+        "//conditions:default": "//bazel/foreign_cc:maxmind",
+    }),
+)

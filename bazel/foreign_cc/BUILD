@@ -196,16 +196,6 @@ configure_make(
     targets = [],
 )
 
-# TODO(phlax): Cleanup once bzlmod migration is complete
-# In bzlmod mode use the module-provided @luajit; otherwise build via foreign_cc.
-alias(
-    name = "luajit",
-    actual = select({
-        "//bazel:bzlmod_mode": "@luajit",
-        "//conditions:default": ":_luajit_foreign_cc",
-    }),
-)
-
 configure_make(
     name = "colm",
     autogen = True,
@@ -398,16 +388,6 @@ envoy_cmake(
     }),
 )
 
-# TODO(phlax): Cleanup once bzlmod migration is complete
-# In bzlmod mode use the module-provided @libevent; otherwise build via foreign_cc.
-alias(
-    name = "event",
-    actual = select({
-        "//bazel:bzlmod_mode": "@libevent",
-        "//conditions:default": ":_event_foreign_cc",
-    }),
-)
-
 envoy_cmake(
     name = "nghttp2",
     build_args = select({
@@ -535,8 +515,8 @@ envoy_cc_library(
     name = "maxmind_linux_darwin",
     srcs = [],
     deps = select({
-        "//bazel:linux": [":maxmind"],
-        "//bazel:darwin_any": [":maxmind"],
+        "//bazel:linux": ["//bazel:libmaxminddb"],
+        "//bazel:darwin_any": ["//bazel:libmaxminddb"],
         "//conditions:default": [],
     }),
 )

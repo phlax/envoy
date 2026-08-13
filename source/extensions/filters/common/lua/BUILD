@@ -19,9 +19,9 @@ envoy_cc_library(
         "//source/common/common:lock_guard_lib",
         "//source/common/common:thread_lib",
         "//source/common/protobuf",
+        "//bazel:luajit",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
-        "//bazel/foreign_cc:luajit",
     ],
 )
 
@@ -43,10 +43,10 @@ envoy_cc_library(
     hdrs = ["protobuf_converter.h"],
     deps = [
         ":lua_lib",
+        "//bazel:luajit",
         "//source/common/protobuf",
         "//source/common/protobuf:create_reflectable_message_lib",
         "//source/common/protobuf:utility_lib",
         "@abseil-cpp//absl/strings",
-        "//bazel/foreign_cc:luajit",
     ],
 )

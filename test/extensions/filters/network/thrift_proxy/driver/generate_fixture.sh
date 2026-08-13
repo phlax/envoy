@@ -62,7 +62,7 @@ mkdir -p "${FIXTURE_DIR}"
 # TODO(phlax): Cleanup once bzlmod migration is complete
 # Determine workspace directory (envoy in WORKSPACE mode, _main in bzlmod mode)
 # shellcheck source=test/srcdir.sh
-source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
+source "${TEST_SRCDIR}/${TEST_WORKSPACE}/test/srcdir.sh"
 DRIVER_DIR="${ENVOY_SRCDIR}/test/extensions/filters/network/thrift_proxy/driver"
 
 # On UNIX python supports AF_UNIX socket which are more reliable and efficient for communication

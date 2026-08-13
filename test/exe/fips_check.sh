@@ -9,7 +9,7 @@ OBJDUMP="${OBJDUMP//\$\{LLVM_DIRECTORY\}/$LLVM_DIRECTORY}"
 # TODO(phlax): Cleanup once bzlmod migration is complete
 # Determine workspace directory (envoy in WORKSPACE mode, _main in bzlmod mode)
 # shellcheck source=test/srcdir.sh
-source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
+source "${TEST_SRCDIR}/${TEST_WORKSPACE}/test/srcdir.sh"
 ENVOY_BIN="${ENVOY_SRCDIR}/test/exe/all_extensions_build_test"
 
 # FIPS requires a consistency self-test. In practice, the FIPS binary has
