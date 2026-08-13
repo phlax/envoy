@@ -4,14 +4,8 @@ set -e
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
 # Detect workspace directory (bzlmod vs WORKSPACE mode)
-if [[ -d "${TEST_SRCDIR}/_main" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/_main"
-elif [[ -d "${TEST_SRCDIR}/envoy" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/envoy"
-else
-    echo "ERROR: Could not find workspace directory in ${TEST_SRCDIR}"
-    exit 1
-fi
+# shellcheck source=test/srcdir.sh
+source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
 
 # Router_check_tool binary path
 PATH_BIN="${ENVOY_SRCDIR}"/test/tools/router_check/router_check_tool

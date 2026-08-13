@@ -11,6 +11,7 @@ filegroup(
     data = [
         ":client",
         ":server",
+        "//test:srcdir.sh",
     ],
 )
 

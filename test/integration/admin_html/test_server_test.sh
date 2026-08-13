@@ -3,16 +3,9 @@
 tmp="${TEST_TMPDIR}/test/integration/admin_html/tempfiles"
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
-# shellcheck source=test/integration/test_utility.sh
+# shellcheck source=test/srcdir.sh
 # Determine workspace directory first
-if [[ -d "${TEST_SRCDIR}/_main" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/_main"
-elif [[ -d "${TEST_SRCDIR}/envoy" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/envoy"
-else
-    echo "Error: Could not find workspace directory" >&2
-    exit 1
-fi
+source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
 
 export ENVOY_BIN="${ENVOY_SRCDIR}/test/integration/admin_html/test_server"
 source "${ENVOY_SRCDIR}/test/integration/test_utility.sh"

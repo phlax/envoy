@@ -1,4 +1,5 @@
 load("@com_google_protobuf//bazel/common:proto_info.bzl", "ProtoInfo")
+load(":utils.bzl", "normalize_workspace_name")
 
 def _file_descriptor_set_text(ctx):
     file_descriptor_sets = depset(
@@ -6,11 +7,6 @@ def _file_descriptor_set_text(ctx):
     )
     proto_repositories = ctx.attr.proto_repositories
     with_external_deps = ctx.attr.with_external_deps
-
-    def _normalize_workspace_name(ws_name):
-        if not ws_name:
-            return ""
-        return ws_name.split("+", 1)[0].split("~", 1)[0]
 
     def _descriptor_set(dep):
         ws_name = dep.owner.workspace_name
@@ -20,7 +16,7 @@ def _file_descriptor_set_text(ctx):
         # In WORKSPACE mode, the main workspace name is empty
         # In bzlmod mode, workspace names may have canonical suffixes such as
         # "envoy_api~" or "envoy_api+". Normalize to the base module name.
-        ws_name_normalized = _normalize_workspace_name(ws_name)
+        ws_name_normalized = normalize_workspace_name(ws_name)
         add_dep = (
             (not ws_name) or
             ws_name == "_main" or

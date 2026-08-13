@@ -36,6 +36,7 @@
 #include "absl/debugging/symbolize.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_replace.h"
 #include "gtest/gtest.h"
 #include "spdlog/spdlog.h"
 
@@ -96,6 +97,18 @@ std::string getTemporaryDirectory() {
 // Allow initializeOptions() to remember CLI args for getOptions().
 int argc_;
 char** argv_;
+
+// Returns the stat for path p, or nullopt if stat fails or p is empty.
+absl::optional<struct stat> pathStat(const std::string& p) {
+  if (p.empty()) {
+    return absl::nullopt;
+  }
+  struct stat info;
+  if (::stat(p.c_str(), &info) != 0) {
+    return absl::nullopt;
+  }
+  return info;
+}
 
 } // namespace
 
@@ -302,24 +315,35 @@ const std::string& TestEnvironment::temporaryDirectory() {
 
 std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
-  auto exists = [](const std::string& p) { return !p.empty() && ::access(p.c_str(), F_OK) == 0; };
+  auto isDir = [](const std::string& p) {
+    auto s = pathStat(p);
+    return s.has_value() && S_ISDIR(s->st_mode);
+  };
   // Apparent name (pre-Bzlmod layout).
   auto path = runfiles_->Rlocation(workspace);
-  if (!exists(path)) {
+  if (!isDir(path)) {
     // Canonical name, e.g. when @envoy is a dependency (mobile).
-    auto canonical = runfiles_->Rlocation(workspace + "+");
-    if (exists(canonical)) {
-      path = canonical;
-    } else if (const char* test_workspace = ::getenv("TEST_WORKSPACE")) {
-      // Root module, where the tree is "_main" under Bzlmod.
-      auto root = runfiles_->Rlocation(test_workspace);
-      if (exists(root)) {
-        path = root;
+    // Bazel 7+ uses "+"; older bzlmod used "~".
+    // TODO(phlax): Cleanup once bzlmod migration is complete
+    for (const char* sep : {"+", "~"}) {
+      auto canonical = runfiles_->Rlocation(workspace + sep);
+      if (isDir(canonical)) {
+        path = canonical;
+        break;
+      }
+    }
+    if (!isDir(path)) {
+      // Root module: the tree is "_main" under Bzlmod.
+      if (const char* test_workspace = ::getenv("TEST_WORKSPACE")) {
+        auto root = runfiles_->Rlocation(test_workspace);
+        if (isDir(root)) {
+          path = root;
+        }
       }
     }
   }
 #ifdef WIN32
-  path = std::regex_replace(path, std::regex("\\\\"), "/");
+  path = absl::StrReplaceAll(path, {{"\\", "/"}});
 #endif
   return path;
 }
@@ -327,29 +351,13 @@ std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
 std::string TestEnvironment::runfilesPath(const std::string& path, const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
   // TODO(phlax): Cleanup once bzlmod migration is complete
-  // In bzlmod mode, the workspace name is _main instead of envoy
-  // Try _main first for bzlmod, then envoy for WORKSPACE mode
-  std::vector<std::string> workspaces_to_try;
+  // In bzlmod mode the envoy workspace is named "_main"; try that first.
   if (workspace == "envoy") {
-    // When looking for envoy workspace, try both _main (bzlmod) and envoy (WORKSPACE)
-    workspaces_to_try = {"_main", "envoy"};
-  } else {
-    // For other workspaces, just try the requested one
-    workspaces_to_try = {workspace};
-  }
-
-  for (const auto& ws : workspaces_to_try) {
-    std::string result = runfiles_->Rlocation(absl::StrCat(ws, "/", path));
-    if (!result.empty()) {
-      // Check if the file exists
-      struct stat info;
-      if (stat(result.c_str(), &info) == 0) {
-        return result;
-      }
+    auto result = runfiles_->Rlocation(absl::StrCat("_main/", path));
+    if (pathStat(result).has_value()) {
+      return result;
     }
   }
-
-  // Fallback: return the result for the requested workspace even if it doesn't exist
   return runfiles_->Rlocation(absl::StrCat(workspace, "/", path));
 }
 

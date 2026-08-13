@@ -10,14 +10,8 @@
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
 # Determine the workspace directory (envoy in WORKSPACE mode, _main in bzlmod mode)
-if [[ -d "${TEST_SRCDIR}/_main" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/_main"
-elif [[ -d "${TEST_SRCDIR}/envoy" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/envoy"
-else
-    echo "Error: Could not find workspace directory at ${TEST_SRCDIR}/_main or ${TEST_SRCDIR}/envoy" >&2
-    exit 1
-fi
+# shellcheck source=test/srcdir.sh
+source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
 
 CURRENT_TEST="NONE"
 function start_test() {

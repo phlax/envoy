@@ -127,8 +127,5 @@ envoy_cc_library(
             "//source/common/api:os_sys_calls_lib",
         ],
         "//conditions:default": [],
-    }) + select({
-        "//bazel:bzlmod_mode": ["@libevent"],
-        "//conditions:default": ["//bazel/foreign_cc:event"],
-    }),
+    }) + ["//bazel/foreign_cc:event"],
 )

@@ -7,14 +7,8 @@
 
 # TODO(phlax): Cleanup once bzlmod migration is complete
 # Determine workspace directory first (envoy in WORKSPACE mode, _main in bzlmod mode)
-if [[ -d "${TEST_SRCDIR}/_main" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/_main"
-elif [[ -d "${TEST_SRCDIR}/envoy" ]]; then
-    ENVOY_SRCDIR="${TEST_SRCDIR}/envoy"
-else
-    echo "Error: Could not find workspace directory at ${TEST_SRCDIR}/_main or ${TEST_SRCDIR}/envoy" >&2
-    exit 1
-fi
+# shellcheck source=test/srcdir.sh
+source "${TEST_SRCDIR}/_main/test/srcdir.sh" 2>/dev/null || source "${TEST_SRCDIR}/envoy/test/srcdir.sh"
 
 # For this test we use a slightly modified test binary, based on
 # source/exe/envoy-static. If this starts failing to run or build, ensure that
@@ -39,7 +33,7 @@ if [[ -z "${ENVOY_IP_TEST_VERSIONS}" ]] || [[ "${ENVOY_IP_TEST_VERSIONS}" == "al
   HOT_RESTART_JSON_V4="${TEST_TMPDIR}"/hot_restart_v4.yaml
   echo "building ${HOT_RESTART_JSON_V4} ..."
   sed -e "s#{{ upstream_. }}#0#g" "${ENVOY_SRCDIR}"/test/config/integration/server.yaml | \
-    sed -e "s#{{ test_rundir }}#$TEST_SRCDIR/envoy#" | \
+    sed -e "s#{{ test_rundir }}#${ENVOY_SRCDIR}#" | \
     sed -e "s#{{ test_tmpdir }}#$TEST_TMPDIR#" | \
     sed -e "s#{{ ip_loopback_address }}#127.0.0.1#" | \
     sed -e "s#{{ enable_reuse_port }}#false#" | \
@@ -53,7 +47,7 @@ if [[ -z "${ENVOY_IP_TEST_VERSIONS}" ]] || [[ "${ENVOY_IP_TEST_VERSIONS}" == "al
   || [[ "${ENVOY_IP_TEST_VERSIONS}" == "v6only" ]]; then
   HOT_RESTART_JSON_V6="${TEST_TMPDIR}"/hot_restart_v6.yaml
   sed -e "s#{{ upstream_. }}#0#g" "${ENVOY_SRCDIR}"/test/config/integration/server.yaml | \
-    sed -e "s#{{ test_rundir }}#$TEST_SRCDIR/envoy#" | \
+    sed -e "s#{{ test_rundir }}#${ENVOY_SRCDIR}#" | \
     sed -e "s#{{ test_tmpdir }}#$TEST_TMPDIR#" | \
     sed -e "s#{{ ip_loopback_address }}#::1#" | \
     sed -e "s#{{ enable_reuse_port }}#false#" | \
@@ -77,7 +71,7 @@ JSON_TEST_ARRAY+=("${HOT_RESTART_JSON_UDS}")
 HOT_RESTART_JSON_REUSE_PORT="${TEST_TMPDIR}"/hot_restart_v4.yaml
 echo "building ${HOT_RESTART_JSON_V4} ..."
 sed -e "s#{{ upstream_. }}#0#g" "${ENVOY_SRCDIR}"/test/config/integration/server.yaml | \
-  sed -e "s#{{ test_rundir }}#$TEST_SRCDIR/envoy#" | \
+  sed -e "s#{{ test_rundir }}#${ENVOY_SRCDIR}#" | \
   sed -e "s#{{ test_tmpdir }}#$TEST_TMPDIR#" | \
   sed -e "s#{{ ip_loopback_address }}#127.0.0.1#" | \
   sed -e "s#{{ enable_reuse_port }}#true#" | \
@@ -90,7 +84,7 @@ JSON_TEST_ARRAY+=("${HOT_RESTART_JSON_REUSE_PORT}")
 HOT_RESTART_JSON_REUSE_PORT_MULTI_ADDRESSES="${TEST_TMPDIR}"/hot_restart_v4_multiple_addresses.yaml
 echo "building ${HOT_RESTART_JSON_V4} ..."
 sed -e "s#{{ upstream_. }}#0#g" "${ENVOY_SRCDIR}"/test/config/integration/server_multiple_addresses.yaml | \
-  sed -e "s#{{ test_rundir }}#$TEST_SRCDIR/envoy#" | \
+  sed -e "s#{{ test_rundir }}#${ENVOY_SRCDIR}#" | \
   sed -e "s#{{ test_tmpdir }}#$TEST_TMPDIR#" | \
   sed -e "s#{{ ip_loopback_address }}#127.0.0.1#" | \
   sed -e "s#{{ enable_reuse_port }}#true#" | \
