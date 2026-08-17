@@ -22,7 +22,6 @@ int main(int argc, char** argv) {
                  error);
 
   Envoy::TestEnvironment::setRunfiles(runfiles.get());
-  Envoy::TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
 
   // Select whether to test only for IPv4, IPv6, or both. The default is to
   // test for both. Options are {"v4only", "v6only", "all"}. Set

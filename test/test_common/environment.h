@@ -123,10 +123,11 @@ public:
   /**
    * Obtain read-only test input data directory.
    * @param workspace the apparent repository name where the input data lives.
-   *        When empty (the default), the main repository name is resolved in this order:
+   *        When empty (the default), Envoy's repository name is resolved in this order:
    *        1. the value passed to setMainWorkspace(),
-   *        2. the TEST_WORKSPACE environment variable (set by Bazel; "_main" under bzlmod),
-   *        3. "envoy" as a last-resort fallback (e.g. bazel run without TEST_WORKSPACE).
+   *        2. BAZEL_CURRENT_REPOSITORY as expanded in environment.cc,
+   *        3. the TEST_WORKSPACE environment variable,
+   *        4. "envoy" as a last-resort fallback (e.g. bazel run without TEST_WORKSPACE).
    *        Pass an explicit non-empty value for external repos (e.g. "aws-c-auth-testdata").
    * @return const std::string& with the path to the read-only test input directory.
    */
@@ -272,8 +273,8 @@ public:
   static void setRunfiles(bazel::tools::cpp::runfiles::Runfiles* runfiles);
 
   /**
-   * Set the workspace/repository name used for main-repo runfile lookups when TEST_WORKSPACE is
-   * unavailable (e.g. under bazel run).
+   * Override the repository name used for Envoy runfile lookups when the default resolution is
+   * unsuitable.
    */
   static void setMainWorkspace(absl::string_view workspace);
 

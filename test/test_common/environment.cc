@@ -303,15 +303,20 @@ const std::string& TestEnvironment::temporaryDirectory() {
 }
 
 namespace {
-// Returns the canonical name for the main (root) repository. Resolution order:
+// Returns the canonical repository name for Envoy's own runfiles. Resolution order:
 // 1. main_workspace_ if set via TestEnvironment::setMainWorkspace()
-// 2. the TEST_WORKSPACE env var, which Bazel sets for tests and evaluates to
-//    "_main" under bzlmod when Envoy is the root module
-// 3. fall back to "envoy" for non-test contexts (e.g. bazel run)
+// 2. BAZEL_CURRENT_REPOSITORY as expanded while compiling environment.cc
+// 3. the TEST_WORKSPACE env var, which names the root module/repository
+// 4. fall back to "envoy" for non-test contexts (e.g. bazel run)
 std::string resolveMainWorkspace() {
   if (!main_workspace_.empty()) {
     return main_workspace_;
   }
+#ifdef BAZEL_CURRENT_REPOSITORY
+  if (BAZEL_CURRENT_REPOSITORY[0] != '\0') {
+    return BAZEL_CURRENT_REPOSITORY;
+  }
+#endif
   const auto env_val = TestEnvironment::getOptionalEnvVar("TEST_WORKSPACE");
   if (env_val.has_value() && !env_val->empty()) {
     return *env_val;

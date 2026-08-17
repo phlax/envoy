@@ -62,8 +62,8 @@ static void bmWasmSimpleCallSpeedTest(benchmark::State& state, std::string test,
   if (runtime == "null") {
     code = "WasmSpeedCpp";
   } else {
-    code = TestEnvironment::readFileToStringForTest(TestEnvironment::runfilesPath(
-        "test/extensions/bootstrap/wasm/test_data/speed_cpp.wasm", "envoy"));
+    code = TestEnvironment::readFileToStringForTest(
+        TestEnvironment::runfilesPath("test/extensions/bootstrap/wasm/test_data/speed_cpp.wasm"));
   }
   EXPECT_FALSE(code.empty());
   EXPECT_TRUE(wasm->load(code, false));
@@ -137,7 +137,6 @@ int main(int argc, char** argv) {
                      runfiles != nullptr,
                  error);
   Envoy::TestEnvironment::setRunfiles(runfiles.get());
-  Envoy::TestEnvironment::setMainWorkspace(BAZEL_CURRENT_REPOSITORY);
   Envoy::TestEnvironment::setEnvVar("ENVOY_IP_TEST_VERSIONS", "all", 0);
   Envoy::Event::Libevent::Global::initialize();
   if (::benchmark::ReportUnrecognizedArguments(argc, argv)) {
