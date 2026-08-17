@@ -54,6 +54,7 @@ envoy_cc_test_library(
         "//test/test_common:global_lib",
         "//test/test_common:logging_lib",
         "//test/test_common:printers_lib",
+        "@bazel_tools//tools/cpp/runfiles",
     ],
 )
 

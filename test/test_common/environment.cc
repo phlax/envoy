@@ -300,11 +300,7 @@ const std::string& TestEnvironment::temporaryDirectory() {
 
 std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
-  // When workspace is empty, resolve it from the TEST_WORKSPACE environment variable.
-  // TODO: remove the "envoy" fallback once the bzlmod migration is complete.
-  const char* ws_env = workspace.empty() ? ::getenv("TEST_WORKSPACE") : nullptr;
-  const std::string& ws = workspace.empty() ? (ws_env != nullptr ? ws_env : "envoy") : workspace;
-  auto path = runfiles_->Rlocation(ws);
+  auto path = runfiles_->Rlocation(workspace);
 #ifdef WIN32
   path = std::regex_replace(path, std::regex("\\\\"), "/");
 #endif
@@ -313,11 +309,7 @@ std::string TestEnvironment::runfilesDirectory(const std::string& workspace) {
 
 std::string TestEnvironment::runfilesPath(const std::string& path, const std::string& workspace) {
   RELEASE_ASSERT(runfiles_ != nullptr, "");
-  // When workspace is empty, resolve it from the TEST_WORKSPACE environment variable.
-  // TODO: remove the "envoy" fallback once the bzlmod migration is complete.
-  const char* ws_env = workspace.empty() ? ::getenv("TEST_WORKSPACE") : nullptr;
-  const std::string& ws = workspace.empty() ? (ws_env != nullptr ? ws_env : "envoy") : workspace;
-  return runfiles_->Rlocation(absl::StrCat(ws, "/", path));
+  return runfiles_->Rlocation(absl::StrCat(workspace, "/", path));
 }
 
 const std::string TestEnvironment::unixDomainSocketDirectory() {
