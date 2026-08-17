@@ -1106,7 +1106,13 @@ config_setting(
     },
 )
 
+# Any target that includes "tools/cpp/runfiles/runfiles.h" and constructs a
+# Runfiles object must depend on this, so that BAZEL_CURRENT_REPOSITORY is
+# defined and runfiles lookups resolve through Bazel repo mapping. This is
+# required for correctness under bzlmod and when Envoy is consumed as an
+# external dependency (e.g. Envoy Mobile).
 alias(
     name = "cpp_runfiles",
     actual = "@bazel_tools//tools/cpp/runfiles",
+    visibility = ["//visibility:public"],
 )
