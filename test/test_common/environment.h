@@ -122,13 +122,15 @@ public:
 
   /**
    * Obtain read-only test input data directory.
-   * @param workspace the apparent repository name where the input data lives. Defaults to "envoy".
-   *        Resolved via Bazel repo mapping (BAZEL_CURRENT_REPOSITORY), so it works correctly
-   *        under both WORKSPACE and bzlmod, and whether Envoy is the root module or an external
-   *        dependency (e.g. Envoy Mobile).
+   * @param workspace the apparent repository name where the input data lives.
+   *        When empty (the default), the main repository name is resolved in this order:
+   *        1. the value passed to setMainWorkspace(),
+   *        2. the TEST_WORKSPACE environment variable (set by Bazel; "_main" under bzlmod),
+   *        3. "envoy" as a last-resort fallback (e.g. bazel run without TEST_WORKSPACE).
+   *        Pass an explicit non-empty value for external repos (e.g. "aws-c-auth-testdata").
    * @return const std::string& with the path to the read-only test input directory.
    */
-  static std::string runfilesDirectory(const std::string& workspace = "envoy");
+  static std::string runfilesDirectory(const std::string& workspace = "");
 
   /**
    * Prefix a given path with the read-only test input data directory.
@@ -136,7 +138,7 @@ public:
    * @param workspace see runfilesDirectory.
    * @return std::string path qualified with read-only test input data directory.
    */
-  static std::string runfilesPath(const std::string& path, const std::string& workspace = "envoy");
+  static std::string runfilesPath(const std::string& path, const std::string& workspace = "");
 
   /**
    * Obtain Unix Domain Socket temporary directory.
