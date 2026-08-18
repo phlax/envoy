@@ -850,6 +850,8 @@ def _grpc():
 def _rules_proto_grpc():
     external_http_archive(
         name = "rules_proto_grpc",
+        patch_args = ["-p1"],
+        patches = ["@envoy//bazel:rules_proto_grpc.patch"],
         repo_mapping = {"@com_github_grpc_grpc": "@grpc"},
     )
 
