@@ -687,6 +687,12 @@ case $CI_TARGET in
         #       //tools/base:requirements_test
         ;;
 
+    deps.graph)
+        setup_clang_toolchain
+        echo "dependency graph structure..."
+        "${ENVOY_SRCDIR}/tools/dependency/validate_graph_structure.sh"
+        ;;
+
     dev)
         setup_clang_toolchain
         # This doesn't go into CI but is available for developer convenience.
