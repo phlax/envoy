@@ -61,7 +61,7 @@ envoy_cc_test(
         "//source/extensions/filters/network/http_connection_manager:config",
         "//source/extensions/filters/network/reverse_tunnel:config",
         "//test/integration:integration_lib",
-        "@com_github_grpc_grpc//:grpc++",
+        "@grpc//:grpc++",
         "@envoy_api//contrib/envoy/extensions/reverse_tunnel_reporters/v3alpha/clients/grpc_client:pkg_cc_grpc",
         "@envoy_api//contrib/envoy/extensions/reverse_tunnel_reporters/v3alpha/clients/grpc_client:pkg_cc_proto",
         "@envoy_api//contrib/envoy/extensions/reverse_tunnel_reporters/v3alpha/reporters:pkg_cc_proto",
