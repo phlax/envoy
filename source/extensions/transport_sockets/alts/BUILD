@@ -124,10 +124,10 @@ envoy_cc_library(
     hdrs = ["alts_proxy.h"],
     external_deps = ["grpc"],
     deps = [
-        ":handshaker_cc_grpc",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
+        "@grpc//src/proto/grpc/gcp:alts_handshaker_cc_grpc",
     ],
 )
 
@@ -138,9 +138,9 @@ envoy_cc_library(
     external_deps = ["grpc"],
     deps = [
         ":alts_proxy",
-        ":handshaker_cc_grpc",
         ":tsi_frame_protector",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
+        "@grpc//src/proto/grpc/gcp:alts_handshaker_cc_grpc",
     ],
 )
