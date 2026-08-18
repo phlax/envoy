@@ -21,21 +21,23 @@ Core deps are those reachable from the core root; extension-marginal deps are
 those reachable from the all-extensions root but *not* from the core root.
 This restores the original deps(ext) − deps(core) semantics from validate.py.
 
-Known gaps relative to validate.py:
+Checks still covered outside this test:
 
 (a) validate_build_graph_structure: the old assertion
     deps(//source/...) == deps(core) ∪ deps(//source/extensions/...)
-    is not expressible over the reachability JSON (the JSON only covers targets
-    reachable from the declared roots, not the full //source/... closure). It is
-    dropped.
+    is enforced by tools/dependency/validate_graph_structure.sh. It is not
+    expressible over the reachability JSON because the aspect only covers targets
+    reachable from declared concrete roots; it cannot root at //source/... or ask
+    whether anything exists outside those roots.
 
 (b) validate_test_only_deps (second direction): the old code also verified that
     deps reachable from //test/... but not //source/... were declared test_only,
     carrying an allowlist for raze__/cu__/remotejdk/_pip3 and an openssl
-    exclusion. This direction is not implemented here because //test/... is not
-    a declared root, so test targets do not appear in the reachability data. The
-    first direction (test_only deps must not be reachable via a production path)
-    is fully retained.
+    exclusion. That direction is enforced by
+    tools/dependency/validate_graph_structure.sh for the same reason: //test/...
+    is not a declared root, and aspect roots cannot be wildcards or query
+    expressions. The first direction (test_only deps must not be reachable via a
+    production path) is fully retained here.
 """
 
 import json
@@ -69,8 +71,6 @@ DATAPLANE_PACKAGE_PREFIXES = tuple(
 )
 
 CONTROLPLANE_PACKAGE_PREFIX = "//source/common/config"
-
-EXTENSION_CONSUMER_RE = re.compile(r"^//source/extensions/([^:]+):")
 
 # Internal/tooling deps to skip in all checks (mirrors validate.py's IGNORE_DEPS).
 IGNORE_DEPS = frozenset(
@@ -158,18 +158,6 @@ def _is_under_package(target, pkg):
     directly in *pkg* itself (``pkg + ":"``).
     """
     return target.startswith(pkg + "/") or target.startswith(pkg + ":")
-
-
-def _extension_package(target):
-    """Return ``//source/extensions/<pkg>`` or None.
-
-    Returns the package portion of the target label (e.g.
-    ``//source/extensions/filters/http/ext_proc``).  Callers that need
-    subtree attribution should use :func:`_extension_packages_for_consumer`
-    instead.
-    """
-    m = EXTENSION_CONSUMER_RE.match(target)
-    return ("//source/extensions/" + m.group(1)) if m else None
 
 
 # ---------------------------------------------------------------------------
