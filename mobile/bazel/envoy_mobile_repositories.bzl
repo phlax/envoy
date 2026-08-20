@@ -80,6 +80,7 @@ def kotlin_repos():
         sha256 = "3afe5195069bd379373528899c03a3072f568d33bd96fe037bd43b1f590535e7",
         strip_prefix = "rules_jvm_external-6.6",
         url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.6/rules_jvm_external-6.6.tar.gz",
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )
 
     http_archive(
@@ -88,6 +89,7 @@ def kotlin_repos():
         urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.9.6/rules_kotlin-v1.9.6.tar.gz"],
         patch_args = ["-p1"],
         patches = ["@envoy_mobile//bazel:rules_kotlin.patch"],
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )
 
     http_archive(
@@ -95,6 +97,7 @@ def kotlin_repos():
         sha256 = "91837e301379c105ff4565ca822f6a6b30531f0b2ab6e75bbaf74e64f7d6879c",
         strip_prefix = "bazel_rules_detekt-0.8.1.2",
         url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.8.1.2.tar.gz",
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )
 
     http_archive(
@@ -102,6 +105,7 @@ def kotlin_repos():
         sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
         strip_prefix = "rules_proto_grpc-4.1.1",
         urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.1.1.tar.gz"],
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )
 
     http_file(
@@ -124,10 +128,12 @@ def android_repos():
         urls = ["https://github.com/bazelbuild/rules_android/releases/download/v0.7.2/rules_android-v0.7.2.tar.gz"],
         sha256 = "0da7198c7c8bac7e11e08dca3c434617b8593075858716595672e9aeefbef2a7",
         strip_prefix = "rules_android-0.7.2",
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )
     http_archive(
         name = "rules_android_ndk",
         urls = ["https://github.com/bazelbuild/rules_android_ndk/archive/v0.1.2.tar.gz"],
         sha256 = "65aedff0cd728bee394f6fb8e65ba39c4c5efb11b29b766356922d4a74c623f5",
         strip_prefix = "rules_android_ndk-0.1.2",
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )

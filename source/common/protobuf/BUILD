@@ -1,5 +1,5 @@
-load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
-load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_cc_library",
@@ -18,11 +18,11 @@ envoy_package()
 proto_library(
     name = "wkt_protos",
     deps = [
-        "@com_google_protobuf//:any_proto",
-        "@com_google_protobuf//:descriptor_proto",
-        "@com_google_protobuf//:empty_proto",
-        "@com_google_protobuf//:struct_proto",
-        "@com_google_protobuf//:wrappers_proto",
+        "@protobuf//:any_proto",
+        "@protobuf//:descriptor_proto",
+        "@protobuf//:empty_proto",
+        "@protobuf//:struct_proto",
+        "@protobuf//:wrappers_proto",
     ],
 )
 
@@ -42,7 +42,7 @@ envoy_cc_library(
         "//source/common/common:hash_lib",
         "//source/common/common:logger_lib",
         "//source/common/common:macros",
-        "@com_google_protobuf//:protobuf",
+        "@protobuf//:protobuf",
     ],
 )
 
@@ -52,7 +52,7 @@ envoy_cc_library(
     deps = [
         ":cc_wkt_protos",
         "//envoy/common:base_includes",
-        "@com_google_protobuf//:protobuf",
+        "@protobuf//:protobuf",
         "@proto-converter//:all",
     ],
 )
@@ -86,8 +86,8 @@ envoy_cc_library(
         "//source/common/runtime:runtime_features_lib",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//third_party/utf8_range:utf8_validity",
+        "@protobuf//:protobuf",
+        "@protobuf//third_party/utf8_range:utf8_validity",
         "@envoy_api//envoy/annotations:pkg_cc_proto",
         "@envoy_api//envoy/type/v3:pkg_cc_proto",
         "@xds//udpa/annotations:pkg_cc_proto",
@@ -102,7 +102,7 @@ envoy_cc_library(
     ],
     deps = [
         "//envoy/common:optref_lib",
-        "@com_google_protobuf//:protobuf",
+        "@protobuf//:protobuf",
     ],
 )
 
@@ -113,7 +113,7 @@ envoy_cc_library(
     ],
     deps = [
         "utility_lib_header",
-        "@com_google_protobuf//:protobuf",
+        "@protobuf//:protobuf",
     ] + envoy_select_enable_lite_protos([
         "@envoy_api//bazel/cc_proto_descriptor_library:create_dynamic_message",
         "@envoy_api//bazel/cc_proto_descriptor_library:text_format_transcoder",
@@ -237,7 +237,7 @@ envoy_cc_library(
         "//source/common/common:utility_lib",
         "//source/common/protobuf:visitor_lib",
         "//source/common/runtime:runtime_features_lib",
-        "@com_google_protobuf//:protobuf",
+        "@protobuf//:protobuf",
         "@envoy_api//envoy/annotations:pkg_cc_proto",
         "@envoy_api//envoy/type/v3:pkg_cc_proto",
         "@xds//udpa/annotations:pkg_cc_proto",

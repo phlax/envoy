@@ -26,7 +26,7 @@ py_binary(
         requirement("packaging"),
         "//tools/type_whisperer",
         "//tools/type_whisperer:api_type_db_proto_py_proto",
-        "@com_google_protobuf//:protobuf_python",
+        "@protobuf//:protobuf_python",
         "@envoy_api//envoy/annotations:pkg_py_proto",
         "@googleapis//google/api:annotations_py_proto",
         "@xds//udpa/annotations:pkg_py_proto",

@@ -25,7 +25,7 @@ envoy_cc_test(
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
-        "@com_google_protobuf//:protobuf",
+        "@protobuf//:protobuf",
         "@ocp-diag-core//ocpdiag/core/testing:parse_text_proto",
         "@ocp-diag-core//ocpdiag/core/testing:status_matchers",
         "@proto-converter//:all",

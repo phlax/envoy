@@ -227,6 +227,7 @@ def envoy_dependency_imports(
         importpath = "github.com/envoyproxy/protoc-gen-validate",
         sum = "h1:TvGH1wof4H33rezVKWSpqKz5NXWg5VPuZ0uONDT6eb4=",
         version = "v1.3.0",
+        repo_mapping = {"@com_google_protobuf": "@protobuf"},
     )
 
     rules_proto_grpc_toolchains()
