@@ -592,7 +592,7 @@ filegroup(
         "boost/**/*.hpp",
         "boost/**/*.ipp",
     ]),
-    visibility = ["@envoy//contrib/hyperscan/matching/input_matchers/source:__pkg__"],
+    visibility = ["@envoy//bazel/foreign_cc:__pkg__"],
 )
 """,
     )
@@ -745,13 +745,16 @@ def _cpp2sky():
         repo_mapping = {
             "@com_google_absl": "@abseil-cpp",
             "@com_google_protobuf": "@protobuf",
+            "@skywalking_data_collect_protocol": "@skywalking-data-collect-protocol",
         },
     )
     external_http_archive(
-        name = "skywalking_data_collect_protocol",
+        name = "skywalking-data-collect-protocol",
+        location_name = "skywalking_data_collect_protocol",
         repo_mapping = {
             "@com_github_grpc_grpc": "@grpc",
             "@com_google_protobuf": "@protobuf",
+            "@skywalking_data_collect_protocol": "@skywalking-data-collect-protocol",
         },
     )
 
@@ -1092,7 +1095,8 @@ filegroup(
 )
     """
     external_http_archive(
-        name = "kafka_source",
+        name = "kafka",
+        location_name = "kafka_source",
         build_file_content = KAFKASOURCE_BUILD_CONTENT,
     )
 
