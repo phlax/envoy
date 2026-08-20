@@ -1,4 +1,3 @@
-load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_cc_extension",
@@ -119,18 +118,13 @@ envoy_cc_library(
     ],
 )
 
-cpp_grpc_library(
-    name = "handshaker_cc_grpc",
-    protos = ["@grpc//src/proto/grpc/gcp:alts_handshaker_proto"],
-)
-
 envoy_cc_library(
     name = "alts_proxy",
     srcs = ["alts_proxy.cc"],
     hdrs = ["alts_proxy.h"],
     external_deps = ["grpc"],
     deps = [
-        ":handshaker_cc_grpc",
+        "@grpc//src/proto/grpc/gcp:alts_handshaker_cc_grpc",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
@@ -144,8 +138,8 @@ envoy_cc_library(
     external_deps = ["grpc"],
     deps = [
         ":alts_proxy",
-        ":handshaker_cc_grpc",
         ":tsi_frame_protector",
+        "@grpc//src/proto/grpc/gcp:alts_handshaker_cc_grpc",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
     ],

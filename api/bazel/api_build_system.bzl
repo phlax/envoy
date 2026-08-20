@@ -103,6 +103,7 @@ def api_cc_py_proto_library(
             "@googleapis//google/rpc:status_cc_proto",
         ],
         deps = [relative_name],
+        protobuf = "@protobuf//:protobuf",
         re2 = "@re2",
         visibility = ["//visibility:public"],
     )

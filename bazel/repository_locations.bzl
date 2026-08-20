@@ -395,7 +395,7 @@ REPOSITORY_LOCATIONS_SPEC = dict(
     ),
     protobuf = dict(
         version = "35.1",
-        # WhXen upgrading the protobuf library, please re-run
+        # When upgrading the protobuf library, please re-run
         # test/common/json:gen_excluded_unicodes to recompute the ranges
         # excluded from differential fuzzing that are populated in
         # test/common/json/json_sanitizer_test_util.cc.
