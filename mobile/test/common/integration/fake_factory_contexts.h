@@ -12,8 +12,6 @@
 #include "source/common/tls/context_manager_impl.h"
 
 namespace Envoy {
-namespace Mobile {
-namespace Test {
 
 /**
  * Minimal fake implementation of ServerFactoryContext for use by the mobile test server's TLS
@@ -72,6 +70,9 @@ public:
   OverloadManager& nullOverloadManager() override { PANIC("not implemented"); }
   bool healthCheckFailed() const override { PANIC("not implemented"); }
   Ssl::ContextManager& sslContextManager() override { return context_manager_; }
+  // secretManager() returns a real SecretManagerImpl that supports static/inline TLS certificates
+  // only. Any SDS-based secret path will panic because initManager() and localInfo() are not
+  // implemented.
   Secret::SecretManager& secretManager() override { return *secret_manager_; }
 
 private:
@@ -90,7 +91,7 @@ private:
     const std::string& configPath() const override { return empty_string_; }
     const std::string& configYaml() const override { return empty_string_; }
     const envoy::config::bootstrap::v3::Bootstrap& configProto() const override {
-      return bootstrap_;
+      return options_bootstrap_;
     }
     bool allowUnknownStaticFields() const override { return false; }
     bool rejectUnknownDynamicFields() const override { return false; }
@@ -137,7 +138,7 @@ private:
     const std::vector<std::pair<std::string, spdlog::level::level_enum>> component_log_levels_;
     const std::vector<std::string> disabled_extensions_;
     const Stats::TagVector stats_tags_;
-    const envoy::config::bootstrap::v3::Bootstrap bootstrap_;
+    const envoy::config::bootstrap::v3::Bootstrap options_bootstrap_;
   };
 
   // Minimal lifecycle notifier: stores a reference but none of its methods are called in practice
@@ -156,6 +157,9 @@ private:
   NullLifecycleNotifier lifecycle_notifier_;
   std::unique_ptr<Secret::SecretManagerImpl> secret_manager_;
   std::unique_ptr<Singleton::ManagerImpl> singleton_manager_;
+  // Dispatcher exists only to satisfy the mainThreadDispatcher() interface requirement. It is never
+  // run. Callbacks posted to it (e.g. ContextManagerImpl's cross-thread context removal) are
+  // intentionally never executed in this test context.
   Event::DispatcherPtr dispatcher_;
   envoy::config::bootstrap::v3::Bootstrap bootstrap_;
   Extensions::TransportSockets::Tls::ContextManagerImpl context_manager_;
@@ -184,6 +188,4 @@ private:
   Stats::Scope& stats_scope_;
 };
 
-} // namespace Test
-} // namespace Mobile
 } // namespace Envoy

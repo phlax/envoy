@@ -306,7 +306,7 @@ void TestServer::setResponse(const absl::flat_hash_map<std::string, std::string>
 }
 
 Network::DownstreamTransportSocketFactoryPtr TestServer::createQuicUpstreamTlsContext(
-    Mobile::Test::FakeTransportSocketFactoryContext& factory_context) {
+    FakeTransportSocketFactoryContext& factory_context) {
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
   tls_context.mutable_common_tls_context()->add_alpn_protocols("h3");
   envoy::extensions::transport_sockets::tls::v3::TlsCertificate* certs =
@@ -327,7 +327,7 @@ Network::DownstreamTransportSocketFactoryPtr TestServer::createQuicUpstreamTlsCo
 }
 
 Network::DownstreamTransportSocketFactoryPtr TestServer::createUpstreamTlsContext(
-    Mobile::Test::FakeTransportSocketFactoryContext& factory_context, bool add_alpn) {
+    FakeTransportSocketFactoryContext& factory_context, bool add_alpn) {
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
   envoy::extensions::transport_sockets::tls::v3::TlsCertificate* certs =
       tls_context.mutable_common_tls_context()->add_tls_certificates();

@@ -72,8 +72,8 @@ private:
   Stats::IsolatedStoreImpl stats_store_;
   Event::GlobalTimeSystem time_system_;
   Api::ApiPtr api_;
-  Mobile::Test::FakeServerFactoryContext server_factory_context_;
-  Mobile::Test::FakeTransportSocketFactoryContext factory_context_;
+  FakeServerFactoryContext server_factory_context_;
+  FakeTransportSocketFactoryContext factory_context_;
   Network::Address::IpVersion version_;
   FakeUpstreamConfig upstream_config_;
   int port_;
@@ -88,10 +88,10 @@ private:
   IntegrationTestServerPtr test_server_;
 
   Network::DownstreamTransportSocketFactoryPtr
-  createQuicUpstreamTlsContext(Mobile::Test::FakeTransportSocketFactoryContext&);
+  createQuicUpstreamTlsContext(FakeTransportSocketFactoryContext&);
 
   Network::DownstreamTransportSocketFactoryPtr
-  createUpstreamTlsContext(Mobile::Test::FakeTransportSocketFactoryContext&, bool);
+  createUpstreamTlsContext(FakeTransportSocketFactoryContext&, bool);
 };
 
 } // namespace Envoy
