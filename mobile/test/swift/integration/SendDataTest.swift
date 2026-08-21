@@ -31,7 +31,7 @@ final class SendDataTests: XCTestCase {
         print(msg, terminator: "")
       }
       .addNativeFilter(
-        name: "test_logger",
+        name: "envoy.filters.http.assertion",
         typedConfigData: makeAssertionBodyMatchAnyProto(stringMatch: requestStringMatch)
       )
       .build()
