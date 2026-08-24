@@ -88,9 +88,7 @@ py_console_script_binary(
 # (all-extensions reachable) minus (core reachable).
 dependency_reachability(
     name = "dep-reachability-core",
-    roots = [
-        "//source/exe:envoy_main_common_with_core_extensions_lib",
-    ],
+    roots = ["//source/exe:envoy_main_common_with_core_extensions_lib"],
 )
 
 # All-extensions root: traverses every extension so that validate_extension_deps
@@ -98,8 +96,17 @@ dependency_reachability(
 # data used by all checks.
 dependency_reachability(
     name = "dep-reachability",
-    roots = [
-        "//source/exe:main_common_with_all_extensions_lib",
+    roots = ["//source/exe:main_common_with_all_extensions_lib"],
+    excluded_patterns = [
+        "base_pip3_*",
+        "bazel_tools",
+        "cu__*",
+        "envoy_rust_crate_*",
+        "envoy_api",
+    ],
+    attribution_patterns = [
+        "//source/extensions/...",
+        "//contrib/...",
     ],
 )
 
