@@ -72,20 +72,6 @@ DATAPLANE_PACKAGE_PREFIXES = tuple(
 
 CONTROLPLANE_PACKAGE_PREFIX = "//source/common/config"
 
-# Internal/tooling deps to skip in all checks (mirrors validate.py's IGNORE_DEPS).
-IGNORE_DEPS = frozenset(
-    [
-        "envoy",
-        "envoy_api",
-        "envoy_repo",
-        "platforms",
-        "bazel_tools",
-        "local_config_cc",
-        "remote_coverage_tools",
-        "foreign_cc_platform_utils",
-    ]
-)
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -216,8 +202,6 @@ def validate_dep_names_resolved(deps, metadata, apparent_lookup, revmap):
     for dep_data in deps.values():
         observed = dep_data["name"]
         key = _resolve_dep_name(observed, apparent_lookup, revmap)
-        if key in IGNORE_DEPS:
-            continue
         if key not in metadata:
             unresolved.append(observed)
 
@@ -231,7 +215,7 @@ def validate_dep_names_resolved(deps, metadata, apparent_lookup, revmap):
             "  (a) add an apparent_name field to the appropriate entry so the canonical"
             " bzlmod name maps back to the metadata key, or\n"
             "  (b) add it to implied_untracked_deps under its parent dep entry, or\n"
-            "  (c) add it to IGNORE_DEPS in validate_reachability_test.py with a"
+            "  (c) add it to excluded_patterns in tools/dependency:dep-reachability with a"
             " documented rationale." % "\n  ".join(sorted(unresolved))
         )
 
@@ -263,8 +247,6 @@ def validate_data_plane_core_deps(deps, metadata, apparent_lookup, revmap):
     for dep_data in deps.values():
         observed_name = dep_data["name"]
         key = _resolve_dep_name(observed_name, apparent_lookup, revmap)
-        if key in IGNORE_DEPS:
-            continue
         for consumer in dep_data["consumers"]:
             if any(
                 _is_under_package(consumer["target"], pfx)
@@ -299,8 +281,6 @@ def validate_control_plane_deps(deps, metadata, apparent_lookup, revmap):
     for dep_data in deps.values():
         observed_name = dep_data["name"]
         key = _resolve_dep_name(observed_name, apparent_lookup, revmap)
-        if key in IGNORE_DEPS:
-            continue
         for consumer in dep_data["consumers"]:
             if _is_under_package(consumer["target"], CONTROLPLANE_PACKAGE_PREFIX):
                 observed[key] = observed_name
