@@ -351,6 +351,16 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
         if key in core_deps:
             continue
 
+        # Skip build-tooling deps (use_category contains 'build').  These are
+        # reached only through exec-config codegen binaries in other repos
+        # (e.g. rules_cc via @cel-cpp//bazel:cel_cc_embed); they are not
+        # extension dependencies in the sense that extensions: is meant to
+        # track.  The 'build' category cleanly separates them from genuine
+        # extension-reachable deps like v8, cel-spec, and hessian2-codec.
+        meta = metadata.get(key)
+        if meta and "build" in meta.get("use_category", []):
+            continue
+
         # Collect packages attributed to this dep (direct and transitive).
         attributed_pkgs: set = set()
 
@@ -405,7 +415,18 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
                         )
 
     # Reverse check: every extension listed in extensions: must be attributed.
-    for dep_key, meta in metadata.items():
+    # Only check deps that are actually present in the reachability JSON (i.e.
+    # reachable in the current build configuration).  Deps absent from the JSON
+    # are simply not analysed in this configuration (contrib extensions, wasm
+    # runtimes gated behind --define wasm=, etc.) — silence is correct for them.
+    reachable_keys = {
+        _resolve_dep_name(dep_data["name"], apparent_lookup, revmap)
+        for dep_data in deps.values()
+    }
+    for dep_key in reachable_keys:
+        meta = metadata.get(dep_key)
+        if not meta:
+            continue
         listed_exts = meta.get("extensions", [])
         if not listed_exts:
             continue
@@ -755,6 +776,118 @@ class ValidateExtensionDepsUnitTest(unittest.TestCase):
             }
         }
         # Should not raise — generic_proxy attribution is testonly-only.
+        self._run(deps, metadata)
+
+    # 7. Bug 1 regression: dep in metadata with extensions: but absent from
+    #    reachability JSON must NOT trigger a stale-entry error.
+    def test_reverse_check_skips_unanalysed_deps(self):
+        """A dep absent from the reachability JSON is silenced, not flagged as stale."""
+        # "wamr" is in metadata (contrib, wasm-gated) but not in deps (not
+        # reachable in this configuration).
+        deps = {
+            "hessian2_codec": {
+                "name": "hessian2_codec",
+                "consumers": [
+                    {
+                        "target": (
+                            "//source/extensions/filters/network/"
+                            "dubbo_proxy:hessian_utils_lib"
+                        )
+                    },
+                ],
+                "extensions": ["envoy.filters.network.dubbo_proxy"],
+            }
+        }
+        metadata = {
+            "hessian2_codec": {
+                "use_category": ["dataplane_ext"],
+                "extensions": ["envoy.filters.network.dubbo_proxy"],
+            },
+            # This dep is NOT in deps (not reachable in this config).
+            "wamr": {
+                "use_category": ["dataplane_ext"],
+                "extensions": ["envoy.wasm.runtime.wamr"],
+            },
+        }
+        # Must not raise — wamr is not in the reachability JSON and the
+        # envoy.wasm.runtime.wamr extension is not in ext_cfg, so no stale
+        # error should be reported.
+        ext_cfg = {
+            "envoy.filters.network.dubbo_proxy": (
+                "//source/extensions/filters/network/dubbo_proxy:config"
+            ),
+        }
+        self._run(deps, metadata, ext_cfg=ext_cfg)
+
+    # 8. Bug 1 regression: a dep present in the reachability JSON with an
+    #    unattributed listed extension must still be reported.
+    def test_reverse_check_flags_reachable_dep_with_stale_extension(self):
+        """A reachable dep with an unattributed listed extension is flagged."""
+        deps = {
+            "hessian2_codec": {
+                "name": "hessian2_codec",
+                "consumers": [
+                    {
+                        "target": (
+                            "//source/extensions/filters/network/"
+                            "dubbo_proxy:hessian_utils_lib"
+                        )
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "hessian2_codec": {
+                "use_category": ["dataplane_ext"],
+                "extensions": [
+                    "envoy.filters.network.dubbo_proxy",
+                    "envoy.filters.network.generic_proxy",  # stale
+                ],
+            },
+        }
+        with self.assertRaises(AssertionError) as ctx:
+            self._run(deps, metadata)
+        self.assertIn("envoy.filters.network.generic_proxy", str(ctx.exception))
+
+    # 9. Bug 2: a dep carrying 'build' in use_category is skipped by the
+    #    extension check even when it is reached by an extension consumer.
+    def test_build_category_dep_skipped_in_extension_check(self):
+        """A dep with use_category 'build' is not checked for extension attribution."""
+        deps = {
+            "rules_cc": {
+                "name": "rules_cc",
+                "consumers": [
+                    {
+                        # Reached only via external repo build tooling.
+                        "target": "@cel-cpp//bazel:cel_cc_embed",
+                        "repo": "cel-cpp",
+                    },
+                ],
+            },
+            "hessian2_codec": {
+                "name": "hessian2_codec",
+                "consumers": [
+                    {
+                        "target": (
+                            "//source/extensions/filters/network/"
+                            "dubbo_proxy:hessian_utils_lib"
+                        ),
+                        "repo": "",
+                    },
+                ],
+            },
+        }
+        metadata = {
+            "rules_cc": {
+                "use_category": ["build", "controlplane", "dataplane_core"],
+                # No extensions: key — build tooling should be skipped entirely.
+            },
+            "hessian2_codec": {
+                "use_category": ["dataplane_ext"],
+                "extensions": ["envoy.filters.network.dubbo_proxy"],
+            },
+        }
+        # rules_cc must not produce "not including dataplane_ext/..." error.
         self._run(deps, metadata)
 
 
