@@ -104,6 +104,10 @@ dependency_reachability(
         "envoy_rust_crate_*",
         "envoy_api",
     ],
+    attribution_patterns = [
+        "//source/extensions/...",
+        "//contrib/...",
+    ],
 )
 
 py_test(
