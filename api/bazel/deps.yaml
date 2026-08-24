@@ -81,6 +81,10 @@ opentelemetry_proto:
   release_date: "2026-07-21"
   use_category:
   - api
+  extensions:
+  - envoy.access_loggers.open_telemetry
+  - envoy.stat_sinks.open_telemetry
+  - envoy.tracers.opentelemetry
   license: "Apache-2.0"
   license_url: "https://github.com/open-telemetry/opentelemetry-proto/blob/v{version}/LICENSE"
 
@@ -143,5 +147,7 @@ zipkin_api:
   release_date: "2020-11-22"
   use_category:
   - api
+  extensions:
+  - envoy.tracers.zipkin
   license: "Apache-2.0"
   license_url: "https://github.com/openzipkin/zipkin-api/blob/{version}/LICENSE"

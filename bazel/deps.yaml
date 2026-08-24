@@ -503,8 +503,6 @@ hessian2_codec:
   - dataplane_ext
   extensions:
   - envoy.filters.network.dubbo_proxy
-  - envoy.filters.network.generic_proxy
-  - envoy.generic_proxy.codecs.dubbo
   license: "Apache-2.0"
   license_url: "https://github.com/alibaba/hessian2-codec/blob/{version}/LICENSE"
 
