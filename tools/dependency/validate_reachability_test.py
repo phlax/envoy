@@ -307,9 +307,9 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     ``extensions_build_config`` is a dict mapping extension-name -> target label.
 
     ``core_deps`` is the set of resolved metadata keys that are reachable from
-    the core (non-extension) root.  Extension-marginal deps are those reachable
-    from the all-extensions root but *not* in ``core_deps``; this restores the
-    original ``deps(ext) − deps(core)`` semantics from validate.py.
+    the core (non-extension) root.  It scopes only the forward
+    ``deps(ext) − deps(core)`` category assertion from validate.py; reverse
+    attribution is still computed for all reachable deps.
 
     A consumer target is attributed to extension package ``pkg`` when the
     consumer label falls within the ``pkg`` subtree — i.e. starts with
@@ -324,6 +324,11 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     production ``extensions:`` entry.  When the field is absent the validator
     falls back to direct attribution only, preserving backwards compatibility.
 
+    ``core_deps`` scopes only the forward category assertion: deps reachable
+    from the core root do not need an extension-specific ``use_category``.
+    Attribution itself is computed for all reachable deps so the reverse check
+    can still validate ``extensions:`` allowlists for core-reachable deps.
+
     Reverse check: every extension listed in a dep's ``extensions:`` allowlist
     must be attributed (directly or transitively) to that dep.  Stale entries
     are reported so they can be removed.
@@ -337,8 +342,11 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
             pkg = m.group(1)
             pkg_to_ext.setdefault(pkg, []).append(ext_name)
 
-    # For each extension package, collect the marginal deps it introduces.
-    # A dep is "core" (non-marginal) if its resolved key appears in core_deps.
+    # For each extension package, collect the deps attributed to it.
+    # Attribution is computed for all reachable deps, including core-reachable
+    # ones, so the reverse extensions: check can validate every listed
+    # extension. core_deps is applied later only to scope the forward
+    # use_category assertion.
     # Attribution combines two sources:
     #   1. Direct: a consumer target falls within the extension's package subtree.
     #   2. Transitive: an attributed_packages entry (production path) matches the
@@ -348,18 +356,6 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     ext_pkg_deps: dict = {}
     for dep_data in deps.values():
         key = _resolve_dep_name(dep_data["name"], apparent_lookup, revmap)
-        if key in core_deps:
-            continue
-
-        # Skip build-tooling deps (use_category contains 'build').  These are
-        # reached only through exec-config codegen binaries in other repos
-        # (e.g. rules_cc via @cel-cpp//bazel:cel_cc_embed); they are not
-        # extension dependencies in the sense that extensions: is meant to
-        # track.  The 'build' category cleanly separates them from genuine
-        # extension-reachable deps like v8, cel-spec, and hessian2-codec.
-        meta = metadata.get(key)
-        if meta and "build" in meta.get("use_category", []):
-            continue
 
         # Collect packages attributed to this dep (direct and transitive).
         attributed_pkgs: set = set()
@@ -391,10 +387,18 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     errors = []
     for pkg, ext_names in pkg_to_ext.items():
         for dep_key in ext_pkg_deps.get(pkg, set()):
+            # deps(ext) - deps(core): core-reachable deps do not need an
+            # extension use_category. This scopes the category assertion only;
+            # attribution above is computed for all deps so the reverse check
+            # can still validate their extensions: lists.
+            if dep_key in core_deps:
+                continue
             meta = metadata.get(dep_key)
             if not meta:
                 continue
             use_category = meta.get("use_category", [])
+            if "build" in use_category:
+                continue
             valid_category = any(
                 c in use_category
                 for c in ["dataplane_ext", "observability_ext", "other", "api"]
@@ -535,6 +539,17 @@ class ValidateExtensionDepsUnitTest(unittest.TestCase):
         ),
         "envoy.generic_proxy.codecs.dubbo": (
             "//source/extensions/filters/network/generic_proxy/codecs/dubbo:config"
+        ),
+    }
+    _BROTLI_EXT_CFG = {
+        "envoy.compression.brotli.compressor": (
+            "//source/extensions/compression/brotli/compressor:config"
+        ),
+        "envoy.compression.brotli.decompressor": (
+            "//source/extensions/compression/brotli/decompressor:config"
+        ),
+        "envoy.filters.network.generic_proxy": (
+            "//source/extensions/filters/network/generic_proxy:config"
         ),
     }
 
@@ -725,7 +740,7 @@ class ValidateExtensionDepsUnitTest(unittest.TestCase):
 
     # 5c. Core-reachable deps are skipped.
     def test_core_deps_skipped(self):
-        """Deps reachable from the core root are not checked as extension deps."""
+        """Core deps skip the category check without requiring extensions metadata."""
         deps = {
             "core_dep": {
                 "name": "core_dep",
@@ -745,8 +760,87 @@ class ValidateExtensionDepsUnitTest(unittest.TestCase):
                 "use_category": ["other"],
             }
         }
-        # core_dep is in core_deps → should be skipped entirely.
+        # core_dep is in core_deps → category checks are skipped.
         self._run(deps, metadata, core_deps={"core_dep"})
+
+    def test_core_reachable_dep_with_attributed_extensions_passes(self):
+        """A core-reachable dep still validates its attributed extensions allowlist."""
+        deps = {
+            "brotli": {
+                "name": "brotli",
+                "consumers": [
+                    {"target": "//source/common/tls:cert_compression_lib"},
+                    {
+                        "target": (
+                            "//source/extensions/compression/brotli/compressor:"
+                            "compressor_lib"
+                        )
+                    },
+                    {
+                        "target": (
+                            "//source/extensions/compression/brotli/decompressor:"
+                            "decompressor_lib"
+                        )
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "brotli": {
+                "use_category": ["dataplane_core"],
+                "extensions": [
+                    "envoy.compression.brotli.compressor",
+                    "envoy.compression.brotli.decompressor",
+                ],
+            }
+        }
+        self._run(
+            deps,
+            metadata,
+            ext_cfg=self._BROTLI_EXT_CFG,
+            core_deps={"brotli"},
+        )
+
+    def test_core_reachable_dep_with_stale_extension_still_fails(self):
+        """A core-reachable dep still flags stale entries in extensions:."""
+        deps = {
+            "brotli": {
+                "name": "brotli",
+                "consumers": [
+                    {"target": "//source/common/tls:cert_compression_lib"},
+                    {
+                        "target": (
+                            "//source/extensions/compression/brotli/compressor:"
+                            "compressor_lib"
+                        )
+                    },
+                    {
+                        "target": (
+                            "//source/extensions/compression/brotli/decompressor:"
+                            "decompressor_lib"
+                        )
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "brotli": {
+                "use_category": ["dataplane_core"],
+                "extensions": [
+                    "envoy.compression.brotli.compressor",
+                    "envoy.compression.brotli.decompressor",
+                    "envoy.filters.network.generic_proxy",
+                ],
+            }
+        }
+        with self.assertRaises(AssertionError) as ctx:
+            self._run(
+                deps,
+                metadata,
+                ext_cfg=self._BROTLI_EXT_CFG,
+                core_deps={"brotli"},
+            )
+        self.assertIn("envoy.filters.network.generic_proxy", str(ctx.exception))
 
     # 6. Testonly-only attributed_packages path does not trigger required entry.
     def test_testonly_attributed_packages_not_required(self):
