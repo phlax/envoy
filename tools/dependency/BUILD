@@ -2,16 +2,12 @@ load("@base_pip3//:requirements.bzl", "requirement")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@envoy_repo//:path.bzl", "PATH")
 load("@envoy_toolshed//:utils.bzl", "json_merge")
-load(
-    "@envoy_toolshed//dependency:reachability.bzl",
-    "dependency_reachability",
-    "dependency_reachability_macro",
-    "dependency_reachability_rule",
-)
+load("@envoy_toolshed//dependency:reachability.bzl", "dependency_reachability")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load(":reachability.bzl", "envoy_dependency_reachability")
 
 licenses(["notice"])  # Apache 2
 
@@ -88,21 +84,6 @@ py_console_script_binary(
     script = "dependatool",
 )
 
-# The wasm runtime is selected via `--define wasm=...` (see the wasm_v8 /
-# wasm_wamr / wasm_wasmtime config_settings in //bazel:BUILD), so the
-# reachability rule is constructed with `defines = True` rather than declaring
-# Starlark build settings in `flags`.
-#
-# `flags`/`defines` must be fixed at rule construction because transition
-# `outputs` are static and cannot vary per target instantiation.
-_envoy_dependency_reachability = dependency_reachability_rule(
-    defines = True,
-)
-
-envoy_dependency_reachability = dependency_reachability_macro(
-    _envoy_dependency_reachability,
-)
-
 # Core-only root: used to compute the "core" dep set (deps of non-extension
 # production code).  Extension-marginal deps are computed as
 # (all-extensions reachable) minus (core reachable).
@@ -128,6 +109,8 @@ dependency_reachability(
 # Data from all analyzed configs is merged by union, so the emitted JSON is
 # config-independent and `deps.yaml` metadata does not have to be written
 # against whichever config CI happens to run.
+#
+# See :reachability.bzl for why the rule is constructed there rather than here.
 envoy_dependency_reachability(
     name = "dep-reachability",
     configs = {
