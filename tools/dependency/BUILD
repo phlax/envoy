@@ -2,7 +2,12 @@ load("@base_pip3//:requirements.bzl", "requirement")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@envoy_repo//:path.bzl", "PATH")
 load("@envoy_toolshed//:utils.bzl", "json_merge")
-load("@envoy_toolshed//dependency:reachability.bzl", "dependency_reachability")
+load(
+    "@envoy_toolshed//dependency:reachability.bzl",
+    "dependency_reachability",
+    "dependency_reachability_macro",
+    "dependency_reachability_rule",
+)
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
@@ -83,9 +88,27 @@ py_console_script_binary(
     script = "dependatool",
 )
 
+# The wasm runtime is selected via `--define wasm=...` (see the wasm_v8 /
+# wasm_wamr / wasm_wasmtime config_settings in //bazel:BUILD), so the
+# reachability rule is constructed with `defines = True` rather than declaring
+# Starlark build settings in `flags`.
+#
+# `flags`/`defines` must be fixed at rule construction because transition
+# `outputs` are static and cannot vary per target instantiation.
+_envoy_dependency_reachability = dependency_reachability_rule(
+    defines = True,
+)
+
+envoy_dependency_reachability = dependency_reachability_macro(
+    _envoy_dependency_reachability,
+)
+
 # Core-only root: used to compute the "core" dep set (deps of non-extension
 # production code).  Extension-marginal deps are computed as
 # (all-extensions reachable) minus (core reachable).
+#
+# Single-config: the core dep set does not vary with the wasm runtime, so
+# there is nothing for a matrix to add here.
 dependency_reachability(
     name = "dep-reachability-core",
     roots = ["//source/exe:envoy_main_common_with_core_extensions_lib"],
@@ -94,8 +117,24 @@ dependency_reachability(
 # All-extensions root: traverses every extension so that validate_extension_deps
 # actually observes non-core extension deps.  This is the primary reachability
 # data used by all checks.
-dependency_reachability(
+#
+# The wasm runtimes are mutually exclusive within a single configuration: only
+# one of v8/wamr/wasmtime is built at a time.  Analyzing a single config would
+# therefore make it impossible for eg envoy.wasm.runtime.wamr and
+# envoy.wasm.runtime.wasmtime to both be attributed, and deps legitimately
+# listing both (proxy_wasm_cpp_host, proxy_wasm_cpp_sdk, rules_rust) would be
+# reported as carrying stale `extensions:` entries.
+#
+# Data from all analyzed configs is merged by union, so the emitted JSON is
+# config-independent and `deps.yaml` metadata does not have to be written
+# against whichever config CI happens to run.
+envoy_dependency_reachability(
     name = "dep-reachability",
+    configs = {
+        "v8": {"wasm": "v8"},
+        "wamr": {"wasm": "wamr"},
+        "wasmtime": {"wasm": "wasmtime"},
+    },
     roots = ["//source/exe:main_common_with_all_extensions_lib"],
     excluded_patterns = [
         "base_pip3_*",
