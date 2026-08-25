@@ -4,26 +4,30 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 def _wasm_rust_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": "@rules_rust//rust/platform:wasm",
+        "@envoy//bazel:wasm_runtime": settings["@envoy//bazel:wasm_runtime"],
     }
 
 def _wasi_rust_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": "@rules_rust//rust/platform:wasi",
+        "@envoy//bazel:wasm_runtime": settings["@envoy//bazel:wasm_runtime"],
     }
 
 wasm_rust_transition = transition(
     implementation = _wasm_rust_transition_impl,
-    inputs = [],
+    inputs = ["@envoy//bazel:wasm_runtime"],
     outputs = [
         "//command_line_option:platforms",
+        "@envoy//bazel:wasm_runtime",
     ],
 )
 
 wasi_rust_transition = transition(
     implementation = _wasi_rust_transition_impl,
-    inputs = [],
+    inputs = ["@envoy//bazel:wasm_runtime"],
     outputs = [
         "//command_line_option:platforms",
+        "@envoy//bazel:wasm_runtime",
     ],
 )
 
