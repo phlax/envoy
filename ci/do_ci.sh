@@ -629,14 +629,12 @@ case $CI_TARGET in
             echo "validating core configs..."
             bazel test "${BAZEL_BUILD_OPTIONS[@]}" \
                   @envoy//test/config_test \
-                  --@proxy-wasm-cpp-host//bazel:engine=disabled \
                   --@envoy//test/config_test:configs="$ENVOY_CONFIGS_CORE"
         fi
         if [[ -z "$ENVOY_SKIP_CONTRIB_CONFIGS" ]]; then
              echo "validating contrib configs..."
              bazel test "${BAZEL_BUILD_OPTIONS[@]}" \
                    @envoy//test/config_test \
-                   --@proxy-wasm-cpp-host//bazel:engine=disabled \
                    --@envoy//test/config_test:configs="$ENVOY_CONFIGS_CONTRIB" \
                    --@envoy//test/config_test:test_lib="$ENVOY_CONFIG_CONTRIB_LIB"
         fi

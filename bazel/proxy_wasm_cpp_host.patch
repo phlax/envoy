@@ -1,24 +1,15 @@
+diff --git a/BUILD b/BUILD
 --- a/BUILD
 +++ b/BUILD
-@@ -93,7 +93,7 @@
-         "@com_google_absl//absl/cleanup",
-     ] + select({
-         "//bazel:crypto_system": [],
--        "//conditions:default": ["@boringssl//:crypto"],
-+        "//conditions:default": ["@envoy//bazel:crypto"],
-     }),
-     alwayslink = 1,
- )
-@@ -158,7 +158,7 @@
+@@ -158,7 +158,6 @@ cc_library(
      }),
      deps = [
          ":wasm_vm_headers",
 -        "@com_github_bytecodealliance_wasm_micro_runtime//:wamr_lib",
-+        "@envoy//bazel/foreign_cc:wamr",
      ],
  )
  
-@@ -224,7 +224,7 @@
+@@ -224,7 +223,7 @@ cc_library(
      deps = [
          ":base_lib",
          ":wasm_vm_headers",
@@ -27,9 +18,11 @@
      ],
  )
  
+diff --git a/bazel/BUILD b/bazel/BUILD
 --- a/bazel/BUILD
 +++ b/bazel/BUILD
-@@ -14,42 +14,89 @@
+@@ -13,43 +13,90 @@
+ # limitations under the License.
  
  load("@bazel_skylib//lib:selects.bzl", "selects")
 +load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
@@ -74,15 +67,15 @@
      name = "engine_v8",
 -    values = {"define": "engine=v8"},
 +    flag_values = {"//bazel:engine": "v8"},
-+)
-+
-+# engine_wamr_interp matches both "wamr-interp" and the generic "wamr" alias.
-+config_setting(
-+    name = "_engine_wamr_interp_strict",
-+    flag_values = {"//bazel:engine": "wamr-interp"},
  )
  
++# engine_wamr_interp matches both "wamr-interp" and the generic "wamr" alias.
  config_setting(
++    name = "_engine_wamr_interp_strict",
++    flag_values = {"//bazel:engine": "wamr-interp"},
++)
++
++config_setting(
 +    name = "engine_wamr",
 +    flag_values = {"//bazel:engine": "wamr"},
 +)
