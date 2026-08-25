@@ -418,7 +418,7 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     # Only check deps that are actually present in the reachability JSON (i.e.
     # reachable in the current build configuration).  Deps absent from the JSON
     # are simply not analysed in this configuration (contrib extensions, wasm
-    # runtimes gated behind --define wasm=, etc.) — silence is correct for them.
+    # runtimes gated behind --//bazel:wasm_runtime=, etc.) — silence is correct for them.
     reachable_keys = {
         _resolve_dep_name(dep_data["name"], apparent_lookup, revmap)
         for dep_data in deps.values()

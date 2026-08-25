@@ -114,9 +114,9 @@ dependency_reachability(
 envoy_dependency_reachability(
     name = "dep-reachability",
     configs = {
-        "v8": {"wasm": "v8"},
-        "wamr": {"wasm": "wamr"},
-        "wasmtime": {"wasm": "wasmtime"},
+        "v8": {"//bazel:wasm_runtime": "v8"},
+        "wamr": {"//bazel:wasm_runtime": "wamr"},
+        "wasmtime": {"//bazel:wasm_runtime": "wasmtime"},
     },
     roots = ["//source/exe:main_common_with_all_extensions_lib"],
     excluded_patterns = [
