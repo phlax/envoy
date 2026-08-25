@@ -10,7 +10,7 @@ tasks:
     test_flags:
     - "--config=clang"
     - "--config=remote-ci"
-    - "--//bazel:wasm_runtime=disabled"
+    - "--@proxy-wasm-cpp-host//bazel:engine=disabled"
     - "--jobs=75"
   coverage:
     name: "Coverage"

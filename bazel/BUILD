@@ -1,5 +1,5 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@envoy_api//bazel:repository_locations.bzl", API_REPOSITORY_LOCATIONS_SPEC = "REPOSITORY_LOCATIONS_SPEC")
 load("@envoy_api//bazel:repository_locations_utils.bzl", "load_repository_locations_spec", "merge_dicts")
 load("@envoy_toolshed//:macros.bzl", "json_data")
@@ -600,35 +600,27 @@ label_flag(
     build_setting_default = "@zlib-ng",
 )
 
-string_flag(
-    name = "wasm_runtime",
-    build_setting_default = "v8",
-    values = [
-        "v8",
-        "wamr",
-        "wasmtime",
-        "disabled",
-    ],
-)
-
+# Wasm engine config settings. The single source of truth for engine selection
+# is @proxy-wasm-cpp-host//bazel:engine (a string_flag defined in that repo).
+# Use --@proxy-wasm-cpp-host//bazel:engine=<value> to select the engine.
 config_setting(
     name = "wasm_v8",
-    flag_values = {":wasm_runtime": "v8"},
+    flag_values = {"@proxy-wasm-cpp-host//bazel:engine": "v8"},
 )
 
 config_setting(
     name = "wasm_wamr",
-    flag_values = {":wasm_runtime": "wamr"},
+    flag_values = {"@proxy-wasm-cpp-host//bazel:engine": "wamr"},
 )
 
 config_setting(
     name = "wasm_wasmtime",
-    flag_values = {":wasm_runtime": "wasmtime"},
+    flag_values = {"@proxy-wasm-cpp-host//bazel:engine": "wasmtime"},
 )
 
 config_setting(
     name = "wasm_disabled",
-    flag_values = {":wasm_runtime": "disabled"},
+    flag_values = {"@proxy-wasm-cpp-host//bazel:engine": "disabled"},
 )
 
 # This config setting enables Universal Header Validator and disables
