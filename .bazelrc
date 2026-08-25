@@ -229,6 +229,9 @@ build:compile-time-options --copt=-Wno-error=deprecated-enum-enum-conversion
 build:compile-time-options --test_env=ENVOY_HAS_EXTRA_EXTENSIONS=true
 build:compile-time-options --@envoy//bazel:http3=False
 build:compile-time-options --@envoy//source/extensions/filters/http/kill_request:enabled
+# Redirect proxy-wasm-cpp-host's WAMR dep to Envoy's foreign_cc build, and crypto to Envoy's alias.
+build --@proxy-wasm-cpp-host//bazel:wamr=@envoy//bazel/foreign_cc:wamr
+build --@proxy-wasm-cpp-host//bazel:crypto=@envoy//bazel:crypto
 
 
 #############################################################################
