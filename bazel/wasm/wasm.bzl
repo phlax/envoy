@@ -5,29 +5,45 @@ def _wasm_rust_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": "@rules_rust//rust/platform:wasm",
         "@proxy-wasm-cpp-host//bazel:engine": settings["@proxy-wasm-cpp-host//bazel:engine"],
+        "@proxy-wasm-cpp-host//bazel:wamr": settings["@proxy-wasm-cpp-host//bazel:wamr"],
+        "@proxy-wasm-cpp-host//bazel:crypto": settings["@proxy-wasm-cpp-host//bazel:crypto"],
     }
 
 def _wasi_rust_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": "@rules_rust//rust/platform:wasi",
         "@proxy-wasm-cpp-host//bazel:engine": settings["@proxy-wasm-cpp-host//bazel:engine"],
+        "@proxy-wasm-cpp-host//bazel:wamr": settings["@proxy-wasm-cpp-host//bazel:wamr"],
+        "@proxy-wasm-cpp-host//bazel:crypto": settings["@proxy-wasm-cpp-host//bazel:crypto"],
     }
 
 wasm_rust_transition = transition(
     implementation = _wasm_rust_transition_impl,
-    inputs = ["@proxy-wasm-cpp-host//bazel:engine"],
+    inputs = [
+        "@proxy-wasm-cpp-host//bazel:engine",
+        "@proxy-wasm-cpp-host//bazel:wamr",
+        "@proxy-wasm-cpp-host//bazel:crypto",
+    ],
     outputs = [
         "//command_line_option:platforms",
         "@proxy-wasm-cpp-host//bazel:engine",
+        "@proxy-wasm-cpp-host//bazel:wamr",
+        "@proxy-wasm-cpp-host//bazel:crypto",
     ],
 )
 
 wasi_rust_transition = transition(
     implementation = _wasi_rust_transition_impl,
-    inputs = ["@proxy-wasm-cpp-host//bazel:engine"],
+    inputs = [
+        "@proxy-wasm-cpp-host//bazel:engine",
+        "@proxy-wasm-cpp-host//bazel:wamr",
+        "@proxy-wasm-cpp-host//bazel:crypto",
+    ],
     outputs = [
         "//command_line_option:platforms",
         "@proxy-wasm-cpp-host//bazel:engine",
+        "@proxy-wasm-cpp-host//bazel:wamr",
+        "@proxy-wasm-cpp-host//bazel:crypto",
     ],
 )
 
