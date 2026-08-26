@@ -5,9 +5,12 @@ evaluation), so the constructed rule cannot live in ``BUILD``.  This module
 exists solely to construct it once, here, and re-export the wrapping macro for
 use from ``tools/dependency/BUILD``.
 
-The wasm runtime is selected via ``--//bazel:wasm_runtime=...`` (see the
-``wasm_runtime`` string_flag and the ``wasm_v8`` / ``wasm_wamr`` /
-``wasm_wasmtime`` config_settings in ``//bazel:BUILD``).
+The wasm runtime is selected via the
+``@proxy-wasm-cpp-host//bazel:engine`` build setting, with ``v8``, ``wamr``,
+and ``wasmtime`` values passed by ``tools/dependency/BUILD``. The flag label is
+resolved via ``str(Label(...))`` so it is interpreted in the consuming
+repository rather than in ``@envoy_toolshed``, matching the toolshed guidance
+for transition flags defined outside the rule's repository.
 
 ``flags``/``defines`` must be fixed at rule construction because transition
 ``outputs`` are static and cannot vary per target instantiation.  A single

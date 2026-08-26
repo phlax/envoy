@@ -152,6 +152,7 @@ cel_cpp:
   - envoy.formatter.cel
   - envoy.matching.inputs.cel_data_input
   - envoy.matching.matchers.cel_matcher
+  - envoy.tracers.opentelemetry
   - envoy.tracers.opentelemetry.samplers.cel
   implied_untracked_deps:
   - antlr4_runtimes
@@ -184,6 +185,7 @@ cel_spec:
   - envoy.formatter.cel
   - envoy.matching.inputs.cel_data_input
   - envoy.matching.matchers.cel_matcher
+  - envoy.tracers.opentelemetry
   - envoy.tracers.opentelemetry.samplers.cel
   license: "Apache-2.0"
   license_url: "https://github.com/google/cel-spec/blob/v{version}/LICENSE"
@@ -389,6 +391,7 @@ flatbuffers:
   - envoy.matching.inputs.cel_data_input
   - envoy.matching.matchers.cel_matcher
   - envoy.filters.network.ext_proc
+  - envoy.tracers.opentelemetry
   - envoy.tracers.opentelemetry.samplers.cel
   cpe: "cpe:2.3:a:google:flatbuffers:*"
   license: "Apache-2.0"
@@ -500,6 +503,7 @@ hessian2_codec:
   - dataplane_ext
   extensions:
   - envoy.filters.network.dubbo_proxy
+  - envoy.filters.network.generic_proxy
   - envoy.generic_proxy.codecs.dubbo
   license: "Apache-2.0"
   license_url: "https://github.com/alibaba/hessian2-codec/blob/{version}/LICENSE"

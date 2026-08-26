@@ -146,6 +146,16 @@ def _is_under_package(target, pkg):
     return target.startswith(pkg + "/") or target.startswith(pkg + ":")
 
 
+def _is_under_package_path(package, pkg):
+    """True if *package* is *pkg* itself or a sub-package of it.
+
+    Unlike :func:`_is_under_package`, this helper operates on package labels
+    from ``attributed_packages[].package``, which never include a ``:target``
+    suffix.
+    """
+    return package == pkg or package.startswith(pkg + "/")
+
+
 # ---------------------------------------------------------------------------
 # Uniqueness check
 # ---------------------------------------------------------------------------
@@ -321,8 +331,12 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     when ``attribution_patterns`` is set on the aspect rule), transitive
     attribution is also considered.  Only production-path attributions
     (``production: true``) are used — testonly-only paths do not require a
-    production ``extensions:`` entry.  When the field is absent the validator
-    falls back to direct attribution only, preserving backwards compatibility.
+    production ``extensions:`` entry.  An emitted package attributes both the
+    matching extension package and any enclosing registered extension packages,
+    because the aspect reports the consumer node's package and that package may
+    be a sub-package of a registered extension.  When the field is absent the
+    validator falls back to direct attribution only, preserving backwards
+    compatibility.
 
     ``core_deps`` scopes only the forward category assertion: deps reachable
     from the core root do not need an extension-specific ``use_category``.
@@ -350,8 +364,8 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
     # Attribution combines two sources:
     #   1. Direct: a consumer target falls within the extension's package subtree.
     #   2. Transitive: an attributed_packages entry (production path) matches the
-    #      extension's package.  This covers deps reached through shared
-    #      intermediate packages that are not themselves registered extensions.
+    #      extension's package or a sub-package of it. This covers deps reached
+    #      through shared intermediate packages and nested extension packages.
     # The union of both gives the full attributed extension set.
     ext_pkg_deps: dict = {}
     for dep_data in deps.values():
@@ -369,9 +383,11 @@ def validate_extension_deps(deps, metadata, apparent_lookup, revmap, extensions_
 
         # Transitive attribution from attributed_packages[] (production paths only).
         for attr in dep_data.get("attributed_packages", []):
-            if attr.get("production", False):
-                pkg = attr["package"]
-                if pkg in pkg_to_ext:
+            if not attr.get("production", False):
+                continue
+            attr_pkg = attr["package"]
+            for pkg in pkg_to_ext:
+                if _is_under_package_path(attr_pkg, pkg):
                     attributed_pkgs.add(pkg)
 
         for pkg in attributed_pkgs:
@@ -552,6 +568,14 @@ class ValidateExtensionDepsUnitTest(unittest.TestCase):
             "//source/extensions/filters/network/generic_proxy:config"
         ),
     }
+    _OPENTELEMETRY_EXT_CFG = {
+        "envoy.tracers.opentelemetry": (
+            "//source/extensions/tracers/opentelemetry:config"
+        ),
+        "envoy.tracers.opentelemetry.samplers.cel": (
+            "//source/extensions/tracers/opentelemetry/samplers/cel:config"
+        ),
+    }
 
     def _run(self, deps, metadata, ext_cfg=None, core_deps=None):
         apparent_lookup = _build_apparent_name_lookup(metadata)
@@ -609,6 +633,123 @@ class ValidateExtensionDepsUnitTest(unittest.TestCase):
         }
         # Must not raise.
         self._run(deps, metadata)
+
+    def test_nested_transitive_attribution_attributes_enclosing_opentelemetry_extension(self):
+        """A nested attributed package satisfies both sampler and enclosing tracer entries."""
+        deps = {
+            "cel_cpp": {
+                "name": "cel_cpp",
+                "consumers": [
+                    {"target": "//source/extensions/common/expr:builder_lib"},
+                ],
+                "attributed_packages": [
+                    {
+                        "package": (
+                            "//source/extensions/tracers/opentelemetry/samplers/cel"
+                        ),
+                        "production": True,
+                        "roots": ["//source/exe:main_common_with_all_extensions_lib"],
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "cel_cpp": {
+                "use_category": ["dataplane_ext"],
+                "extensions": [
+                    "envoy.tracers.opentelemetry",
+                    "envoy.tracers.opentelemetry.samplers.cel",
+                ],
+            }
+        }
+        self._run(deps, metadata, ext_cfg=self._OPENTELEMETRY_EXT_CFG)
+
+    def test_nested_transitive_attribution_attributes_enclosing_generic_proxy_extension(self):
+        """A nested codec package satisfies both codec and enclosing generic-proxy entries."""
+        deps = {
+            "hessian2_codec": {
+                "name": "hessian2_codec",
+                "consumers": [
+                    {"target": "//source/extensions/common/dubbo:hessian2_utils_lib"},
+                ],
+                "attributed_packages": [
+                    {
+                        "package": (
+                            "//source/extensions/filters/network/"
+                            "generic_proxy/codecs/dubbo"
+                        ),
+                        "production": True,
+                        "roots": ["//source/exe:main_common_with_all_extensions_lib"],
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "hessian2_codec": {
+                "use_category": ["dataplane_ext"],
+                "extensions": [
+                    "envoy.filters.network.generic_proxy",
+                    "envoy.generic_proxy.codecs.dubbo",
+                ],
+            }
+        }
+        self._run(deps, metadata)
+
+    def test_nested_transitive_attribution_is_boundary_safe(self):
+        """A similarly-prefixed package must not satisfy the enclosing extension entry."""
+        deps = {
+            "cel_cpp": {
+                "name": "cel_cpp",
+                "consumers": [
+                    {"target": "//source/extensions/common/expr:builder_lib"},
+                ],
+                "attributed_packages": [
+                    {
+                        "package": "//source/extensions/tracers/opentelemetry_other",
+                        "production": True,
+                        "roots": ["//source/exe:main_common_with_all_extensions_lib"],
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "cel_cpp": {
+                "use_category": ["dataplane_ext"],
+                "extensions": ["envoy.tracers.opentelemetry"],
+            }
+        }
+        with self.assertRaises(AssertionError) as ctx:
+            self._run(deps, metadata, ext_cfg=self._OPENTELEMETRY_EXT_CFG)
+        self.assertIn("envoy.tracers.opentelemetry", str(ctx.exception))
+
+    def test_testonly_nested_transitive_attribution_does_not_satisfy_listed_extension(self):
+        """A testonly-only nested package must not satisfy a listed production extension."""
+        deps = {
+            "cel_cpp": {
+                "name": "cel_cpp",
+                "consumers": [
+                    {"target": "//source/extensions/common/expr:builder_lib"},
+                ],
+                "attributed_packages": [
+                    {
+                        "package": (
+                            "//source/extensions/tracers/opentelemetry/samplers/cel"
+                        ),
+                        "production": False,
+                        "roots": ["//source/exe:main_common_with_all_extensions_lib"],
+                    },
+                ],
+            }
+        }
+        metadata = {
+            "cel_cpp": {
+                "use_category": ["dataplane_ext"],
+                "extensions": ["envoy.tracers.opentelemetry"],
+            }
+        }
+        with self.assertRaises(AssertionError) as ctx:
+            self._run(deps, metadata, ext_cfg=self._OPENTELEMETRY_EXT_CFG)
+        self.assertIn("envoy.tracers.opentelemetry", str(ctx.exception))
 
     # 2. Extension listed in extensions: but not attributed → reverse check fails.
     def test_reverse_check_stale_extension_fails(self):
