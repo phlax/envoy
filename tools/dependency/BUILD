@@ -90,6 +90,10 @@ py_console_script_binary(
 #
 # Single-config: the core dep set does not vary with the wasm runtime, so
 # there is nothing for a matrix to add here.
+#
+# Intentionally no excluded_patterns here: core_deps is only used to skip the
+# forward extension-category assertion, so a larger core set is only more
+# lenient and cannot introduce false validation failures.
 dependency_reachability(
     name = "dep-reachability-core",
     roots = ["//source/exe:envoy_main_common_with_core_extensions_lib"],
@@ -115,18 +119,30 @@ envoy_dependency_reachability(
     name = "dep-reachability",
     attribution_patterns = [
         "//source/extensions/...",
-        "//contrib/...",
     ],
     configs = {
         "v8": {WASM_RUNTIME_FLAG: "v8"},
         "wamr": {WASM_RUNTIME_FLAG: "wamr"},
         "wasmtime": {WASM_RUNTIME_FLAG: "wasmtime"},
     },
+    # toolshed excluded_patterns prunes traversal. These exclusions are still
+    # safe here (equivalent in practice to the old IGNORE_DEPS filtering)
+    # because current Envoy reachability has no non-excluded deps reached only
+    # via these repos.
+    #
+    # Deliberately dropped from old IGNORE_DEPS because they are not emitted by
+    # this aspect output: envoy/envoy_repo (main repo labels have repo_name=""),
+    # local_config_cc/remote_coverage_tools/foreign_cc_platform_utils.
     excluded_patterns = [
+        # Python tooling repo used by checker binaries, not dependency metadata.
         "base_pip3_*",
+        # Bazel internals (configuration/tooling repository).
         "bazel_tools",
+        # crate_universe internal synthetic repositories.
         "cu__*",
+        # Rust crate_universe generated repositories.
         "envoy_rust_crate_*",
+        # API repo itself; its transitive deps are otherwise reached in Envoy.
         "envoy_api",
     ],
     roots = ["//source/exe:main_common_with_all_extensions_lib"],
