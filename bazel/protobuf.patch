@@ -8,10 +8,9 @@
      ],
  })
  
-
 --- a/src/google/protobuf/io/BUILD.bazel
 +++ b/src/google/protobuf/io/BUILD.bazel
-@@ -162,7 +162,7 @@
+@@ -162,6 +162,6 @@
          "@abseil-cpp//absl/log:absl_log",
      ] + select({
          "//build_defs:config_msvc": [],
@@ -19,18 +18,17 @@
 +        "//conditions:default": ["//:zlib"],
      }),
  )
-
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
-@@ -1,6 +1,7 @@
- # Bazel (https://bazel.build/) BUILD file for Protobuf.
-
+@@ -3,4 +3,5 @@
  load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 +load("@bazel_skylib//rules:common_settings.bzl", "label_flag")
  load("@rules_license//rules:license.bzl", "license")
  load("//bazel:cc_proto_library.bzl", "cc_proto_library")
  load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
-@@ -808,3 +809,12 @@
+@@ -806,5 +807,14 @@
+ filegroup(
+     name = "bzl_srcs",
      srcs = glob(["**/*.bzl"]),
      visibility = ["//visibility:public"],
  )
