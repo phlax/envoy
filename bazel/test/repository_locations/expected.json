@@ -1,0 +1,46 @@
+{
+  "baz_qux": {
+    "version": "3.0.0",
+    "module_url": "https://bcr.bazel.build/modules/baz-qux/3.0.0/",
+    "urls": [
+      "https://bcr.bazel.build/modules/baz-qux/3.0.0/"
+    ],
+    "module_name": "baz-qux",
+    "project_name": "BazQux"
+  },
+  "com_google_bar": {
+    "version": "2.0.0",
+    "module_url": "https://bcr.bazel.build/modules/bar/2.0.0/",
+    "urls": [
+      "https://bcr.bazel.build/modules/bar/2.0.0/"
+    ],
+    "module_name": "bar",
+    "project_name": "Bar"
+  },
+  "foo": {
+    "version": "1.0.0",
+    "module_url": "https://bcr.bazel.build/modules/foo/1.0.0/",
+    "urls": [
+      "https://bcr.bazel.build/modules/foo/1.0.0/"
+    ],
+    "module_name": "foo",
+    "project_name": "Foo Two",
+    "extra1": "keep-me"
+  },
+  "license_dep": {
+    "project_name": "LicenseDep",
+    "version": "1.2.3",
+    "license_url": "https://example.com/1.2.3/1-2-3/1_2_3/LICENSE"
+  },
+  "license_dep_no_version": {
+    "project_name": "LicenseDepNoVersion",
+    "license_url": "https://example.com/{version}/LICENSE"
+  },
+  "no_module_dep": {
+    "project_name": "NoModule",
+    "urls": [
+      "https://example.com/no_module_dep.tar.gz"
+    ],
+    "version": "9.9.9"
+  }
+}
