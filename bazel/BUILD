@@ -12,6 +12,7 @@ load("@rules_shell//shell:sh_library.bzl", "sh_library")
 load("//bazel:envoy_build_system.bzl", "envoy_package")
 load(":deprecated_features.bzl", "check_removed_fips_define", "check_removed_wasm_defines")
 load(":repository_locations.bzl", "REPOSITORY_LOCATIONS_SPEC")
+load(":repository_locations_filter.bzl", "BZLMOD_ALL_REPOSITORY_LOCATIONS_FILTER")
 
 licenses(["notice"])  # Apache 2
 
@@ -1015,45 +1016,7 @@ json_merge(
     srcs = [
         "@envoy_mod_graph//:deps.json",
     ],
-    filter = """
-    .
-    | .[0] as $modules
-    | .[1] as $metadata1
-    | .[2] as $metadata2
-    | ($metadata1 * $metadata2) as $metadata
-    | def module_source($dep):
-        if $modules[$dep] then
-          ($modules[$dep] + {module_name: $dep})
-        elif ($dep | startswith("com_google_")) and $modules[$dep | sub("^com_google_"; "")] then
-          (($dep | sub("^com_google_"; "")) as $module_name | $modules[$module_name] + {module_name: $module_name})
-        else
-          ($dep | gsub("_"; "-")) as $module_name
-          | if $modules[$module_name] then
-              ($modules[$module_name] + {module_name: $module_name})
-            else null end
-        end;
-      def dependency_source($dep):
-        module_source($dep);
-      $metadata
-      | keys
-      | reduce .[] as $k ({};
-          (dependency_source($k)) as $source
-          | if $source then
-              . + {($k): (
-                ($source + ($metadata[$k] // {}))
-                | .version as $ver
-                | if .license_url and $ver then
-                    .license_url |= (
-                      gsub("{version}"; $ver)
-                      | gsub("{dash_version}"; ($ver | gsub("[.]"; "-")))
-                      | gsub("{underscore_version}"; ($ver | gsub("[.]"; "_")))
-                    )
-                  else . end
-              )}
-            else .
-            end
-        )
-    """,
+    filter = BZLMOD_ALL_REPOSITORY_LOCATIONS_FILTER,
     visibility = ["//visibility:public"],
     yaml_srcs = [
         ":deps.yaml",
@@ -1061,15 +1024,31 @@ json_merge(
     ],
 )
 
+# Applies the same filter used by `bzlmod_all_repository_locations` to a
+# synthetic, fixed fixture, so `all_repository_locations_test` can exercise
+# the filter logic deterministically, independent of real dependency data
+# and without requiring the bzlmod-only `@envoy_mod_graph` repo.
+json_merge(
+    name = "all_repository_locations_test_fixture",
+    # buildifier: do not sort
+    srcs = [
+        # Order matters: the filter reads these positionally as
+        # `[modules, metadata1, metadata2]`.
+        "test/repository_locations/modules.json",
+        "test/repository_locations/metadata1.json",
+        "test/repository_locations/metadata2.json",
+    ],
+    filter = BZLMOD_ALL_REPOSITORY_LOCATIONS_FILTER,
+)
+
 py_test(
     name = "all_repository_locations_test",
     srcs = ["all_repository_locations_test.py"],
-    args = ["$(location :all_repository_locations)"],
-    data = [":all_repository_locations"],
-    target_compatible_with = select({
-        ":bzlmod_mode": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    })
+    args = ["$(location :all_repository_locations_test_fixture)"],
+    data = [
+        "test/repository_locations/expected.json",
+        ":all_repository_locations_test_fixture",
+    ],
 )
 
 # A dependency required by python protobuf

@@ -1,0 +1,23 @@
+{
+  "foo": {
+    "version": "1.0.0",
+    "module_url": "https://bcr.bazel.build/modules/foo/1.0.0/",
+    "urls": [
+      "https://bcr.bazel.build/modules/foo/1.0.0/"
+    ]
+  },
+  "bar": {
+    "version": "2.0.0",
+    "module_url": "https://bcr.bazel.build/modules/bar/2.0.0/",
+    "urls": [
+      "https://bcr.bazel.build/modules/bar/2.0.0/"
+    ]
+  },
+  "baz-qux": {
+    "version": "3.0.0",
+    "module_url": "https://bcr.bazel.build/modules/baz-qux/3.0.0/",
+    "urls": [
+      "https://bcr.bazel.build/modules/baz-qux/3.0.0/"
+    ]
+  }
+}
