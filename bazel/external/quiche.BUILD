@@ -13,10 +13,95 @@ load(
 )
 load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("@bazel_skylib//rules:common_settings.bzl", "label_flag")
 
 licenses(["notice"])  # Apache 2
 
 package(default_visibility = ["//visibility:public"])
+
+# The following label_flags allow the platform impl targets (and the zlib
+# dependency) used by this repository to be overridden from the command
+# line. Each defaults to the same target that is otherwise hardcoded below,
+# so behavior is unchanged unless the flag is explicitly overridden.
+label_flag(
+    name = "zlib",
+    build_setting_default = "@envoy//bazel:zlib",
+)
+
+label_flag(
+    name = "quic_base_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quic_base_impl_lib",
+)
+
+label_flag(
+    name = "quiche_export_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_export_impl_lib",
+)
+
+label_flag(
+    name = "quiche_flags_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_flags_impl_lib",
+)
+
+label_flag(
+    name = "quiche_logging_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_logging_impl_lib",
+)
+
+label_flag(
+    name = "quiche_lower_case_string_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_lower_case_string_impl_lib",
+)
+
+label_flag(
+    name = "quiche_mem_slice_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_mem_slice_impl_lib",
+)
+
+label_flag(
+    name = "quiche_platform_iovec_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_platform_iovec_impl_lib",
+)
+
+label_flag(
+    name = "quiche_stack_trace_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_stack_trace_impl_lib",
+)
+
+label_flag(
+    name = "quiche_time_utils_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_time_utils_impl_lib",
+)
+
+label_flag(
+    name = "mobile_quiche_bug_tracker_impl_lib",
+    build_setting_default = "@envoy//source/common/quic/platform:quiche_logging_impl_lib",
+)
+
+label_flag(
+    name = "quiche_expect_bug_impl_lib",
+    build_setting_default = "@envoy//test/common/quic/platform:quiche_expect_bug_impl_lib",
+)
+
+label_flag(
+    name = "quiche_test_impl_lib",
+    build_setting_default = "@envoy//test/common/quic/platform:quiche_test_impl_lib",
+)
+
+label_flag(
+    name = "quiche_test_helpers_impl_lib",
+    build_setting_default = "@envoy//test/common/quic/platform:quiche_test_helpers_impl_lib",
+)
+
+label_flag(
+    name = "quiche_test_output_impl_lib",
+    build_setting_default = "@envoy//test/common/quic/platform:quiche_test_output_impl_lib",
+)
+
+label_flag(
+    name = "quiche_thread_impl_lib",
+    build_setting_default = "@envoy//test/common/quic/platform:quiche_thread_impl_lib",
+)
 
 # QUICHE is Google's implementation of QUIC and related protocols. It is the
 # same code used in Chromium and Google's servers, but packaged in a form that

@@ -16,7 +16,30 @@
      ] + select({
          "//build_defs:config_msvc": [],
 -        "//conditions:default": ["@zlib"],
-+        "//conditions:default": ["@envoy//bazel:zlib"],
++        "//conditions:default": ["//:zlib"],
      }),
  )
- 
+
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -1,6 +1,7 @@
+ # Bazel (https://bazel.build/) BUILD file for Protobuf.
+
+ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
++load("@bazel_skylib//rules:common_settings.bzl", "label_flag")
+ load("@rules_license//rules:license.bzl", "license")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+@@ -808,3 +809,12 @@
+     srcs = glob(["**/*.bzl"]),
+     visibility = ["//visibility:public"],
+ )
++
++# The zlib dependency used by protobuf's io library. Defaults to the same
++# zlib envoy otherwise selects so behavior is unchanged when this flag is
++# not overridden on the command line.
++label_flag(
++    name = "zlib",
++    build_setting_default = "@envoy//bazel:zlib",
++    visibility = ["//visibility:public"],
++)

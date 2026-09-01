@@ -225,7 +225,13 @@ diff --git a/third_party/BUILD b/third_party/BUILD
 index ff2dcae..7cf8b3f 100644
 --- a/third_party/BUILD
 +++ b/third_party/BUILD
-@@ -32,25 +32,19 @@ config_setting(
+@@ -1,4 +1,4 @@
+-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
++load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "label_flag")
+ 
+ exports_files([
+     "gtest.BUILD",
+@@ -32,25 +32,31 @@ config_setting(
  
  alias(
      name = "libssl",
@@ -233,20 +239,32 @@ index ff2dcae..7cf8b3f 100644
 -        ":grpc_use_openssl_setting": "@openssl//:ssl",
 -        "//conditions:default": "@boringssl//:ssl",
 -    }),
-+    actual = "@envoy//bazel:ssl",
++    actual = ":ssl_lib",
      tags = ["manual"],
  )
  
++label_flag(
++    name = "ssl_lib",
++    build_setting_default = "@envoy//bazel:ssl",
++    visibility = ["//visibility:public"],
++)
++
  alias(
      name = "libcrypto",
 -    actual = select({
 -        ":grpc_use_openssl_setting": "@openssl//:crypto",
 -        "//conditions:default": "@boringssl//:crypto",
 -    }),
-+    actual = "@envoy//bazel:crypto",
++    actual = ":crypto_lib",
      tags = ["manual"],
  )
  
++label_flag(
++    name = "crypto_lib",
++    build_setting_default = "@envoy//bazel:crypto",
++    visibility = ["//visibility:public"],
++)
++
  alias(
      name = "madler_zlib",
 -    actual = "@zlib//:zlib",
@@ -254,7 +272,7 @@ index ff2dcae..7cf8b3f 100644
      tags = ["manual"],
  )
  
-@@ -81,7 +75,7 @@ alias(
+@@ -81,7 +87,7 @@ alias(
  
  alias(
      name = "cares",

@@ -6,7 +6,7 @@ diff --git a/BUILD b/BUILD
      ] + select({
          "//bazel:crypto_system": [],
 -        "//conditions:default": ["@boringssl//:crypto"],
-+        "//conditions:default": ["@envoy//bazel:crypto"],
++        "//conditions:default": ["//bazel:crypto_lib"],
      }),
      alwayslink = 1,
  )
@@ -31,11 +31,11 @@ diff --git a/BUILD b/BUILD
 diff --git a/bazel/BUILD b/bazel/BUILD
 --- a/bazel/BUILD
 +++ b/bazel/BUILD
-@@ -13,43 +13,90 @@
+@@ -13,43 +13,98 @@
  # limitations under the License.
  
  load("@bazel_skylib//lib:selects.bzl", "selects")
-+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
++load("@bazel_skylib//rules:common_settings.bzl", "label_flag", "string_flag")
  load(":v8_transition.bzl", "v8_lib_no_pointer_compression")
  
  package(default_visibility = ["//visibility:public"])
@@ -77,15 +77,15 @@ diff --git a/bazel/BUILD b/bazel/BUILD
      name = "engine_v8",
 -    values = {"define": "engine=v8"},
 +    flag_values = {"//bazel:engine": "v8"},
- )
- 
-+# engine_wamr_interp matches both "wamr-interp" and the generic "wamr" alias.
- config_setting(
-+    name = "_engine_wamr_interp_strict",
-+    flag_values = {"//bazel:engine": "wamr-interp"},
 +)
 +
++# engine_wamr_interp matches both "wamr-interp" and the generic "wamr" alias.
 +config_setting(
++    name = "_engine_wamr_interp_strict",
++    flag_values = {"//bazel:engine": "wamr-interp"},
+ )
+ 
+ config_setting(
 +    name = "engine_wamr",
 +    flag_values = {"//bazel:engine": "wamr"},
 +)
@@ -126,6 +126,14 @@ diff --git a/bazel/BUILD b/bazel/BUILD
 +config_setting(
 +    name = "engine_disabled",
 +    flag_values = {"//bazel:engine": "disabled"},
++)
++
++# The crypto library used when a system crypto library is not requested (see
++# ":crypto_system" above). Defaults to the same target envoy otherwise
++# selects, so this can be overridden from the command line.
++label_flag(
++    name = "crypto_lib",
++    build_setting_default = "@envoy//bazel:crypto",
  )
  
  config_setting(
