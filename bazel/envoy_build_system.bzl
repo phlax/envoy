@@ -4,6 +4,7 @@ load(
     "CONTRIB_EXTENSION_PACKAGE_VISIBILITY",
     "EXTENSION_PACKAGE_VISIBILITY",
 )
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
 
 # The main Envoy bazel file. Load this file for all Envoy-specific build macros
 # and rules that you'd like to use in your BUILD files.
@@ -27,6 +28,7 @@ load(
     _envoy_mobile_defines = "envoy_mobile_defines",
 )
 load(":envoy_pch.bzl", _envoy_pch_library = "envoy_pch_library")
+load(":envoy_proto_descriptor.bzl", "envoy_proto_descriptor_rule")
 load(
     ":envoy_select.bzl",
     _envoy_select_admin_functionality = "envoy_select_admin_functionality",
@@ -170,71 +172,42 @@ def envoy_cc_platform_specific_dep(name):
         "//conditions:default": [name + "_posix"],
     })
 
+# Shorthand names for commonly used bundles of external proto_library deps,
+# for use with the `external_deps` arg of `envoy_proto_descriptor`.
+_ENVOY_PROTO_DESCRIPTOR_EXTERNAL_DEPS = {
+    "api_httpbody_protos": ["@googleapis//google/api:httpbody_proto"],
+    "http_api_protos": [
+        "@googleapis//google/api:annotations_proto",
+        "@googleapis//google/api:http_proto",
+    ],
+    "well_known_protos": [
+        "@protobuf//:any_proto",
+        "@protobuf//:descriptor_proto",
+        "@protobuf//:duration_proto",
+        "@protobuf//:empty_proto",
+        "@protobuf//:struct_proto",
+        "@protobuf//:timestamp_proto",
+        "@protobuf//:wrappers_proto",
+    ],
+}
+
 # Envoy proto descriptor targets should be specified with this function.
 # This is used for testing only.
 def envoy_proto_descriptor(name, out, srcs = [], external_deps = []):
-    input_files = ["$(location " + src + ")" for src in srcs]
-    include_paths = [".", native.package_name()]
+    deps = []
+    for external_dep in external_deps:
+        deps.extend(_ENVOY_PROTO_DESCRIPTOR_EXTERNAL_DEPS[external_dep])
 
-    # TODO(phlax): Cleanup once bzlmod migration is complete
-    has_protobuf_deps = False
-    has_googleapis_deps = False
-    protobuf_include_marker = None
-    googleapis_include_marker = None
-
-    if "api_httpbody_protos" in external_deps:
-        srcs.append("@googleapis//google/api:httpbody.proto")
-        has_googleapis_deps = True
-        googleapis_include_marker = "@googleapis//google/api:httpbody.proto"
-
-    if "http_api_protos" in external_deps:
-        srcs.append("@googleapis//google/api:annotations.proto")
-        srcs.append("@googleapis//google/api:http.proto")
-        has_googleapis_deps = True
-        if not googleapis_include_marker:
-            googleapis_include_marker = "@googleapis//google/api:annotations.proto"
-
-    if "well_known_protos" in external_deps:
-        # Use the public filegroups rather than individual source-file targets -
-        # the latter are not visible in WORKSPACE mode.
-        srcs.append("@protobuf//:well_known_type_protos")
-        srcs.append("@protobuf//:descriptor_proto_srcs")
-        has_protobuf_deps = True
-        protobuf_include_marker = "@protobuf//:descriptor_proto_srcs"
-
-    options = ["--include_imports"]
-
-    # Build the command that computes include paths dynamically at execution time
-    if has_protobuf_deps or has_googleapis_deps:
-        cmd_parts = []
-        if has_googleapis_deps and googleapis_include_marker:
-            cmd_parts.append("GOOGLEAPIS_PROTO_PATH=$(location %s)" % googleapis_include_marker)
-            cmd_parts.append("GOOGLEAPIS_INCLUDE_PATH=$${GOOGLEAPIS_PROTO_PATH%/google/api/*}")
-        if has_protobuf_deps and protobuf_include_marker:
-            # $(locations) as the marker is a filegroup - take the first file to
-            # derive the include path, which works under both bzlmod and
-            # WORKSPACE external repo layouts.
-            cmd_parts.append("PROTO_MARKER_PATH=$$(echo $(locations %s) | cut -d' ' -f1)" % protobuf_include_marker)
-            cmd_parts.append("PROTOBUF_INCLUDE_PATH=$${PROTO_MARKER_PATH%/google/protobuf/*}")
-        cmd_parts.append("INCLUDE_OPTS=\"--include_imports\"")
-        for include_path in include_paths:
-            cmd_parts.append("INCLUDE_OPTS=\"$$INCLUDE_OPTS -I%s\"" % include_path)
-        if has_googleapis_deps:
-            cmd_parts.append("INCLUDE_OPTS=\"$$INCLUDE_OPTS -I$$GOOGLEAPIS_INCLUDE_PATH\"")
-        if has_protobuf_deps:
-            cmd_parts.append("INCLUDE_OPTS=\"$$INCLUDE_OPTS -I$$PROTOBUF_INCLUDE_PATH\"")
-        cmd_parts.append("$(location //tools/protoc) $$INCLUDE_OPTS --descriptor_set_out=$@ %s" % " ".join(input_files))
-        cmd = " && ".join(cmd_parts)
-    else:
-        options.extend(["-I" + include_path for include_path in include_paths])
-        options.append("--descriptor_set_out=$@")
-        cmd = "$(location //tools/protoc) " + " ".join(options + input_files)
-    native.genrule(
-        name = name,
+    proto_library(
+        name = name + "_proto_lib",
         srcs = srcs,
-        outs = [out],
-        cmd = cmd,
-        tools = ["@envoy//tools/protoc"],
+        deps = deps,
+        visibility = ["//visibility:private"],
+    )
+    envoy_proto_descriptor_rule(
+        name = name,
+        out = out,
+        deps = [":" + name + "_proto_lib"],
     )
 
 # Dependencies on Google grpc should be wrapped with this function.
