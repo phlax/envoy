@@ -16,8 +16,20 @@ There are 5 identities:
   its private key. The different between this certificate and **Upstream** is that this certifcate
   has a SAN for "localhost".
 
-# How to update certificates
-**certs.sh** has the commands to generate all files. Running certs.sh directly
-will cause all files to be regenerated. So if you want to regenerate a
-particular file, please copy the corresponding commands from certs.sh and
-execute them in command line.
+# How to generate and update certificates
+The certificates, chains, OCSP responses, `*cert_hash.h` and `*cert_info.h`
+headers in this directory are generated at build time by
+[//tools/testcerts:gen](../../../../tools/testcerts) from
+[certs.spec](certs.spec). Only the private keys and the `*.cfg` OpenSSL configs
+are checked in.
+
+```console
+$ bazel build //test/config/integration/certs:certs
+$ ls bazel-bin/test/config/integration/certs/
+```
+
+Generating the expired certificate no longer needs `docker run ... faketime`;
+the generator writes the notBefore/notAfter fields directly.
+
+`pqc_cacert.pem`, `google_root_certs.pem` and `san_nul_servercert.pem` (see
+`generate_nul_cert.py`) are not generated and are checked in as-is.
