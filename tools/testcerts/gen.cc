@@ -49,8 +49,6 @@
 
 namespace {
 
-// The number of days a "current" fixture is valid for. Matches the historical
-// DEFAULT_VALIDITY_DAYS from certs.sh (2 years).
 // CRL nextUpdate offset. Matches `default_crl_days` in the CA configs.
 constexpr int CrlDays = 3650;
 // clang-format's column limit; the generated headers used to be reformatted by

@@ -35,7 +35,7 @@ Three validity modes are available:
 | --- | --- | --- |
 | `current` (default) | Jan 1 of the stamped year | +2 years |
 | `expired` | Jan 1 2020 | Jan 1 2021 |
-| `long` | Jan 1 of the stamped year | +18250 days |
+| `long` | Jan 1 of the stamped year | Jan 1 of the stamped year + 50 |
 
 Serial numbers are derived from a hash of the fixture name (or pinned in the
 spec), never randomly, so CRL and OCSP entries stay consistent and repeated
