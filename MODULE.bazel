@@ -160,12 +160,13 @@ single_version_override(
 #     path = "../toolshed/bazel",
 # )
 
-# git_override(
-#     module_name = "envoy_toolshed",
-#     commit = "9e1dcf88ddb6523306b8fadd3d2c50c96a474426",
-#     remote = "https://github.com/phlax/toolshed",
-#     strip_prefix = "bazel",
-# )
+# TODO(phlax): remove once toolshed bazel-v0.4.x with certs is released
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "b3c9ebf08f85677688bb168816e7be3d52cf62dd",
+    remote = "https://github.com/envoyproxy/toolshed",
+    strip_prefix = "bazel",
+)
 
 ####################################################################################
 # setup: Compilers

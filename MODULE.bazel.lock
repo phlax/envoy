@@ -171,7 +171,6 @@
     "https://bcr.bazel.build/modules/dragonbox/0.0.0-241028-6c7c925.envoy/MODULE.bazel": "not found",
     "https://bcr.bazel.build/modules/elfutils/0.195.envoy/MODULE.bazel": "not found",
     "https://bcr.bazel.build/modules/emsdk/4.0.23.envoy/MODULE.bazel": "not found",
-    "https://bcr.bazel.build/modules/envoy_toolshed/0.4.13.envoy/MODULE.bazel": "not found",
     "https://bcr.bazel.build/modules/fast_float/8.0.2/MODULE.bazel": "43504664efdfa4c6cf1349626c87135c9b87926325c720458f396eee25568eda",
     "https://bcr.bazel.build/modules/fast_float/8.0.2/source.json": "8b83304ea4c3c1e43cc74e644918394a799b0f2cebe3b9ffbbe37ac75dcfb171",
     "https://bcr.bazel.build/modules/flatbuffers/25.12.19.envoy/MODULE.bazel": "not found",
@@ -695,8 +694,6 @@
     "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/elfutils/0.195.envoy/source.json": "f82c8183f1b34e98fe49d14cd131c567f373f8f715e7028adc16aea2c254908a",
     "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/emsdk/4.0.23.envoy/MODULE.bazel": "f764bb57c935c9fb4dc72263dd92c48c50e21367983fb1edf402fb43717752b5",
     "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/emsdk/4.0.23.envoy/source.json": "d2991b99eaa712c405d51744981ea07b88c6c926d514fc9f83f4ba9241190577",
-    "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/envoy_toolshed/0.4.13.envoy/MODULE.bazel": "d860126ddc5a10ea98393ab0f26962a63a42784daa074f22f1692275e18e3bde",
-    "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/envoy_toolshed/0.4.13.envoy/source.json": "17b0148f9ee6c5d56dcd1c8927431f25fb91dd6929b838f682ff9e9aed536ae3",
     "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/flatbuffers/25.12.19.envoy/MODULE.bazel": "76f751e7355170d14b95c532bdebe796e0f5dde1efd3374ca2e6358567668914",
     "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/flatbuffers/25.12.19.envoy/source.json": "ea0204be7a79de9141cee5fa436e58a14e88b39b5b59227b21efa0394474ebea",
     "https://raw.githubusercontent.com/envoyproxy/bazel-registry/b6e15c00b1c0493cd194b1b248c562bd8bc46648/modules/fp16/0.0.0-260704-3d2de18.envoy/MODULE.bazel": "27e5020ea158fdc725eafed3443b6fa9a1555d52505dafcdc3e6ea74d9e112c1",
@@ -818,7 +815,7 @@
   "moduleExtensions": {
     "//bazel:extensions.bzl%envoy_build_config_ext": {
       "general": {
-        "bzlTransitiveDigest": "dw/Tdy/iUC4F36IXsG1YO2qMasHYK+5Bl8C0qJyELJI=",
+        "bzlTransitiveDigest": "jGSg6SA7EX9il07uJALFLV4YsugZdY4Szc3sFtbpAW8=",
         "usagesDigest": "MLWuM137EhOdY1+qM/X+w9CfebbWM2X9iYFKV4d9YnA=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -870,7 +867,7 @@
     },
     "//bazel:extensions.bzl%envoy_module_graph_extension": {
       "general": {
-        "bzlTransitiveDigest": "dw/Tdy/iUC4F36IXsG1YO2qMasHYK+5Bl8C0qJyELJI=",
+        "bzlTransitiveDigest": "jGSg6SA7EX9il07uJALFLV4YsugZdY4Szc3sFtbpAW8=",
         "usagesDigest": "QEMWbIKM//Mp+xCyiZ6VMSO5cBWwkmyOj5c0RVLU65c=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -924,7 +921,7 @@
     },
     "//bazel:extensions.bzl%envoy_repo_extension": {
       "general": {
-        "bzlTransitiveDigest": "dw/Tdy/iUC4F36IXsG1YO2qMasHYK+5Bl8C0qJyELJI=",
+        "bzlTransitiveDigest": "jGSg6SA7EX9il07uJALFLV4YsugZdY4Szc3sFtbpAW8=",
         "usagesDigest": "ev3JwF8T3t1Lzq4LDmr0bcVYncB0jj3HOaH1Ax9SG60=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -976,7 +973,7 @@
     },
     "//bazel:extensions.bzl%envoy_toolchains_extension": {
       "general": {
-        "bzlTransitiveDigest": "dw/Tdy/iUC4F36IXsG1YO2qMasHYK+5Bl8C0qJyELJI=",
+        "bzlTransitiveDigest": "jGSg6SA7EX9il07uJALFLV4YsugZdY4Szc3sFtbpAW8=",
         "usagesDigest": "b/0RV7ukcWBwz6aM5tK8DEVFn5uk77wUWSuVYT/DDjo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1464,7 +1461,7 @@
     },
     "@@envoy_toolshed+//compile:extensions.bzl%libcxx_extension": {
       "general": {
-        "bzlTransitiveDigest": "x8brdUaqutwZNWU2C3GzA+Sd3OjgtdDV37agyDaPhi0=",
+        "bzlTransitiveDigest": "n0LvzKP3JAl1+o6doTrtIK1Cog9WVZxkjucbNUVhJk0=",
         "usagesDigest": "zlcuQuN/w8RuftzjE5cZrfHR/kZu/2RJF3Xq+9Yjar8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1492,7 +1489,7 @@
     },
     "@@envoy_toolshed+//compile:extensions.bzl%libcxx_libs_extension": {
       "general": {
-        "bzlTransitiveDigest": "x8brdUaqutwZNWU2C3GzA+Sd3OjgtdDV37agyDaPhi0=",
+        "bzlTransitiveDigest": "n0LvzKP3JAl1+o6doTrtIK1Cog9WVZxkjucbNUVhJk0=",
         "usagesDigest": "Lp09oT+2dmvx/nJqJU272xUbZOHo82vMsUFN8hZjEXQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1520,7 +1517,7 @@
     },
     "@@envoy_toolshed+//compile:extensions.bzl%llvm_minimal_build_extension": {
       "general": {
-        "bzlTransitiveDigest": "x8brdUaqutwZNWU2C3GzA+Sd3OjgtdDV37agyDaPhi0=",
+        "bzlTransitiveDigest": "n0LvzKP3JAl1+o6doTrtIK1Cog9WVZxkjucbNUVhJk0=",
         "usagesDigest": "XOl+kJerJ6eg8+K94rh60xWQjMRY7D9EYcHWpB2zWho=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1559,7 +1556,7 @@
     },
     "@@envoy_toolshed+//compile:extensions.bzl%llvm_minimal_extension": {
       "general": {
-        "bzlTransitiveDigest": "x8brdUaqutwZNWU2C3GzA+Sd3OjgtdDV37agyDaPhi0=",
+        "bzlTransitiveDigest": "n0LvzKP3JAl1+o6doTrtIK1Cog9WVZxkjucbNUVhJk0=",
         "usagesDigest": "leHHhPDLPJnyuJVV2SC2F2s/xNkSaHeIfsm0FV1eROY=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1595,7 +1592,7 @@
     },
     "@@envoy_toolshed+//compile:extensions.bzl%llvm_toolchain_alias_extension": {
       "general": {
-        "bzlTransitiveDigest": "x8brdUaqutwZNWU2C3GzA+Sd3OjgtdDV37agyDaPhi0=",
+        "bzlTransitiveDigest": "n0LvzKP3JAl1+o6doTrtIK1Cog9WVZxkjucbNUVhJk0=",
         "usagesDigest": "oIuv+T+PAMentFb90m9LTSKdoEg6mjXN/pBTz8F3fH0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1639,7 +1636,7 @@
     },
     "@@envoy_toolshed+//compile:extensions.bzl%sanitizer_extension": {
       "general": {
-        "bzlTransitiveDigest": "x8brdUaqutwZNWU2C3GzA+Sd3OjgtdDV37agyDaPhi0=",
+        "bzlTransitiveDigest": "n0LvzKP3JAl1+o6doTrtIK1Cog9WVZxkjucbNUVhJk0=",
         "usagesDigest": "6D8SuAn0bGgzXMCdQCiJJKJD8uT0lLxCJQJA1OTd2XE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1665,7 +1662,7 @@
     },
     "@@envoy_toolshed+//coverage/grcov:extensions.bzl%grcov_extension": {
       "general": {
-        "bzlTransitiveDigest": "CGj8VAT0hSEB4PQMagl3zFA7WRmHTk7Yol/Hful6gY8=",
+        "bzlTransitiveDigest": "SyRcRSF+Fq3fTnEFDCNdy6s7CoJ04VJDp7lP6OLpgOM=",
         "usagesDigest": "qDbzJW9jSFtU9v08FiocS8kDkzwUnFC0H1+QISz4rDA=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1687,7 +1684,7 @@
     },
     "@@envoy_toolshed+//sysroot:extensions.bzl%sysroot_extension": {
       "general": {
-        "bzlTransitiveDigest": "CQlHTk2wRBJ3aOM7jzKA9zRO6JoNhMR68mo4qJZ5uZw=",
+        "bzlTransitiveDigest": "uAoRLgi1JRtBcmgRrdu+13YqitvZUnWAHhOfPCOJNmI=",
         "usagesDigest": "MsL7b1DsmEoFRFAsDjkrY7p8a6Dfz1WONdw+VvgzHoM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1719,8 +1716,8 @@
     },
     "@@envoy_toolshed+//v8:extensions.bzl%wee8_prebuilt_extension": {
       "general": {
-        "bzlTransitiveDigest": "gXMFfVg+qoio1QNyicAgzuZLG0526gxbQBOVTkMq3iM=",
-        "usagesDigest": "XuBitzuIntPy/266vKmY1dtWJfErLg+//DNIWJyJTaY=",
+        "bzlTransitiveDigest": "5AUyi7CH/8ae8nMZHY23Ft2e3Sb3ikj9PLEmqOGOZV8=",
+        "usagesDigest": "PzQgJNGbtxI3uDbC9+VwrIkO/Gq07zMmQhwPS2MVu8Q=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
