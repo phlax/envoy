@@ -29,7 +29,7 @@ envoy_cc_test(
     data = [
         "//test/common/tls/ocsp/test_data:certs",
         "//test/common/tls/test_data:certs",
-        "//test/config/integration/certs:certs",
+        "//test/config/integration/certs",
     ],
     rbe_pool = "linux_x64_small",
     deps = [
