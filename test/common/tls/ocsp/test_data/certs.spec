@@ -1,6 +1,7 @@
 # OCSP test fixtures for test/common/tls/ocsp.
 #
-# Consumed by //tools/testcerts:gen (see tools/testcerts/README.md).
+# Consumed by @envoy_toolshed//certs:gen (see
+# https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md).
 
 [cert ca]
 key = ca_key.pem

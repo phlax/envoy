@@ -3,7 +3,8 @@
 Every `*_key.pem` (and `*key.pem`) file in this directory is a **deliberately
 public, test-only** private key. They are checked into the repository so that
 the certificate fixtures built by
-[//tools/testcerts:gen](../../../../tools/testcerts) are reproducible: the
+[`@envoy_toolshed//certs:gen`](https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md)
+are reproducible: the
 generator only creates certificates, never keys, so the same spec always
 produces the same public key material.
 

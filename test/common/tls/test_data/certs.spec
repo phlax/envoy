@@ -1,8 +1,9 @@
 # Test certificate fixtures for test/common/tls.
 #
-# Consumed by //tools/testcerts:gen (see tools/testcerts/README.md for the
-# format). Every file listed as an output here must also appear in the `outs`
-# of the `certs` genrule in this directory's BUILD file.
+# Consumed by @envoy_toolshed//certs:gen (see
+# https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md for the
+# format). Every file listed as an output here must also appear in the `outs` of
+# the `certs` genrule in this directory's BUILD file.
 #
 # Serial numbers are derived deterministically from the fixture name unless
 # pinned with `serial = <hex>`.

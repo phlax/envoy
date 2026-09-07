@@ -23,7 +23,9 @@ There are 8 identities:
 
 # How to generate and update certificates
 The certificates and OCSP responses in this directory are generated at build
-time by [//tools/testcerts:gen](../../../../../tools/testcerts) from
+time by
+[`@envoy_toolshed//certs:gen`](https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md)
+from
 [certs.spec](certs.spec). Only the private keys and the `*.cfg` OpenSSL configs
 are checked in.
 
@@ -36,5 +38,5 @@ The OCSP request DER files and the human-readable response dumps are no longer
 produced. Nothing read the requests, and the timestamps that were scraped out
 of the old dump are now exposed as constants in the generated
 `good_ocsp_resp_info.h`.
-//tools/testcerts:gen_test asserts that the generated responses parse with the
-expected status and expiry.
+`//test/common/tls/ocsp:generated_fixtures_test` asserts that the generated
+responses parse with the expected status and expiry.

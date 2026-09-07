@@ -26,7 +26,7 @@ pkg_files(
 )
 
 # Test cert/key used by the google-vrp image. The certificate is generated at
-# build time (see //tools/testcerts) so it cannot be ADDed from the Docker
+# build time (see @envoy_toolshed//certs) so it cannot be ADDed from the Docker
 # build context, and is shipped in the release tarball instead.
 pkg_files(
     name = "vrp_cert_files",

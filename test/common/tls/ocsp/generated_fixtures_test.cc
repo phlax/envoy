@@ -7,7 +7,7 @@
 
 #include "gtest/gtest.h"
 
-// Verifies that the OCSP responses //tools/testcerts:gen produces are
+// Verifies that the OCSP responses @envoy_toolshed//certs:gen produces are
 // well-formed and carry the status and validity window the spec asks for. This
 // replaces the human-readable `*_ocsp_resp_details.txt` dumps that the old
 // offline fixture generation scripts wrote next to each response.

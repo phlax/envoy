@@ -77,7 +77,8 @@ There are 15 identities:
 # How to generate and update certificates
 All certificates, chains, CRLs, PKCS#12 bundles, `*_cert_info.h` headers and
 `trust_bundles.json` in this directory are generated at build time by
-[//tools/testcerts:gen](../../../../tools/testcerts). The private keys, the
+[`@envoy_toolshed//certs:gen`](https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md).
+The private keys, the
 `*.cfg` OpenSSL configs, the session ticket keys and
 `password_protected_password.txt` are checked in, and are the only inputs.
 

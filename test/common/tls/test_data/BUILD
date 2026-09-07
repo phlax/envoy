@@ -1,15 +1,15 @@
+load("@envoy_toolshed//certs:certs.bzl", "generated_certs")
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_cc_test_library",
     "envoy_package",
 )
-load("//tools/testcerts:certs.bzl", "generated_certs")
 
 licenses(["notice"])  # Apache 2
 
 envoy_package()
 
-# Fixtures produced by //tools/testcerts:gen from certs.spec. Keep this list in
+# Fixtures produced by @envoy_toolshed//certs:gen from certs.spec. Keep this list in
 # sync with the spec; see README.md.
 CERTS = [
     "ca_cert.crl",

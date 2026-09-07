@@ -19,7 +19,8 @@ There are 5 identities:
 # How to generate and update certificates
 The certificates, chains, OCSP responses, `*cert_hash.h` and `*cert_info.h`
 headers in this directory are generated at build time by
-[//tools/testcerts:gen](../../../../tools/testcerts) from
+[`@envoy_toolshed//certs:gen`](https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md)
+from
 [certs.spec](certs.spec). Only the private keys and the `*.cfg` OpenSSL configs
 are checked in.
 

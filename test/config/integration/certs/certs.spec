@@ -1,7 +1,8 @@
 # Test certificate fixtures for test/config/integration.
 #
-# Consumed by //tools/testcerts:gen (see tools/testcerts/README.md). Note that
-# this directory's naming convention has no underscore before "cert".
+# Consumed by @envoy_toolshed//certs:gen (see
+# https://github.com/envoyproxy/toolshed/blob/main/bazel/certs/README.md).
+# Note that this directory's naming convention has no underscore before "cert".
 
 # --------------------------------------------------------------------------
 # Certificate authorities.
