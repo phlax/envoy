@@ -6,8 +6,8 @@
  * The index is loaded on first open, not on page load.
  *
  * The overlay searches page and section titles, which is what a quick switcher
- * is for. Full-text search stays on /search/, one Enter away, and remains
- * the only search when JavaScript is unavailable.
+ * is for. Full-text search stays on the search page, one Enter away, and
+ * remains the only search when JavaScript is unavailable.
  */
 
 const MAX_RESULTS = 24;
@@ -139,9 +139,6 @@ function score(title, query) {
 }
 
 function docUrl(docname) {
-  if (DOCUMENTATION_OPTIONS.BUILDER === 'dirhtml') {
-    return docname === 'index' ? '' : `${docname}/`;
-  }
   return `${docname}${DOCUMENTATION_OPTIONS.LINK_SUFFIX}`;
 }
 
