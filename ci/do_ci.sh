@@ -43,6 +43,26 @@ _realpath() {
 ENVOY_DOCS_PATH="${ENVOY_DOCS_PATH:-./docs}"
 ENVOY_DOCS_PATH="$(_realpath "$ENVOY_DOCS_PATH")"
 
+lockfiles_check() {
+    lockfiles_generate
+    # this needs to only check lockfiles
+    if [[ $(git status --porcelain) ]]; then
+        echo >&2
+        echo "Lockfiles are not in sync, please regenerate" >&2
+        echo >&2
+        # wondering if it should revert lockfile changes
+    fi
+}
+
+lockfiles_generate() {
+    local module_dir
+    for module_dir in . "$ENVOY_DOCS_PATH" api/ mobile/ bazel/tests/external/; do
+        pushd "$module_dir"
+        bazel mod "${BAZEL_GLOBAL_OPTIONS[@]}" deps --lockfile_mode=update
+        popd
+    done
+}
+
 setup_clang_toolchain() {
     local config
     if [[ -n "${CLANG_TOOLCHAIN_SETUP}" ]]; then
@@ -902,13 +922,12 @@ case $CI_TARGET in
         bazel info "${BAZEL_BUILD_OPTIONS[@]}"
         ;;
 
-    lockfiles|lockfiles.regenerate)
-        # TODO(phlax): Add other lockfiles here and a check path
-        for module_dir in . "$ENVOY_DOCS_PATH" api/ mobile/ bazel/tests/external/; do
-            pushd "$module_dir"
-            bazel mod "${BAZEL_GLOBAL_OPTIONS[@]}" deps --lockfile_mode=update
-            popd
-        done
+    lockfiles|lockfiles.regenerate|lockfiles.check)
+        if [[ "$CI_TARGET" == "lockfiles.check" ]]; then
+            lockfiles_check
+        else
+            lockfiles_generate
+        fi
         ;;
 
     msan)
@@ -947,6 +966,17 @@ case $CI_TARGET in
               @envoy_repo//:publish \
               -- --repo="$ENVOY_REPO" \
                  "${PUBLISH_ARGS[@]}"
+        ;;
+
+    registry)
+        local registry_hash
+        if [[ -n "$ENVOY_REGISTRY_HASH" ]]; then
+            registry_hash="$ENVOY_REGISTRY_HASH"
+        else
+            :
+            # registry_hash="$(cheapest git call to get the latest head of registry)"
+        fi
+        lockfiles_generate
         ;;
 
     release|release.server_only|release.test_only)
