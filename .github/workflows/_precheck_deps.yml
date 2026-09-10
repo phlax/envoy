@@ -49,3 +49,4 @@ jobs:
       matrix:
         include:
         - target: deps
+        - target: lockfiles.check

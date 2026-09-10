@@ -42,24 +42,56 @@ _realpath() {
 
 ENVOY_DOCS_PATH="${ENVOY_DOCS_PATH:-./docs}"
 ENVOY_DOCS_PATH="$(_realpath "$ENVOY_DOCS_PATH")"
+readonly LOCKFILE_PATHSPEC=':(glob)**/MODULE.bazel.lock'
+readonly -a REGISTRY_BAZELRC_FILES=(
+    ".bazelrc"
+    "api/.bazelrc"
+    "bazel/tests/external/.bazelrc"
+)
 
 lockfiles_check() {
     lockfiles_generate
-    # this needs to only check lockfiles
-    if [[ $(git status --porcelain) ]]; then
+    if [[ -n "$(git status --porcelain -- "$LOCKFILE_PATHSPEC")" ]]; then
+        git --no-pager diff -- "$LOCKFILE_PATHSPEC"
         echo >&2
-        echo "Lockfiles are not in sync, please regenerate" >&2
+        echo "Lockfiles are not in sync, please run: ci/do_ci.sh lockfiles" >&2
         echo >&2
-        # wondering if it should revert lockfile changes
+        exit 1
     fi
 }
 
 lockfiles_generate() {
     local module_dir
     for module_dir in . "$ENVOY_DOCS_PATH" api/ mobile/ bazel/tests/external/; do
-        pushd "$module_dir"
+        pushd "$module_dir" > /dev/null
         bazel mod "${BAZEL_GLOBAL_OPTIONS[@]}" deps --lockfile_mode=update
-        popd
+        popd > /dev/null
+    done
+}
+
+registry_bump() {
+    local registry_hash="$1"
+    local bazelrc
+    local old_hash
+
+    for bazelrc in "${REGISTRY_BAZELRC_FILES[@]}"; do
+        old_hash="$(sed -n -E \
+            's#^common --registry=https://raw\.githubusercontent\.com/envoyproxy/bazel-registry/([0-9a-f]+)$#\1#p' \
+            "$bazelrc")"
+        if [[ -z "${old_hash}" ]]; then
+            echo "Failed to determine current registry hash from ${bazelrc}" >&2
+            return 1
+        fi
+
+        if [[ "${old_hash}" == "${registry_hash}" ]]; then
+            echo "${bazelrc}: ${old_hash} -> ${registry_hash} (unchanged)"
+            continue
+        fi
+
+        sed -i -E \
+            "s#^(common --registry=https://raw\\.githubusercontent\\.com/envoyproxy/bazel-registry/)[0-9a-f]+\$#\1${registry_hash}#" \
+            "$bazelrc"
+        echo "${bazelrc}: ${old_hash} -> ${registry_hash}"
     done
 }
 
@@ -969,13 +1001,21 @@ case $CI_TARGET in
         ;;
 
     registry)
-        local registry_hash
         if [[ -n "$ENVOY_REGISTRY_HASH" ]]; then
             registry_hash="$ENVOY_REGISTRY_HASH"
         else
-            :
-            # registry_hash="$(cheapest git call to get the latest head of registry)"
+            registry_hash="$(
+                git ls-remote \
+                    "${ENVOY_REGISTRY_REPO:-https://github.com/envoyproxy/bazel-registry}" \
+                    refs/heads/main \
+                    | cut -f1
+            )"
         fi
+        if [[ -z "${registry_hash}" ]]; then
+            echo "Failed to determine Envoy bazel-registry hash" >&2
+            exit 1
+        fi
+        registry_bump "$registry_hash"
         lockfiles_generate
         ;;
 
