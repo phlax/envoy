@@ -194,7 +194,8 @@ The `./ci/run_envoy_docker.sh './ci/do_ci.sh <TARGET>'` targets are:
 * `format`&mdash; run validation, linting and formatting tools.
 * `lockfiles`/`lockfiles.regenerate` &mdash; regenerate all `MODULE.bazel.lock` files with `bazel mod deps --lockfile_mode=update`.
 * `lockfiles.check` &mdash; regenerate all `MODULE.bazel.lock` files and fail with a diff if any lockfile changes; run `ci/do_ci.sh lockfiles` to update them.
-* `registry` &mdash; update the Envoy bazel-registry hash in `.bazelrc`, `api/.bazelrc`, and `bazel/tests/external/.bazelrc`, then regenerate all `MODULE.bazel.lock` files. Set `ENVOY_REGISTRY_HASH` to use a specific hash or `ENVOY_REGISTRY_REPO` to override the repository used for `git ls-remote`.
+* `deps` &mdash; validate dependency metadata ordering, reachability, graph structure, the pinned bazel-registry commit, and dependabot configuration.
+* `registry` &mdash; update the Envoy bazel-registry hash in `.bazelrc`, `api/.bazelrc`, and `bazel/tests/external/.bazelrc`, then regenerate all `MODULE.bazel.lock` files. Set `ENVOY_REGISTRY_HASH` to use a specific hash, `ENVOY_REGISTRY_REPO` to override the repository used for `git ls-remote`, or `ENVOY_REGISTRY_BRANCH` to override the branch checked by `deps`.
 * `docs`&mdash; build documentation tree in `generated/docs`.
 
 ## On Windows

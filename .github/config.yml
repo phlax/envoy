@@ -357,6 +357,7 @@ run:
     - .github/dependabot.yml
     - .github/workflows/_precheck_deps.yml
     - ci/do_ci.sh
+    - VERSION.txt
     - bazel/BUILD
     - tools/dependency/*
     - "**/.bazelrc"
