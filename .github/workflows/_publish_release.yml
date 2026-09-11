@@ -57,6 +57,7 @@ jobs:
         --//distribution:arm64-packages=//distribution:custom/arm64/packages.arm64.tar.gz
         --//distribution:x64-release=//distribution:custom/x64/bin/release.tar.zst
         --//distribution:arm64-release=//distribution:custom/arm64/bin/release.tar.zst
+        ${{ !inputs.trusted && '--//distribution:signing-key=snakeoil' || '' }}
       cache-build-image: ${{ fromJSON(inputs.request).request.build-image.default }}
       diskspace-hack: true
       downloads: |
@@ -65,7 +66,7 @@ jobs:
         release.arm64: envoy/arm64/bin/
         release.x64: envoy/x64/bin/
       gcs-cache-bucket: ${{ inputs.gcs-cache-bucket }}
-      import-gpg: true
+      signing: true
       request: ${{ inputs.request }}
       source: |
         export NO_BUILD_SETUP=1

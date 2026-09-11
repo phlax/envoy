@@ -8,10 +8,6 @@ on:
     secrets:
       gcs-cache-key:
         required: true
-      gpg-key:
-        required: true
-      gpg-key-password:
-        required: true
     inputs:
       arch:
         type: string
@@ -101,8 +97,6 @@ jobs:
       packages: read
     secrets:
       gcs-cache-key: ${{ secrets.gcs-cache-key }}
-      gpg-key: ${{ secrets.gpg-key }}
-      gpg-key-password: ${{ secrets.gpg-key-password }}
     name: Packages
     needs:
     - binary
@@ -119,7 +113,6 @@ jobs:
       cache-build-image-key-suffix: ${{ inputs.arch == 'arm64' && '-arm64' || '' }}
       concurrency-suffix: -${{ inputs.arch }}
       gcs-cache-bucket: ${{ inputs.gcs-cache-bucket }}
-      import-gpg: true
       rbe: false
       request: ${{ inputs.request }}
       runs-on: ${{ inputs.arch == 'arm64' && (vars.ENVOY_ARM_VM || 'ubuntu-24.04-arm') || null }}
