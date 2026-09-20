@@ -27,7 +27,7 @@ Use the `@envoy//bazel` label_flag overrides instead, for example \
 """
 
 def deprecate_repository(caller, repository):
-    if repository:
+    if repository not in ("", "@envoy"):
         print("WARNING %s: %s Got %r." % (caller, _DEPRECATED_REPOSITORY_MESSAGE, repository))
 
 # Used to select a dependency that has different implementations on POSIX vs Windows.

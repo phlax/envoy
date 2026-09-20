@@ -135,7 +135,7 @@ benchmark binary target on a quiescent machine.
 
 Downstream bzlmod consumers using `envoy_cc_benchmark_binary` must declare
 `bazel_dep(name = "google_benchmark", version = "1.9.5", repo_name = "benchmark")`
-in their `MODULE.bazel`.
+and `bazel_dep(name = "tclap", version = "1.2.5")` in their `MODULE.bazel`.
 
 If you would like to detect when your benchmark test is running under the
 wrapper, call

@@ -26,6 +26,8 @@ _APPLE = Label("//bazel:apple")
 _ASAN_BUILD = Label("//bazel:asan_build")
 _ENABLE_EXPORTED_SYMBOLS = Label("//bazel:enable_exported_symbols")
 _ENGFLOW_RBE_X86_64 = Label("//bazel:engflow_rbe_x86_64")
+_EXPORTED_SYMBOLS = Label("//bazel:exported_symbols.txt")
+_EXPORTED_SYMBOLS_APPLE = Label("//bazel:exported_symbols_apple.txt")
 _FUZZING_ENGINE = Label("//bazel:fuzzing_engine")
 _LIBFUZZER = Label("//bazel:libfuzzer")
 _LIBFUZZER_COVERAGE = Label("//bazel:libfuzzer_coverage")
@@ -80,10 +82,10 @@ def _envoy_cc_test_infrastructure_library(
 def _envoy_test_default_exported_symbols():
     return select({
         _LINUX: [
-            "-Wl,--dynamic-list=$(location %s)" % str(Label("//bazel:exported_symbols.txt")),
+            "-Wl,--dynamic-list=$(location %s)" % str(_EXPORTED_SYMBOLS),
         ],
         _APPLE: [
-            "-Wl,-exported_symbols_list,$(location %s)" % str(Label("//bazel:exported_symbols_apple.txt")),
+            "-Wl,-exported_symbols_list,$(location %s)" % str(_EXPORTED_SYMBOLS_APPLE),
         ],
         "//conditions:default": [],
     })
@@ -276,7 +278,7 @@ def envoy_cc_test_library(
         copts = [],
         alwayslink = 1,
         **kargs):
-    deprecate_repository("envoy_cc_test", repository)
+    deprecate_repository("envoy_cc_test_library", repository)
     exec_properties = exec_properties | select({
         _ENGFLOW_RBE_X86_64: {"Pool": rbe_pool} if rbe_pool else {},
         "//conditions:default": {},
