@@ -77,7 +77,10 @@ envoy_cc_test(
 envoy_cc_benchmark_binary(
     name = "external_benchmark_binary",
     srcs = ["external_benchmark.cc"],
-    deps = [":external_lib"],
+    deps = [
+        ":external_lib",
+        "@benchmark",
+    ],
 )
 
 envoy_benchmark_test(
@@ -88,6 +91,7 @@ envoy_benchmark_test(
 envoy_cc_benchmark_binary(
     name = "external_envoy_benchmark_binary",
     srcs = ["external_envoy_benchmark.cc"],
+    deps = ["@benchmark"],
 )
 
 envoy_benchmark_test(

@@ -325,31 +325,11 @@ def envoy_cc_test_binary(
         **kargs
     )
 
-def _append_unique(items, extra):
-    # `items` may be a select(); selects support `+` but are not iterable,
-    # so only dedupe when we have a concrete list.
-    if type(items) != "list":
-        return items + extra
-    result = list(items)
-    for item in extra:
-        if item not in result:
-            result.append(item)
-    return result
-
-def _benchmark_attrs(srcs, deps):
-    return dict(
-        srcs = _append_unique(srcs, [_BENCHMARK_MAIN_SRC]),
-        deps = _append_unique(deps, [
-            _BENCHMARK_MAIN_LIB,
-            # These intentionally resolve in the caller's repo mapping so downstream
-            # bzlmod consumers must declare benchmark dependencies in their MODULE.bazel.
-            "@benchmark",
-            "@tclap",
-        ]),
-    )
-
 # Envoy benchmark binaries should be specified with this function. bazel run
 # these targets to measure performance.
+#
+# Callers must list `@benchmark` in `deps`; the macro deliberately does not
+# inject it so that downstream consumers declare their own benchmark dependency.
 def envoy_cc_benchmark_binary(
         name,
         srcs = [],
@@ -359,7 +339,11 @@ def envoy_cc_benchmark_binary(
     deprecate_repository("envoy_cc_benchmark_binary", repository)
     envoy_cc_test_binary(
         name,
-        **dict(kargs, **_benchmark_attrs(srcs, deps))
+        srcs = srcs + [_BENCHMARK_MAIN_SRC],
+        # `@tclap` intentionally resolves in the caller's repo mapping so downstream
+        # bzlmod consumers must declare it in their MODULE.bazel.
+        deps = deps + [_BENCHMARK_MAIN_LIB, "@tclap"],
+        **kargs
     )
 
 # Envoy benchmark binaries loading dynamic modules should be specified with this function. bazel run
@@ -373,8 +357,10 @@ def envoy_cc_benchmark_dyn_module_binary(
     deprecate_repository("envoy_cc_benchmark_dyn_module_binary", repository)
     envoy_cc_test_binary(
         name,
+        srcs = srcs + [_BENCHMARK_MAIN_SRC],
+        deps = deps + [_BENCHMARK_MAIN_LIB, "@tclap"],
         linkopts = _envoy_test_default_exported_symbols(),
-        **dict(kargs, **_benchmark_attrs(srcs, deps))
+        **kargs
     )
 
 # Tests to validate that Envoy benchmarks run successfully should be specified
