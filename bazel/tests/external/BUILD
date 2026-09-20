@@ -84,3 +84,13 @@ envoy_benchmark_test(
     name = "external_benchmark_test",
     benchmark_binary = "external_benchmark_binary",
 )
+
+envoy_cc_benchmark_binary(
+    name = "external_envoy_benchmark_binary",
+    srcs = ["external_envoy_benchmark.cc"],
+)
+
+envoy_benchmark_test(
+    name = "external_envoy_benchmark_test",
+    benchmark_binary = "external_envoy_benchmark_binary",
+)

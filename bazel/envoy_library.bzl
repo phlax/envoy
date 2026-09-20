@@ -1,6 +1,5 @@
 # DO NOT LOAD THIS FILE. Load envoy_build_system.bzl instead.
 # Envoy library targets
-load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@envoy_api//bazel:api_build_system.bzl", "api_cc_py_proto_library")
 load(
     "@envoy_build_config//:extensions_build_config.bzl",
@@ -13,6 +12,7 @@ load(
     "envoy_copts",
     "envoy_external_dep_path",
     "envoy_linkstatic",
+    "tcmalloc_external_deps",
 )
 load(":envoy_mobile_defines.bzl", "envoy_mobile_defines")
 load(":envoy_pch.bzl", "envoy_pch_copts", "envoy_pch_deps")
@@ -22,31 +22,10 @@ load(":sanitizers.bzl", "sanitizer_deps")
 _CHECK_REMOVED_FIPS_DEFINE = Label("//bazel:check_removed_fips_define")
 _CHECK_REMOVED_WASM_DEFINES = Label("//bazel:check_removed_wasm_defines")
 _COMMON_PCH = Label("//source/common/common:common_pch")
-_DEBUG_TCMALLOC = Label("//bazel:debug_tcmalloc")
-_DISABLE_TCMALLOC = Label("//bazel:disable_tcmalloc")
 _DISABLE_LIBRARY_AUTOLINK = Label("//bazel:disable_library_autolink")
 _ENGFLOW_RBE_X86_64 = Label("//bazel:engflow_rbe_x86_64")
-_GPERFTOOLS = Label("//bazel/external:gperftools")
-_GPERFTOOLS_TCMALLOC = Label("//bazel:gperftools_tcmalloc")
-_JEMALLOC = Label("//bazel/deps:jemalloc")
-_JEMALLOC_ENABLED = Label("//bazel:jemalloc_enabled")
 _LINUX = Label("//bazel:linux")
-_TCMALLOC_ALL_LIBS = Label("//bazel:tcmalloc_all_libs")
 _WINDOWS_X86_64 = Label("//bazel:windows_x86_64")
-
-# As above, but wrapped in list form for adding to dep lists. This smell seems needed as
-# SelectorValue values have to match the attribute type. See
-# https://github.com/bazelbuild/bazel/issues/2273.
-def tcmalloc_external_deps():
-    return selects.with_or({
-        _DISABLE_TCMALLOC: [],
-        (
-            _DEBUG_TCMALLOC,
-            _GPERFTOOLS_TCMALLOC,
-        ): [_GPERFTOOLS],
-        _JEMALLOC_ENABLED: [_JEMALLOC],
-        "//conditions:default": [_TCMALLOC_ALL_LIBS],
-    })
 
 # Envoy C++ library targets that need no transformations or additional dependencies before being
 # passed to cc_library should be specified with this function. Note: this exists to ensure that

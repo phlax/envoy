@@ -37,6 +37,7 @@ _LINUX = Label("//bazel:linux")
 _NO_DEBUG_INFO = Label("//bazel:no_debug_info")
 _OPT_BUILD = Label("//bazel:opt_build")
 _STATIC_STDLIB = Label("//bazel:static_stdlib")
+_TCMALLOC_ALL_LIBS = Label("//bazel:tcmalloc_all_libs")
 _TCMALLOC_LIB = Label("//bazel:tcmalloc_lib")
 _UHV_ENABLED = Label("//bazel:uhv_enabled")
 _WINDOWS_DBG_BUILD = Label("//bazel:windows_dbg_build")
@@ -239,6 +240,20 @@ def tcmalloc_external_dep():
         ): _GPERFTOOLS,
         _JEMALLOC_ENABLED: _JEMALLOC,
         "//conditions:default": _TCMALLOC_LIB,
+    })
+
+# As above, but wrapped in list form for adding to dep lists. This smell seems needed as
+# SelectorValue values have to match the attribute type. See
+# https://github.com/bazelbuild/bazel/issues/2273.
+def tcmalloc_external_deps():
+    return selects.with_or({
+        _DISABLE_TCMALLOC: [],
+        (
+            _DEBUG_TCMALLOC,
+            _GPERFTOOLS_TCMALLOC,
+        ): [_GPERFTOOLS],
+        _JEMALLOC_ENABLED: [_JEMALLOC],
+        "//conditions:default": [_TCMALLOC_ALL_LIBS],
     })
 
 # Select the given values if default path normalization is on in the current build.
