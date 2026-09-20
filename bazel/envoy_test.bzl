@@ -17,13 +17,15 @@ load(
     "envoy_select_force_libcpp",
     "envoy_stdlib_deps",
     "tcmalloc_external_dep",
+    "tcmalloc_external_deps",
 )
-load(":envoy_library.bzl", "tcmalloc_external_deps")
 load(":envoy_pch.bzl", "envoy_pch_copts", "envoy_pch_deps")
 load(":envoy_select.bzl", "deprecate_repository")
 
 _APPLE = Label("//bazel:apple")
 _ASAN_BUILD = Label("//bazel:asan_build")
+_BENCHMARK_MAIN_LIB = Label("//test/benchmark:main_lib")
+_BENCHMARK_MAIN_SRC = Label("//test/benchmark:main.cc")
 _ENABLE_EXPORTED_SYMBOLS = Label("//bazel:enable_exported_symbols")
 _ENGFLOW_RBE_X86_64 = Label("//bazel:engflow_rbe_x86_64")
 _EXPORTED_SYMBOLS = Label("//bazel:exported_symbols.txt")
@@ -334,6 +336,18 @@ def _append_unique(items, extra):
             result.append(item)
     return result
 
+def _benchmark_attrs(srcs, deps):
+    return dict(
+        srcs = _append_unique(srcs, [_BENCHMARK_MAIN_SRC]),
+        deps = _append_unique(deps, [
+            _BENCHMARK_MAIN_LIB,
+            # These intentionally resolve in the caller's repo mapping so downstream
+            # bzlmod consumers must declare benchmark dependencies in their MODULE.bazel.
+            "@benchmark",
+            "@tclap",
+        ]),
+    )
+
 # Envoy benchmark binaries should be specified with this function. bazel run
 # these targets to measure performance.
 def envoy_cc_benchmark_binary(
@@ -345,15 +359,7 @@ def envoy_cc_benchmark_binary(
     deprecate_repository("envoy_cc_benchmark_binary", repository)
     envoy_cc_test_binary(
         name,
-        srcs = _append_unique(srcs, [Label("//test/benchmark:main.cc")]),
-        deps = _append_unique(deps, [
-            Label("//test/benchmark:main_lib"),
-            # These intentionally resolve in the caller's repo mapping so downstream
-            # bzlmod consumers must declare benchmark dependencies in their MODULE.bazel.
-            "@benchmark",
-            "@tclap",
-        ]),
-        **kargs
+        **dict(kargs, **_benchmark_attrs(srcs, deps))
     )
 
 # Envoy benchmark binaries loading dynamic modules should be specified with this function. bazel run
@@ -367,16 +373,8 @@ def envoy_cc_benchmark_dyn_module_binary(
     deprecate_repository("envoy_cc_benchmark_dyn_module_binary", repository)
     envoy_cc_test_binary(
         name,
-        srcs = _append_unique(srcs, [Label("//test/benchmark:main.cc")]),
-        deps = _append_unique(deps, [
-            Label("//test/benchmark:main_lib"),
-            # These intentionally resolve in the caller's repo mapping so downstream
-            # bzlmod consumers must declare benchmark dependencies in their MODULE.bazel.
-            "@benchmark",
-            "@tclap",
-        ]),
         linkopts = _envoy_test_default_exported_symbols(),
-        **kargs
+        **dict(kargs, **_benchmark_attrs(srcs, deps))
     )
 
 # Tests to validate that Envoy benchmarks run successfully should be specified
