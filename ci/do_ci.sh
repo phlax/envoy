@@ -67,7 +67,7 @@ lockfiles_check() {
 
 lockfiles_generate() {
     local module_dir
-    for module_dir in . "$ENVOY_DOCS_PATH" api/ mobile/ bazel/tests/external/; do
+    for module_dir in api . "$ENVOY_DOCS_PATH" mobile/ bazel/tests/external/; do
         pushd "$module_dir" > /dev/null
         bazel mod "${BAZEL_GLOBAL_OPTIONS[@]}" deps --lockfile_mode=update
         popd > /dev/null
