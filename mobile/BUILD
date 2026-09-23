@@ -7,7 +7,6 @@ load(
 )
 load("@rules_android//android:rules.bzl", "aar_import")
 load("@rules_apple//apple:apple.bzl", "apple_static_framework_import")
-load("@rules_java//java:defs.bzl", "java_import")
 load("@rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
 load("//bazel:framework_imports_extractor.bzl", "framework_imports_extractor")
 
@@ -55,21 +54,14 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# R8/D8 stamps com.android.tools.r8.annotations.* onto desugared lambda
-# classes. Provide those annotations for aar_import strict deps checking
-# without packaging the full R8 jar into downstream consumers.
-java_import(
-    name = "r8_annotations",
-    jars = ["@android_gmaven_r8//jar:file"],
-    neverlink = True,
-)
-
 aar_import(
     name = "envoy_mobile_android",
     aar = "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar",
     visibility = ["//visibility:public"],
     deps = [
-        ":r8_annotations",
+        # D8 stamps this marker onto desugared lambdas; stub it (neverlink) so
+        # the aar_import strict deps check can resolve it.
+        "//bazel/r8_annotations",
         "@maven//:androidx_annotation_annotation",
         "@maven//:androidx_core_core",
         "@maven//:org_jetbrains_annotations",
