@@ -59,6 +59,9 @@ aar_import(
     aar = "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar",
     visibility = ["//visibility:public"],
     deps = [
+        # D8 stamps this marker onto desugared lambdas; stub it (neverlink) so
+        # the aar_import strict deps check can resolve it.
+        "//bazel/r8_annotations",
         "@maven//:androidx_annotation_annotation",
         "@maven//:androidx_core_core",
         "@maven//:org_jetbrains_annotations",
