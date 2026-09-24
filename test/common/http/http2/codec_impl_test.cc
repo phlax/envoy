@@ -238,6 +238,8 @@ public:
     }
   }
 
+  bool isLegacyNghttp2() const { return http2_implementation_ == Http2Impl::Nghttp2; }
+
   static Status onConnBeginHeaders(ConnectionImpl* conn, int stream_id) {
     return conn->onBeginHeaders(stream_id);
   }
@@ -816,7 +818,11 @@ TEST_P(Http2CodecImplTest, TrailerStatus) {
   driveToCompletion();
   EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
   EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
+  // nghttp2 #2480 now terminates the connection for invalid pseudo/trailer semantics before
+  // on_invalid_frame_recv_callback runs, so the legacy nghttp2 codec no longer increments
+  // rx_messaging_error for this case.
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
 };
 
 // Multiple 100 responses are passed to the response encoder (who is responsible for coalescing).
@@ -881,7 +887,10 @@ TEST_P(Http2CodecImplTest, Invalid101SwitchingProtocols) {
   driveToCompletion();
   EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
   EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
+  // nghttp2 #2480 now terminates the connection for this HTTP messaging violation before
+  // on_invalid_frame_recv_callback runs on the legacy nghttp2 codec.
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
 }
 
 TEST_P(Http2CodecImplTest, InvalidContinueWithFin) {
@@ -899,7 +908,8 @@ TEST_P(Http2CodecImplTest, InvalidContinueWithFin) {
   driveToCompletion();
   EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
   EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
 }
 
 TEST_P(Http2CodecImplTest, InvalidContinueWithFinAllowed) {
@@ -915,14 +925,26 @@ TEST_P(Http2CodecImplTest, InvalidContinueWithFinAllowed) {
   EXPECT_OK(request_encoder_->encodeHeaders(request_headers, true));
   driveToCompletion();
 
-  EXPECT_CALL(request_callbacks, onResetStream(StreamResetReason::ProtocolError, _));
+  if (!isLegacyNghttp2()) {
+    EXPECT_CALL(request_callbacks, onResetStream(StreamResetReason::ProtocolError, _));
+  }
   TestResponseHeaderMapImpl continue_headers{{":status", "100"}};
   response_encoder_->encodeHeaders(continue_headers, true);
   driveToCompletion();
-  EXPECT_OK(client_wrapper_->status_);
+  // nghttp2 #2480 now turns this into a connection error before Envoy can honor
+  // override_stream_error_on_invalid_http_message on the legacy nghttp2 codec.
+  if (isLegacyNghttp2()) {
+    EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
+    EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
+  } else {
+    EXPECT_OK(client_wrapper_->status_);
+  }
 
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
-  expectDetailsRequest("http2.violation.of.messaging.rule");
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
+  if (!isLegacyNghttp2()) {
+    expectDetailsRequest("http2.violation.of.messaging.rule");
+  }
 }
 
 TEST_P(Http2CodecImplTest, CodecHasCorrectStreamErrorIfFalse) {
@@ -969,7 +991,8 @@ TEST_P(Http2CodecImplTest, InvalidRepeatContinue) {
   driveToCompletion();
   EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
   EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
 };
 
 TEST_P(Http2CodecImplTest, InvalidRepeatContinueAllowed) {
@@ -990,13 +1013,23 @@ TEST_P(Http2CodecImplTest, InvalidRepeatContinueAllowed) {
   response_encoder_->encode1xxHeaders(continue_headers);
   driveToCompletion();
 
-  EXPECT_CALL(request_callbacks, onResetStream(StreamResetReason::ProtocolError, _));
+  if (!isLegacyNghttp2()) {
+    EXPECT_CALL(request_callbacks, onResetStream(StreamResetReason::ProtocolError, _));
+  }
   response_encoder_->encodeHeaders(continue_headers, true);
   driveToCompletion();
-  EXPECT_OK(client_wrapper_->status_);
+  if (isLegacyNghttp2()) {
+    EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
+    EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
+  } else {
+    EXPECT_OK(client_wrapper_->status_);
+  }
 
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
-  expectDetailsRequest("http2.violation.of.messaging.rule");
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
+  if (!isLegacyNghttp2()) {
+    expectDetailsRequest("http2.violation.of.messaging.rule");
+  }
 };
 
 TEST_P(Http2CodecImplTest, Invalid204WithContentLength) {
@@ -1034,7 +1067,8 @@ TEST_P(Http2CodecImplTest, Invalid204WithContentLength) {
   }
   EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
   EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
 };
 
 TEST_P(Http2CodecImplTest, Invalid204WithContentLengthAllowed) {
@@ -1063,14 +1097,24 @@ TEST_P(Http2CodecImplTest, Invalid204WithContentLengthAllowed) {
     response_headers.addCopy(std::to_string(i), std::to_string(i));
   }
 
-  EXPECT_CALL(request_callbacks, onResetStream(StreamResetReason::ProtocolError, _));
-  EXPECT_CALL(server_stream_callbacks_, onResetStream(StreamResetReason::ProtocolError, _));
+  if (!isLegacyNghttp2()) {
+    EXPECT_CALL(request_callbacks, onResetStream(StreamResetReason::ProtocolError, _));
+    EXPECT_CALL(server_stream_callbacks_, onResetStream(StreamResetReason::ProtocolError, _));
+  }
   response_encoder_->encodeHeaders(response_headers, false);
   driveToCompletion();
-  EXPECT_OK(client_wrapper_->status_);
+  if (isLegacyNghttp2()) {
+    EXPECT_THAT(client_wrapper_->status_, Not(IsOk()));
+    EXPECT_TRUE(isCodecProtocolError(client_wrapper_->status_));
+  } else {
+    EXPECT_OK(client_wrapper_->status_);
+  }
 
-  EXPECT_EQ(1, client_stats_store_.counter("http2.rx_messaging_error").value());
-  expectDetailsRequest("http2.invalid.header.field");
+  EXPECT_EQ(isLegacyNghttp2() ? 0 : 1,
+            client_stats_store_.counter("http2.rx_messaging_error").value());
+  if (!isLegacyNghttp2()) {
+    expectDetailsRequest("http2.invalid.header.field");
+  }
 };
 
 TEST_P(Http2CodecImplTest, RefusedStreamReset) {

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <vector>
@@ -2230,6 +2231,11 @@ ConnectionImpl::Http2Options::Http2Options(
   // on this mitigation, set back to the old 10K number to avoid any changes in the HTTP/2 codec
   // behavior.
   nghttp2_option_set_max_outbound_ack(options_, 10000);
+  // nghttp2 v1.67 added a "glitch" rate limiter that sends GOAWAY(ENHANCE_YOUR_CALM) when it
+  // observes bursts of suspicious-but-legal frames. Envoy already has its own HTTP/2 flood
+  // protection, and we want that logic (and its associated test coverage) to remain authoritative.
+  nghttp2_option_set_glitch_rate_limit(options_, std::numeric_limits<uint64_t>::max(),
+                                       std::numeric_limits<uint64_t>::max());
 
   // nghttp2 REQUIRES setting max number of CONTINUATION frames.
   // 512 is chosen to accommodate Envoy's 8Mb max limit of max_request_headers_kb

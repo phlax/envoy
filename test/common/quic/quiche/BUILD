@@ -59,6 +59,11 @@ envoy_cc_test(
 envoy_cc_test(
     name = "http2_adapter_impl_comparison_test",
     srcs = envoy_select_enable_http3(["@quiche//:http2_adapter_impl_comparison_test_srcs"]),
+    args = [
+        # TODO(phlax): restore these cases once QUICHE can surface nghttp2 #2480 connection-level
+        # header validation failures consistently with oghttp2.
+        "--gtest_filter=-ComparisonTest.PathCharValidation:ComparisonTest.HeaderNameCharValidation:ComparisonTest.HeaderValueCharValidation",
+    ],
     copts = quiche_copts,
     rbe_pool = "linux_x64_small",
     tags = ["quiche"],

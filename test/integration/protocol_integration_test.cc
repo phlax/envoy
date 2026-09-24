@@ -5454,10 +5454,14 @@ TEST_P(DownstreamProtocolIntegrationTest, ContentLengthSmallerThanPayload) {
     EXPECT_EQ("200", response->headers().getStatusValue());
     EXPECT_TRUE(response->complete());
   } else {
-    // Inconsistency in content-length header and the actually body length should be treated as a
-    // stream error.
+    // nghttp2 #2480 now turns this HTTP messaging violation into a connection error for the legacy
+    // nghttp2 codec; oghttp2 still preserves the stream-error behavior.
     ASSERT_TRUE(response->waitForReset());
-    EXPECT_EQ(Http::StreamResetReason::ProtocolError, response->resetReason());
+    EXPECT_EQ((downstreamProtocol() == Http::CodecType::HTTP2 &&
+               GetParam().http2_implementation == Http2Impl::Nghttp2)
+                  ? Http::StreamResetReason::ConnectionTermination
+                  : Http::StreamResetReason::ProtocolError,
+              response->resetReason());
   }
 }
 
@@ -5483,10 +5487,14 @@ TEST_P(DownstreamProtocolIntegrationTest, ContentLengthLargerThanPayload) {
                                      {"content-length", "1025"}},
       1024);
 
-  // Inconsistency in content-length header and the actually body length should be treated as a
-  // stream error.
+  // nghttp2 #2480 now turns this HTTP messaging violation into a connection error for the legacy
+  // nghttp2 codec; oghttp2 still preserves the stream-error behavior.
   ASSERT_TRUE(response->waitForReset());
-  EXPECT_EQ(Http::StreamResetReason::ProtocolError, response->resetReason());
+  EXPECT_EQ((downstreamProtocol() == Http::CodecType::HTTP2 &&
+             GetParam().http2_implementation == Http2Impl::Nghttp2)
+                ? Http::StreamResetReason::ConnectionTermination
+                : Http::StreamResetReason::ProtocolError,
+            response->resetReason());
 }
 
 class NoUdpGso : public Api::OsSysCallsImpl {

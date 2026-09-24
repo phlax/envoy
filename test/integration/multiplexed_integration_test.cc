@@ -2432,6 +2432,8 @@ TEST_P(MultiplexedIntegrationTest, InconsistentContentLength) {
     EXPECT_EQ(Http::StreamResetReason::ProtocolError, response->resetReason());
     EXPECT_THAT(waitForAccessLog(access_log_name_), "http2.violation.of.messaging.rule");
   } else {
+    // nghttp2 #2480 now surfaces this HTTP messaging violation as a connection error on the legacy
+    // nghttp2 codec instead of delivering on_invalid_frame_recv_callback for a stream reset.
     EXPECT_EQ(Http::StreamResetReason::ConnectionTermination, response->resetReason());
     // http2.violation.of.messaging.rule
     EXPECT_THAT(waitForAccessLog(access_log_name_), HasSubstr("violation"));
