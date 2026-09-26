@@ -46,6 +46,15 @@ bazel_dep(name = "toolchains_llvm", version = "1.9.1.envoy")
 bazel_dep(name = "zlib-ng", version = "2.3.3.bcr.2")
 bazel_dep(name = "zstd", version = "1.5.7.bcr.2")
 
+java_toolchains = use_extension("@rules_java//java:extensions.bzl", "toolchains")
+use_repo(
+    java_toolchains,
+    "remotejdk17_linux",
+    "remotejdk17_linux_aarch64",
+    "remotejdk17_macos",
+    "remotejdk17_macos_aarch64",
+)
+
 local_path_override(
     module_name = "envoy",
     path = "..",
