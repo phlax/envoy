@@ -49,9 +49,37 @@ readonly -a REGISTRY_BAZELRC_FILES=(
     "api/.bazelrc"
     "bazel/tests/external/.bazelrc"
 )
+# shellcheck disable=SC2034
+readonly -a MODULE_DIRS=(. "$ENVOY_DOCS_PATH" api mobile bazel/tests/external)
+# shellcheck disable=SC2034
+readonly -a REGISTRY_MODULE_DIRS=(. api bazel/tests/external)
 
-module_workspace_dirs() {
-    printf '%s\n' . "$ENVOY_DOCS_PATH" api/ mobile/ bazel/tests/external/
+run_in_mods() {
+    local -n _mod_dirs="$1"
+    local fn="$2"
+    shift 2
+    local module_dir status
+
+    declare -F "$fn" > /dev/null || {
+        echo "FAIL: no such function: ${fn}" >&2
+        return 1
+    }
+    for module_dir in "${_mod_dirs[@]}"; do
+        status=0
+        pushd "$module_dir" > /dev/null
+        "$fn" "$module_dir" "$@" || status=$?
+        bazel "${BAZEL_STARTUP_OPTIONS[@]}" shutdown
+        popd > /dev/null
+        (( status == 0 )) || return "$status"
+    done
+}
+
+run_in_nested_mods() {
+    run_in_mods MODULE_DIRS "$@"
+}
+
+run_in_registry_mods() {
+    run_in_mods REGISTRY_MODULE_DIRS "$@"
 }
 
 workspace_name() {
@@ -84,6 +112,24 @@ workspace_target() {
     esac
 }
 
+workspace_bazel_options() {
+    case "${1%/}" in
+        mobile|api) ;;
+        *) echo --config=clang ;;
+    esac
+}
+
+workspace_bazel_run() {
+    local module_dir="$1"
+    local target_name="$2"
+    local target
+    shift 2
+
+    target="$(workspace_target "$module_dir" "$target_name")" || return 1
+    # shellcheck disable=SC2046
+    bazel run "${BAZEL_BUILD_OPTIONS[@]}" $(workspace_bazel_options "$module_dir") "$target" "$@"
+}
+
 lockfiles_check() {
     lockfiles_generate
     if [[ -z "$(git status --porcelain -- "$LOCKFILE_PATHSPEC")" ]]; then
@@ -100,13 +146,11 @@ lockfiles_check() {
 }
 
 lockfiles_generate() {
-    local module_dir
-    while IFS= read -r module_dir; do
-        pushd "$module_dir" > /dev/null
-        bazel mod "${BAZEL_GLOBAL_OPTIONS[@]}" deps --lockfile_mode=update
-        bazel "${BAZEL_STARTUP_OPTIONS[@]}" shutdown
-        popd > /dev/null
-    done < <(module_workspace_dirs)
+    run_in_nested_mods _lockfiles_generate_mod
+}
+
+_lockfiles_generate_mod() {
+    bazel mod "${BAZEL_GLOBAL_OPTIONS[@]}" deps --lockfile_mode=update
 }
 
 registry_current_hash() {
@@ -133,154 +177,138 @@ registry_current_hash() {
 }
 
 registry_check() {
-    local bazelrc
-    local module_dir
+    local version
+    local registry_hash=""
+
+    version="$(cat VERSION.txt)"
+    if [[ -n "${ENVOY_REGISTRY_ALLOW_UNSAFE:-}" ]]; then
+        run_in_registry_mods _registry_check_mod \
+            "--@envoy_toolshed//dependency:registry_allow_unsafe=true"
+        return
+    fi
+    run_in_registry_mods _registry_check_mod
+}
+
+_registry_check_mod() {
+    local module_dir="$1"
     local markdown_path
     local sha
     local sha_path
     local status_path
-    local workspace
     local tags
-    local version
-    local registry_hash=""
-    local target
+    local workspace
+    shift
 
-    version="$(cat VERSION.txt)"
-    for bazelrc in "${REGISTRY_BAZELRC_FILES[@]}"; do
-        module_dir="$(dirname "$bazelrc")"
-        target="$(workspace_target "$module_dir" update_registry.check)"
-        workspace="$(workspace_name "$module_dir")"
-        status_path="$(mktemp)"
-        markdown_path="$(mktemp)"
-        sha_path="$(mktemp)"
+    workspace="$(workspace_name "$module_dir")"
+    status_path="$(mktemp)"
+    markdown_path="$(mktemp)"
+    sha_path="$(mktemp)"
+    # shellcheck disable=SC2064
+    trap "rm -f '${status_path}' '${markdown_path}' '${sha_path}'" RETURN
 
-        pushd "$module_dir" > /dev/null
-        if [[ -n "${ENVOY_REGISTRY_ALLOW_UNSAFE:-}" ]]; then
-            bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
-                "${target}" \
-                "--@envoy_toolshed//dependency:registry_allow_unsafe=true" \
-                -- \
-                "--json-out=${status_path}" \
-                "--markdown-out=${markdown_path}" \
-                "--sha-out=${sha_path}"
-        else
-            bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
-                "${target}" \
-                -- \
-                "--json-out=${status_path}" \
-                "--markdown-out=${markdown_path}" \
-                "--sha-out=${sha_path}"
-        fi
-        bazel "${BAZEL_STARTUP_OPTIONS[@]}" shutdown
-        popd > /dev/null
+    workspace_bazel_run "$module_dir" update_registry.check "$@" -- \
+        "--json-out=${status_path}" \
+        "--markdown-out=${markdown_path}" \
+        "--sha-out=${sha_path}"
 
-        sha="$(cat "${sha_path}")"
-        tags="$(jq -r '.tags | join(" ")' "${status_path}")"
-        if [[ -z "${sha}" || "${sha}" == "null" ]]; then
-            rm -f "${status_path}" "${markdown_path}" "${sha_path}"
-            echo "FAIL: Failed to determine registry hash for ${workspace}" >&2
-            return 1
-        fi
-        if [[ -n "${registry_hash}" && "${registry_hash}" != "${sha}" ]]; then
-            rm -f "${status_path}" "${markdown_path}" "${sha_path}"
-            echo "FAIL: Registry hash mismatch: ${workspace} has ${sha}, expected ${registry_hash}" >&2
-            return 1
-        fi
-        registry_hash="${sha}"
-
-        echo "${workspace}: $(cat "${markdown_path}")"
-        if [[ -n "${tags}" ]]; then
-            rm -f "${status_path}" "${markdown_path}" "${sha_path}"
-            echo "${workspace}: registry commit ${sha} is tagged: ${tags}"
-            continue
-        fi
-        if [[ "${version}" == *-dev ]]; then
-            rm -f "${status_path}" "${markdown_path}" "${sha_path}"
-            echo "WARNING: ${workspace}: registry commit ${sha} is not a tagged version (ok for ${version})" >&2
-            continue
-        fi
-        rm -f "${status_path}" "${markdown_path}" "${sha_path}"
-        echo "FAIL: ${workspace}: registry commit ${sha} is not a tagged version, required for release ${version}" >&2
+    sha="$(cat "${sha_path}")"
+    tags="$(jq -r '.tags | join(" ")' "${status_path}")"
+    if [[ -z "${sha}" || "${sha}" == "null" ]]; then
+        echo "FAIL: Failed to determine registry hash for ${workspace}" >&2
         return 1
-    done
+    fi
+    if [[ -n "${registry_hash}" && "${registry_hash}" != "${sha}" ]]; then
+        echo "FAIL: Registry hash mismatch: ${workspace} has ${sha}, expected ${registry_hash}" >&2
+        return 1
+    fi
+    registry_hash="${sha}"
+
+    echo "${workspace}: $(cat "${markdown_path}")"
+    if [[ -n "${tags}" ]]; then
+        echo "${workspace}: registry commit ${sha} is tagged: ${tags}"
+        return
+    fi
+    if [[ "${version}" == *-dev ]]; then
+        echo "WARNING: ${workspace}: registry commit ${sha} is not a tagged version (ok for ${version})" >&2
+        return
+    fi
+    echo "FAIL: ${workspace}: registry commit ${sha} is not a tagged version, required for release ${version}" >&2
+    return 1
 }
 
 deps_report() {
-    local extra_options
+    run_in_nested_mods _deps_report_mod
+}
+
+_deps_report_mod() {
+    local module_dir="$1"
     local markdown_path
-    local module_dir
     local report_path
-    local target
     local workspace
 
-    while IFS= read -r module_dir; do
-        target="$(workspace_target "$module_dir" update_module)"
-        workspace="$(workspace_name "$module_dir")"
-        report_path="$(mktemp)"
-        markdown_path="$(mktemp)"
+    workspace="$(workspace_name "$module_dir")"
+    report_path="$(mktemp)"
+    markdown_path="$(mktemp)"
+    # shellcheck disable=SC2064
+    trap "rm -f '${report_path}' '${markdown_path}'" RETURN
 
-        pushd "$module_dir" > /dev/null
-        extra_options=()
-        case "${module_dir%/}" in
-            mobile|api) ;;
-            *) extra_options+=(--config=clang) ;;
-        esac
-        bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
-            "${extra_options[@]}" \
-            "${target}" \
-            -- \
-            --report \
-            "--json-out=${report_path}" \
-            "--markdown-out=${markdown_path}"
-        bazel "${BAZEL_STARTUP_OPTIONS[@]}" shutdown
-        popd > /dev/null
+    workspace_bazel_run "$module_dir" update_module -- \
+        --report \
+        "--json-out=${report_path}" \
+        "--markdown-out=${markdown_path}"
 
-        echo "== ${workspace} =="
-        cat "${markdown_path}"
-        echo
-
-        rm -f "${report_path}" "${markdown_path}"
-    done < <(module_workspace_dirs)
+    echo "== ${workspace} =="
+    cat "${markdown_path}"
+    echo
 }
 
 deps_update() {
-    local dep="$1"
-    local dep_name="${dep%%=*}"
-    local module_dir
-    local output
-    local output_path
-    local target
-    local workspace
-    local status
-
-    while IFS= read -r module_dir; do
-        target="$(workspace_target "$module_dir" update_module)"
-        workspace="$(workspace_name "$module_dir")"
-        output_path="$(mktemp)"
-
-        pushd "$module_dir" > /dev/null
-        set +e
-        bazel run "${BAZEL_BUILD_OPTIONS[@]}" "${target}" -- "${dep}" \
-            > "${output_path}" 2>&1
-        status=$?
-        set -e
-        bazel "${BAZEL_STARTUP_OPTIONS[@]}" shutdown
-        popd > /dev/null
-        output="$(cat "${output_path}")"
-        rm -f "${output_path}"
-        if [[ ${status} -eq 0 ]]; then
-            printf '%s: %s\n' "${workspace}" "${output}"
-            continue
-        fi
-        if grep -q "Dependency ${dep_name} not found" <<< "${output}"; then
-            echo "${workspace}: ${dep_name} not declared, skipping"
-            continue
-        fi
-        echo "${output}" >&2
-        return "${status}"
-    done < <(module_workspace_dirs)
-
+    run_in_nested_mods _deps_update_mod "$1"
     lockfiles_generate
+}
+
+_deps_update_mod() {
+    local module_dir="$1"
+    local dep="$2"
+    local dep_name="${dep%%=*}"
+    local output
+    local status=0
+    local workspace
+
+    workspace="$(workspace_name "$module_dir")"
+    output="$(workspace_bazel_run "$module_dir" update_module -- "${dep}" 2>&1)" || status=$?
+    if [[ ${status} -eq 0 ]]; then
+        printf '%s: %s\n' "${workspace}" "${output}"
+        return
+    fi
+    if grep -q "Dependency ${dep_name} not found" <<< "${output}"; then
+        echo "${workspace}: ${dep_name} not declared, skipping"
+        return
+    fi
+    echo "${output}" >&2
+    return "${status}"
+}
+
+registry_update() {
+    local -a registry_args=()
+
+    if [[ -n "${ENVOY_REGISTRY_HASH:-}" ]]; then
+        registry_args+=("--@envoy_toolshed//dependency:registry_sha=${ENVOY_REGISTRY_HASH}")
+    fi
+    if [[ -n "${ENVOY_REGISTRY_ALLOW_UNSAFE:-}" ]]; then
+        registry_args+=("--@envoy_toolshed//dependency:registry_allow_unsafe=true")
+    fi
+
+    run_in_registry_mods _registry_update_mod "${registry_args[@]}"
+    registry_current_hash > /dev/null
+    lockfiles_generate
+}
+
+_registry_update_mod() {
+    local module_dir="$1"
+    shift
+
+    workspace_bazel_run "$module_dir" update_registry "$@"
 }
 
 setup_clang_toolchain() {
@@ -1217,27 +1245,7 @@ case $CI_TARGET in
             registry_check
             exit 0
         fi
-        for bazelrc in "${REGISTRY_BAZELRC_FILES[@]}"; do
-            module_dir="$(dirname "$bazelrc")"
-            target="$(workspace_target "$module_dir" update_registry)"
-            pushd "$module_dir" > /dev/null
-            registry_args=()
-            if [[ -n "${ENVOY_REGISTRY_HASH:-}" ]]; then
-                registry_args+=("--@envoy_toolshed//dependency:registry_sha=${ENVOY_REGISTRY_HASH}")
-            fi
-            if [[ -n "${ENVOY_REGISTRY_ALLOW_UNSAFE:-}" ]]; then
-                registry_args+=("--@envoy_toolshed//dependency:registry_allow_unsafe=true")
-            fi
-            case "${module_dir%/}" in
-                mobile|api) ;;
-                *) registry_args+=(--config=clang) ;;
-            esac
-            bazel run "${BAZEL_BUILD_OPTIONS[@]}" "${target}" "${registry_args[@]}"
-            bazel "${BAZEL_STARTUP_OPTIONS[@]}" shutdown
-            popd > /dev/null
-        done
-        registry_current_hash > /dev/null
-        lockfiles_generate
+        registry_update
         ;;
 
     release|release.server_only|release.test_only)
