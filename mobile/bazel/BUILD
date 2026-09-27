@@ -1,5 +1,6 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_mobile_package")
+load("@rules_java//toolchains:default_java_toolchain.bzl", "default_java_toolchain")
 
 licenses(["notice"])  # Apache 2
 
@@ -121,3 +122,68 @@ alias(
     }),
     visibility = ["//visibility:public"],
 )
+
+# Keep JavaBuilder on the concrete JDK 25 runtime because rules_java's BazelJavaBuilder is built
+# for newer bytecode than JDK 17, while Android builds still compile Java 8 bytecode and
+# test/runtime toolchain resolution below stays on JDK 17.
+[
+    default_java_toolchain(
+        name = "envoy_mobile_java_toolchain_" + suffix,
+        exec_compatible_with = constraints,
+        java_runtime = "@remotejdk25_%s//:jdk" % suffix,
+        javabuilder_jvm_opts = ["--sun-misc-unsafe-memory-access=allow"],
+        source_version = "8",
+        target_version = "8",
+    )
+    for suffix, constraints in {
+        "linux": [
+            "@platforms//os:linux",
+            "@platforms//cpu:x86_64",
+        ],
+        "linux_aarch64": [
+            "@platforms//os:linux",
+            "@platforms//cpu:aarch64",
+        ],
+        "macos": [
+            "@platforms//os:macos",
+            "@platforms//cpu:x86_64",
+        ],
+        "macos_aarch64": [
+            "@platforms//os:macos",
+            "@platforms//cpu:aarch64",
+        ],
+    }.items()
+]
+
+# Envoy Mobile's JVM test stack (Robolectric 4.16, Netty 4.1.x ALPN, Mockito) does not yet
+# work on the JDK 25 runtime that @envoy registers by default, so the root module pins its Java
+# runtime to 17 for builds and tests under mobile/. TODO(phlax): drop this once the test
+# dependencies support newer JDK runtimes.
+_JDK17_PLATFORMS = {
+    "linux": [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    "linux_aarch64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    "macos": [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    "macos_aarch64": [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+    ],
+}
+
+[
+    toolchain(
+        name = "envoy_mobile_java_runtime_toolchain_" + suffix,
+        target_compatible_with = constraints,
+        toolchain = "@remotejdk17_%s//:jdk" % suffix,
+        toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
+    )
+    for suffix, constraints in _JDK17_PLATFORMS.items()
+]
