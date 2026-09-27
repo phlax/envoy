@@ -123,15 +123,13 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# Keep JavaBuilder on the concrete JDK 25 runtime because rules_java's BazelJavaBuilder is built
-# for newer bytecode than JDK 17, while Android builds still compile Java 8 bytecode and
-# test/runtime toolchain resolution below stays on JDK 17.
+# Keep JavaBuilder on a concrete JDK 21 runtime: rules_java 9.x's BazelJavaBuilder is compiled
+# for JDK 21 bytecode, while Envoy Mobile's JVM test stack does not yet work on JDK 25.
 [
     default_java_toolchain(
         name = "envoy_mobile_java_toolchain_" + suffix,
         exec_compatible_with = constraints,
-        java_runtime = "@remotejdk25_%s//:jdk" % suffix,
-        javabuilder_jvm_opts = ["--sun-misc-unsafe-memory-access=allow"],
+        java_runtime = "@remotejdk21_%s//:jdk" % suffix,
         source_version = "8",
         target_version = "8",
     )
@@ -155,11 +153,13 @@ alias(
     }.items()
 ]
 
-# Envoy Mobile's JVM test stack (Robolectric 4.16, Netty 4.1.x ALPN, Mockito) does not yet
-# work on the JDK 25 runtime that @envoy registers by default, so the root module pins its Java
-# runtime to 17 for builds and tests under mobile/. TODO(phlax): drop this once the test
-# dependencies support newer JDK runtimes.
-_JDK17_PLATFORMS = {
+# Envoy Mobile's runtime and bootstrap runtime toolchains must use the concrete //:jdk targets,
+# not the @rules_java//toolchains:remotejdk_21 alias, because that alias resolves through runtime
+# toolchain selection and would self-cycle. Pin them to JDK 21 because rules_java 9.x's
+# BazelJavaBuilder is compiled for JDK 21 bytecode, while Robolectric 4.16 / Netty 4.1.x ALPN /
+# Mockito still do not work on JDK 25. TODO(phlax): drop this once the test dependencies support
+# newer JDK runtimes.
+_JDK21_PLATFORMS = {
     "linux": [
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
@@ -182,8 +182,18 @@ _JDK17_PLATFORMS = {
     toolchain(
         name = "envoy_mobile_java_runtime_toolchain_" + suffix,
         target_compatible_with = constraints,
-        toolchain = "@remotejdk17_%s//:jdk" % suffix,
+        toolchain = "@remotejdk21_%s//:jdk" % suffix,
         toolchain_type = "@bazel_tools//tools/jdk:runtime_toolchain_type",
     )
-    for suffix, constraints in _JDK17_PLATFORMS.items()
+    for suffix, constraints in _JDK21_PLATFORMS.items()
+]
+
+[
+    toolchain(
+        name = "envoy_mobile_java_bootstrap_runtime_toolchain_" + suffix,
+        target_compatible_with = constraints,
+        toolchain = "@remotejdk21_%s//:jdk" % suffix,
+        toolchain_type = "@bazel_tools//tools/jdk:bootstrap_runtime_toolchain_type",
+    )
+    for suffix, constraints in _JDK21_PLATFORMS.items()
 ]
