@@ -111,6 +111,7 @@ def envoy_copts(test = False):
                    "-Wc++2a-extensions",
                    "-Wno-nullability-completeness",
                    "-Wrange-loop-analysis",
+                   "-Wno-nullability-completeness",
                ],
                _GCC_BUILD: [
                    "-Wno-maybe-uninitialized",
