@@ -114,17 +114,23 @@ selects.config_setting_group(
 
 alias(
     name = "dokka_java_runtime",
-    actual = select({
-        ":exec_linux_aarch64": "@remotejdk17_linux_aarch64//:jdk",
-        ":exec_linux_x86_64": "@remotejdk17_linux//:jdk",
-        ":exec_macos_aarch64": "@remotejdk17_macos_aarch64//:jdk",
-        ":exec_macos_x86_64": "@remotejdk17_macos//:jdk",
-    }),
+    actual = select(
+        {
+            ":exec_linux_aarch64": "@remotejdk17_linux_aarch64//:jdk",
+            ":exec_linux_x86_64": "@remotejdk17_linux//:jdk",
+            ":exec_macos_aarch64": "@remotejdk17_macos_aarch64//:jdk",
+            ":exec_macos_x86_64": "@remotejdk17_macos//:jdk",
+        },
+        no_match_error = "Dokka's pinned JDK 17 runtime is only configured for linux/macos x86_64/aarch64 exec platforms",
+    ),
     visibility = ["//visibility:public"],
 )
 
 # Keep JavaBuilder on a concrete JDK 21 runtime: rules_java 9.x's BazelJavaBuilder is compiled
 # for JDK 21 bytecode, while Envoy Mobile's JVM test stack does not yet work on JDK 25.
+# These source_version = "8" toolchains only match under the Android configs in mobile/.bazelrc,
+# which set --java_language_version=8 for :android / :mobile-android; other configs fall back to
+# rules_java's default toolchain selection.
 [
     default_java_toolchain(
         name = "envoy_mobile_java_toolchain_" + suffix,
@@ -156,7 +162,7 @@ alias(
 # Envoy Mobile's runtime and bootstrap runtime toolchains must use the concrete //:jdk targets,
 # not the @rules_java//toolchains:remotejdk_21 alias, because that alias resolves through runtime
 # toolchain selection and would self-cycle. Pin them to JDK 21 because rules_java 9.x's
-# BazelJavaBuilder is compiled for JDK 21 bytecode, while Robolectric 4.16 / Netty 4.1.x ALPN /
+# BazelJavaBuilder is compiled for JDK 21 bytecode, while Robolectric 4.17 / Netty 4.1.x ALPN /
 # Mockito still do not work on JDK 25. TODO(phlax): drop this once the test dependencies support
 # newer JDK runtimes.
 _JDK21_PLATFORMS = {
