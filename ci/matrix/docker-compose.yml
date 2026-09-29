@@ -40,7 +40,6 @@ services:
       <<: *common-env
       EXPECTED_NO_ARGS: clang-libc++
       EXPECTED_GCC: gcc-libstdc++
-      EXPECTED_LIBSTDCXX: clang-libstdc++
       EXPECTED_GCC_ENV: clang-libc++
       EXPECTED_CLANG_ENV: clang-libc++
     command:
@@ -61,8 +60,6 @@ services:
       <<: *common-env
       EXPECTED_NO_ARGS: clang-libc++
       EXPECTED_GCC: fail
-      # These images do not install a system libstdc++ development package.
-      EXPECTED_LIBSTDCXX: fail
       EXPECTED_GCC_ENV: clang-libc++
       EXPECTED_CLANG_ENV: clang-libc++
     command:
@@ -84,7 +81,6 @@ services:
       <<: *common-env
       EXPECTED_NO_ARGS: clang-libc++
       EXPECTED_GCC: gcc-libstdc++
-      EXPECTED_LIBSTDCXX: clang-libstdc++
       EXPECTED_GCC_ENV: clang-libc++
       EXPECTED_CLANG_ENV: clang-libc++
     command:
@@ -103,8 +99,6 @@ services:
       <<: *common-env
       EXPECTED_NO_ARGS: clang-libc++
       EXPECTED_GCC: fail
-      # These images do not install a system libstdc++ development package.
-      EXPECTED_LIBSTDCXX: fail
       EXPECTED_GCC_ENV: clang-libc++
       EXPECTED_CLANG_ENV: clang-libc++
     command:

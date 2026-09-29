@@ -57,12 +57,11 @@ As of November 2019 after [#8859](https://github.com/envoyproxy/envoy/pull/8859)
 [linked against libc++ on Linux](https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#linking-against-libc-on-linux).
 
 The standard library is derived from the compiler toolchain:
-* Clang uses libc++ (LLVM standard library) by default
-* GCC uses libstdc++ (GNU standard library) by default
-* `--//bazel:libstdc++=true` explicitly selects libstdc++
-* `--//bazel:libc++=true` explicitly selects libc++
+* Clang uses libc++ (LLVM standard library)
+* GCC uses libstdc++ (GNU standard library)
 
-These are the only supported configurations. If you need a different toolchain configuration, you must set it up in your `user.bazelrc` file.
+These are the only supported configurations. Other combinations, such as Clang with libstdc++, are not supported or tested;
+if you need one, you will need to set up your own `cc_toolchain`.
 
 # Building and running tests as a developer
 

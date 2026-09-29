@@ -9,7 +9,7 @@ This directory contains tests that verify Envoy's toolchain detection and select
 The test suite validates toolchain behavior in the following scenarios:
 
 - **Default build**: Testing what toolchain is selected with no explicit configuration
-- **Config-based selection**: Testing the default toolchain, `--config=gcc`, and `--//bazel:libstdc++=true`
+- **Config-based selection**: Testing the default toolchain (clang + libc++) and `--config=gcc` (gcc + libstdc++)
 - **Environment-based selection**: Testing `CC`/`CXX` environment variable overrides
 - **Compiler availability**: Testing behavior when only specific compilers are available
 
@@ -53,7 +53,6 @@ Successful tests will show output like:
 ```
 ✅ NO_ARGS passed as expected
 ✅ GCC passed as expected
-✅ LIBSTDCXX passed as expected
 ✅ GCC_ENV passed as expected
 ✅ CLANG_ENV passed as expected
 All test configs passed as expected
@@ -61,7 +60,7 @@ All test configs passed as expected
 
 Failed tests will show which configuration didn't match expectations:
 ```
-❌ LIBSTDCXX: expected=clang-libstdc++, got=fail
+❌ GCC: expected=gcc-libstdc++, got=fail
 ```
 
 ### Troubleshooting
