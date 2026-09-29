@@ -43,12 +43,12 @@ running tests that reflects the latest built Windows 2019 Envoy image.
 The source for these images is located in the [envoyproxy/envoy-build-tools](https://github.com/envoyproxy/envoy-build-tools)
 repository.
 
-The default toolchain uses the Clang compiler with libc++ for all Linux CI runs with tests. This is configured with `--config=clang`. We have an additional Linux CI run with GCC which builds binary only, configured with `--config=gcc`.
+The default toolchain uses the Clang compiler with libc++ for all Linux CI runs with tests and requires no configuration flag. We have an additional Linux CI run with GCC which builds binary only, configured with `--config=gcc`.
 
 # Supported compiler configurations
 
-Envoy supports two compiler toolchain configurations:
-* `--config=clang` - Clang compiler with libc++ standard library (default for CI)
+Envoy supports the following compiler toolchain configurations:
+* No configuration flag - Clang compiler with libc++ standard library (default)
 * `--config=gcc` - GCC compiler with libstdc++ standard library
 
 # C++ standard library
@@ -56,9 +56,11 @@ Envoy supports two compiler toolchain configurations:
 As of November 2019 after [#8859](https://github.com/envoyproxy/envoy/pull/8859) the official released binary is
 [linked against libc++ on Linux](https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#linking-against-libc-on-linux).
 
-The standard library is tied to the compiler toolchain:
-* `--config=clang` - Uses libc++ (LLVM standard library)
-* `--config=gcc` - Uses libstdc++ (GNU standard library)
+The standard library is derived from the compiler toolchain:
+* Clang uses libc++ (LLVM standard library) by default
+* GCC uses libstdc++ (GNU standard library) by default
+* `--//bazel:libstdc++=true` explicitly selects libstdc++
+* `--//bazel:libc++=true` explicitly selects libc++
 
 These are the only supported configurations. If you need a different toolchain configuration, you must set it up in your `user.bazelrc` file.
 

@@ -9,7 +9,7 @@ set -eo pipefail
 echo "Testing toolchain detection"
 RESULT_NO_ARGS=fail
 RESULT_GCC=fail
-RESULT_CLANG=fail
+RESULT_LIBSTDCXX=fail
 RESULT_GCC_ENV=fail
 RESULT_CLANG_ENV=fail
 
@@ -23,13 +23,13 @@ if OUTPUT_NO_ARGS=$(bazel run --verbose_failures -s //tools/toolchain:detect 2>&
     fi
 fi
 
-echo "Testing --config=clang"
-if OUTPUT_CLANG=$(bazel run --verbose_failures -s  --config=clang //tools/toolchain:detect 2>&1); then
-    COMPILER=$(echo "$OUTPUT_CLANG" | grep "Compiler:" | awk '{print $2}' | tr -d '\r\n')
-    LIBRARY=$(echo "$OUTPUT_CLANG" | grep "Standard Library:" | awk '{print $3}' | tr -d '\r\n')
+echo "Testing --//bazel:libstdc++=true"
+if OUTPUT_LIBSTDCXX=$(bazel run --verbose_failures -s --//bazel:libstdc++=true //tools/toolchain:detect 2>&1); then
+    COMPILER=$(echo "$OUTPUT_LIBSTDCXX" | grep "Compiler:" | awk '{print $2}' | tr -d '\r\n')
+    LIBRARY=$(echo "$OUTPUT_LIBSTDCXX" | grep "Standard Library:" | awk '{print $3}' | tr -d '\r\n')
     if [[ -n "$COMPILER" && -n "$LIBRARY" ]]; then
         # shellcheck disable=SC2034
-        RESULT_CLANG="$COMPILER-$LIBRARY"
+        RESULT_LIBSTDCXX="$COMPILER-$LIBRARY"
     fi
 fi
 
@@ -72,7 +72,7 @@ if OUTPUT_CLANG_ENV=$(bazel run --verbose_failures -s //tools/toolchain:detect 2
 fi
 
 FAILED=0
-for key in NO_ARGS GCC CLANG GCC_ENV CLANG_ENV; do
+for key in NO_ARGS GCC LIBSTDCXX GCC_ENV CLANG_ENV; do
     actual_var="RESULT_${key}"
     expected_var="EXPECTED_${key}"
     output_var="OUTPUT_${key}"

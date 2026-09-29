@@ -22,7 +22,7 @@ behavior_changes:
 - area: build
   change: |
     Removed the ``clang-libstdc++`` toolchain setup as this is no longer used or tested by the project.
-    Consolidated Clang and GCC toolchains which can be used with ``--config=clang`` or ``--config=gcc``.
+    Consolidated Clang and GCC toolchains which can be used with Clang or GCC configurations.
     These use ``libc++`` and ``libstdc++`` respectively.
 - area: squash_filter
   change: |
