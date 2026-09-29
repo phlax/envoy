@@ -103,6 +103,10 @@ build --@librdkafka//:with_ssl=false
 build --@librdkafka//:with_zlib=false
 build --per_file_copt=contrib/kafka/.*\.cc@-Wno-old-style-cast
 
+# protobuf: without this protobuf falls back to the legacy --proto_compiler path and builds
+# protoc from source (prefer_prebuilt_protoc defaults to true and so is not set here).
+common --incompatible_enable_proto_toolchain_resolution
+
 # these are here to detect if the toolchain attempts to compile protoc
 common --per_file_copt=bazel-out/.*/bin/external/protobuf.*/protoc@--THIS_CC_TOOLCHAIN_IS_BROKEN
 
