@@ -1145,63 +1145,19 @@ config_setting(
     },
 )
 
-# Explicit opt-ins. Neither is required for the default (clang + libc++) build;
-# the stdlib is derived from the compiler unless overridden.
-bool_flag(
-    name = "libc++",
-    build_setting_default = False,
-)
-
-config_setting(
-    name = "libc++_flag",
-    flag_values = {
-        ":libc++": "True",
-    },
-)
-
-bool_flag(
-    name = "libstdc++",
-    build_setting_default = False,
-)
-
-config_setting(
-    name = "libstdc++_flag",
-    flag_values = {
-        ":libstdc++": "True",
-    },
-)
-
-config_setting(
-    name = "libstdc++_flag_off",
-    flag_values = {
-        ":libstdc++": "False",
-    },
-)
-
-# gcc => libstdc++ unless overridden. Explicit flag allows clang + libstdc++.
-selects.config_setting_group(
+# The C++ standard library is derived from the compiler: clang and Apple builds use libc++,
+# gcc uses libstdc++. Other combinations (e.g. clang + libstdc++) are not supported; if you
+# need one you must provide your own cc_toolchain.
+alias(
     name = "libstdc++_enabled",
-    match_any = [
-        ":gcc_build",
-        ":libstdc++_flag",
-    ],
+    actual = ":gcc_build",
 )
 
-selects.config_setting_group(
-    name = "_clang_default_libc++",
-    match_all = [
-        ":clang_build",
-        ":libstdc++_flag_off",
-    ],
-)
-
-# clang/apple => libc++ unless --//bazel:libstdc++=true.
 selects.config_setting_group(
     name = "libc++_enabled",
     match_any = [
         ":apple",
-        ":libc++_flag",
-        ":_clang_default_libc++",
+        ":clang_build",
     ],
 )
 
