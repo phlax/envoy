@@ -20,6 +20,18 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
+string_flag(
+    name = "build_sha",
+    build_setting_default = "",
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "docs_tag",
+    build_setting_default = "",
+    visibility = ["//visibility:public"],
+)
+
 config_setting(
     name = "with_pretty_links",
     flag_values = {":pretty_links": "True"},
@@ -277,9 +289,9 @@ sphinx_html(
     out = "html_release.tar.gz",
     descriptor_path = "@envoy_api//:v3_proto_set",
     link_suffix_env = _LINK_SUFFIX_ENV,
-    # BUILD_SHA must be set in release builds
-    # The Envoy workspace will provide this on stamped builds. For external builds
-    # you must either pass an env var or pass it through the workspace's status.
+    # Build sha/tag may be supplied with --@envoy-docs//:build_sha=<sha> and
+    # --@envoy-docs//:docs_tag=<tag>. When unset, stamped builds fall back to workspace status
+    # (ENVOY_BUILD_SCM_REVISION), BUILD_DOCS_SHA, and BUILD_DOCS_TAG environment variables.
     rst = ":rst",
     sphinx_runner = "//tools:sphinx_runner",
     stamp = 1,

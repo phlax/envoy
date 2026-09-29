@@ -16,6 +16,8 @@ def _sphinx_html_impl(ctx):
 
     sphinx_args = ctx.attr._sphinx_args[BuildSettingInfo].value
     sphinx_args = sphinx_args.replace("\t", " ").replace("\n", " ").replace("\r", " ")
+    build_sha = ctx.attr._build_sha[BuildSettingInfo].value
+    docs_tag = ctx.attr._docs_tag[BuildSettingInfo].value
 
     ctx.actions.run_shell(
         inputs = inputs,
@@ -24,6 +26,8 @@ def _sphinx_html_impl(ctx):
         arguments = [
             "1" if ctx.attr.stamp else "0",
             volatile_env.path if volatile_env else "",
+            build_sha,
+            docs_tag,
             runner.path,
             version_file.path,
             descriptor_path.path,
@@ -34,22 +38,37 @@ def _sphinx_html_impl(ctx):
             set -e
             if [[ "$1" == "1" ]]; then
                 . "$2"
+            fi
+            if [[ -n "$3" ]]; then
+                build_sha="$3"
+            elif [[ "$1" == "1" ]]; then
                 build_sha="${BUILD_DOCS_SHA:-${ENVOY_BUILD_SCM_REVISION:-${BUILD_SCM_REVISION}}}"
-                docs_tag=(--docs_tag="${BUILD_DOCS_TAG:-}")
             else
                 build_sha="${BUILD_DOCS_SHA:-}"
-                docs_tag=()
             fi
-            runner="$3"
-            version_file="$4"
-            descriptor_path="$5"
-            rst="$6"
-            out="$7"
-            shift 7
-            "$runner" "$@" --build_sha="$build_sha" "${docs_tag[@]}" \\
+            build_sha_arg=()
+            if [[ -n "$build_sha" ]]; then
+                build_sha_arg=(--build_sha="$build_sha")
+            fi
+            docs_tag="$4"
+            if [[ -z "$docs_tag" && "$1" == "1" ]]; then
+                docs_tag="${BUILD_DOCS_TAG:-}"
+            fi
+            docs_tag_arg=()
+            if [[ -n "$docs_tag" ]]; then
+                docs_tag_arg=(--docs_tag="$docs_tag")
+            fi
+            runner="$5"
+            version_file="$6"
+            descriptor_path="$7"
+            rst="$8"
+            out="$9"
+            shift 9
+            "$runner" "$@" "${build_sha_arg[@]}" "${docs_tag_arg[@]}" \\
                 --version_file="$version_file" --descriptor_path="$descriptor_path" "$rst" "$out"
         """,
         mnemonic = "SphinxHtml",
+        use_default_shell_env = True,
     )
 
 sphinx_html = rule(
@@ -63,6 +82,8 @@ sphinx_html = rule(
         "link_suffix_env": attr.string(),
         "stamp": attr.int(default = 0, values = [0, 1]),
         "volatile_env": attr.label(allow_single_file = True),
+        "_build_sha": attr.label(default = "//:build_sha"),
+        "_docs_tag": attr.label(default = "//:docs_tag"),
         "_sphinx_args": attr.label(default = "//:sphinx_args"),
     },
 )
