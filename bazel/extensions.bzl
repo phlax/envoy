@@ -68,7 +68,7 @@ def _detect_llvm_version(repository_ctx, llvm_root, declared_version):
     marker = "clang version "
     for line in result.stdout.split("\n"):
         if marker in line:
-            version_parts = line[line.find(marker) + len(marker):].strip().split()
+            version_parts = line[line.find(marker) + len(marker):].strip().split(" ")
             if version_parts:
                 version = version_parts[0].split("-")[0]
                 components = version.split(".")
@@ -189,7 +189,7 @@ def _envoy_llvm_impl(module_ctx):
 
 _host_llvm = tag_class(
     attrs = {
-        "llvm_version": attr.string(default = _LLVM_VERSION),
+        "llvm_version": attr.string(default = ""),
         "path": attr.string(mandatory = True),
     },
 )

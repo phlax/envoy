@@ -30,7 +30,6 @@ cargo_build_script(
     data = [
         ":abi/abi.h",
     ] + select({
-
         "@platforms//os:linux": [
             "@llvm_toolchain_llvm//:include",
             "@llvm_toolchain_llvm//:lib/libclang.so",
