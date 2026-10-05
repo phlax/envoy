@@ -1,5 +1,5 @@
 common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/981341b385942d3bb81b444da9b266a14d29e8c7
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/495d8786e7462aa16934f30fedc5e2586306d1b7
 
 common --noincompatible_disallow_empty_glob
 common --noincompatible_disallow_ctx_resolve_tools
