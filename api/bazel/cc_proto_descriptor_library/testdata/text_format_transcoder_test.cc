@@ -2,6 +2,7 @@
 // Author: kmensah@google.com (Kwasi Mensah)
 
 #include <string>
+#include <utility>
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/substitute.h"
@@ -14,6 +15,7 @@
 #include "bazel/cc_proto_descriptor_library/text_format_transcoder.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
@@ -83,8 +85,16 @@ TEST(TextFormatTranscoderTest, InvalidDescriptorsAreNotRegistered) {
       protobuf::reflection::bazel_cc_proto_descriptor_library_testdata_test::kFileDescriptorInfo;
   std::string descriptor_bytes;
   ASSERT_TRUE(absl::Base64Unescape(original.file_descriptor_bytes_base64, &descriptor_bytes));
-  for (const auto& invalid_bytes : {std::string(original.file_descriptor_bytes_base64) + "!",
-                                    absl::Base64Escape(descriptor_bytes + "\x80")}) {
+  google::protobuf::FileDescriptorProto invalid_proto;
+  ASSERT_TRUE(invalid_proto.ParseFromString(descriptor_bytes));
+  invalid_proto.mutable_message_type(0)->mutable_field(0)->set_number(0);
+  std::string invalid_proto_bytes;
+  ASSERT_TRUE(invalid_proto.SerializeToString(&invalid_proto_bytes));
+  for (const auto& [label, invalid_bytes] :
+       {std::make_pair("invalid base64", std::string(original.file_descriptor_bytes_base64) + "!"),
+        std::make_pair("truncated proto", absl::Base64Escape(descriptor_bytes + "\x80")),
+        std::make_pair("invalid field number", absl::Base64Escape(invalid_proto_bytes))}) {
+    SCOPED_TRACE(label);
     cc_proto_descriptor_library::TextFormatTranscoder reserializer(false);
     const cc_proto_descriptor_library::internal::FileDescriptorInfo invalid_descriptor{
         original.file_name, invalid_bytes, original.deps};

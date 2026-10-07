@@ -21,15 +21,15 @@ createDynamicMessage(const TextFormatTranscoder& transcoder,
   auto dynamic_message =
       transcoder.createEmptyDynamicMessage(message.GetTypeName(), error_collector);
 
-  if (dynamic_message) {
-    if (!dynamic_message->ParsePartialFromString(message.SerializePartialAsString())) {
-      if (error_collector) {
-        error_collector->RecordError(
-            0, 0,
-            absl::StrFormat("Could not parse dynamic message for: %s", message.GetTypeName()));
-      }
-      return nullptr;
+  if (!dynamic_message) {
+    return nullptr;
+  }
+  if (!dynamic_message->ParsePartialFromString(message.SerializePartialAsString())) {
+    if (error_collector) {
+      error_collector->RecordError(
+          0, 0, absl::StrFormat("Could not parse dynamic message for: %s", message.GetTypeName()));
     }
+    return nullptr;
   }
 
   return dynamic_message;
