@@ -1,6 +1,7 @@
 #include <string>
 
 #include "absl/strings/escaping.h"
+#include "absl/strings/substitute.h"
 #include "bazel/cc_proto_descriptor_library/create_dynamic_message.h"
 #include "bazel/cc_proto_descriptor_library/file_descriptor_info.h"
 #include "bazel/cc_proto_descriptor_library/testdata/test.pb.h"
@@ -17,17 +18,19 @@ using ::testing::Eq;
 using ::testing::NotNull;
 using ::testing::Test;
 
-class ParseErrorCollector : public google::protobuf::io::ErrorCollector {
+class StringErrorCollector : public google::protobuf::io::ErrorCollector {
 public:
-  void RecordError(int line, int column, absl::string_view message) override {
-    EXPECT_EQ(line, 0);
-    EXPECT_EQ(column, 0);
-    EXPECT_EQ(message, "Could not parse dynamic message for: testdata.dynamic_descriptors.Foo");
-    ++errors_;
-  }
-  void RecordWarning(int, int, absl::string_view) override { ADD_FAILURE(); }
+  explicit StringErrorCollector(std::string& error_text) : error_text_(error_text) {}
 
-  int errors_ = 0;
+  void RecordError(int line, int column, absl::string_view message) override {
+    absl::SubstituteAndAppend(&error_text_, "$0($1): $2\n", line, column, message);
+  }
+  void RecordWarning(int line, int column, absl::string_view message) override {
+    RecordError(line, column, message);
+  }
+
+private:
+  std::string& error_text_;
 };
 
 TEST(TextFormatTranscoderTest, CreateDynamicMessage) {
@@ -75,11 +78,13 @@ TEST(TextFormatTranscoderTest, CreateDynamicMessageParseFailure) {
   ASSERT_NE(cc_proto_descriptor_library::createDynamicMessage(reserializer, concrete_message),
             nullptr);
   concrete_message.set_bar("\x08");
-  ParseErrorCollector error_collector;
+  std::string error_text;
+  StringErrorCollector error_collector(error_text);
   EXPECT_EQ(cc_proto_descriptor_library::createDynamicMessage(reserializer, concrete_message,
                                                               &error_collector),
             nullptr);
-  EXPECT_EQ(error_collector.errors_, 1);
+  EXPECT_EQ(error_text,
+            "0(0): Could not parse dynamic message for: testdata.dynamic_descriptors.Foo\n");
   EXPECT_EQ(cc_proto_descriptor_library::createDynamicMessage(reserializer, concrete_message),
             nullptr);
 }

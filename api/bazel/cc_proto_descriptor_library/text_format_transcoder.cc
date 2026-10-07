@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
@@ -16,6 +17,20 @@
 
 // NOLINT(namespace-envoy)
 namespace cc_proto_descriptor_library {
+
+namespace {
+
+class DescriptorErrorCollector : public google::protobuf::DescriptorPool::ErrorCollector {
+public:
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const google::protobuf::Message*, ErrorLocation,
+                   absl::string_view message) override {
+    ABSL_LOG(ERROR) << "Could not build descriptor for: " << filename
+                    << ", element: " << element_name << ": " << message;
+  }
+};
+
+} // namespace
 
 struct TextFormatTranscoder::InternalData {
   google::protobuf::DescriptorPool descriptor_pool;
@@ -63,13 +78,21 @@ void TextFormatTranscoder::loadFileDescriptors(
   google::protobuf::FileDescriptorProto file_descriptor_proto;
   std::string file_descriptor_bytes;
   if (!absl::Base64Unescape(file_descriptor_info.file_descriptor_bytes_base64,
-                            &file_descriptor_bytes) ||
-      !file_descriptor_proto.ParseFromString(file_descriptor_bytes)) {
+                            &file_descriptor_bytes)) {
     // Embedded descriptors are generated at build time; a failure here is a
     // build bug, not a runtime condition. Skip rather than register garbage.
+    ABSL_LOG(ERROR) << "Could not decode base64 descriptor for: " << file_descriptor_info.file_name;
     return;
   }
-  internals_->descriptor_pool.BuildFile(file_descriptor_proto);
+  if (!file_descriptor_proto.ParseFromString(file_descriptor_bytes)) {
+    ABSL_LOG(ERROR) << "Could not parse descriptor proto for: " << file_descriptor_info.file_name;
+    return;
+  }
+  DescriptorErrorCollector error_collector;
+  if (internals_->descriptor_pool.BuildFileCollectingErrors(file_descriptor_proto,
+                                                            &error_collector) == nullptr) {
+    return;
+  }
 }
 
 bool TextFormatTranscoder::toBinarySerializationInternal(
