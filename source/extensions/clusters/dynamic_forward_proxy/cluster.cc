@@ -514,14 +514,12 @@ Upstream::HostConstSharedPtr Cluster::LoadBalancer::findHostByName(const std::st
 Upstream::HostSelectionResponse Cluster::selectHostFromResolvedEntry(
     const std::string& host,
     const Common::DynamicForwardProxy::DnsHostInfoSharedPtr& host_info) const {
-  if (host_info && host_info->address()) {
-    auto selected_host = findHostByName(host);
-    if (!selected_host) {
-      ENVOY_LOG(debug, "resolved host {} has an address but no selectable cluster host", host);
-    }
-    return {std::move(selected_host), host_info->details()};
+  if (!host_info) {
+    return {nullptr, "no_host"};
   }
-  return {nullptr, host_info ? host_info->details() : "no_host"};
+  // Proxied hosts are published with a null address; failed resolutions are never published.
+  // Use the cluster host map as the sole source of truth rather than checking the address.
+  return {findHostByName(host), host_info->details()};
 }
 
 Upstream::HostConstSharedPtr Cluster::findHostByName(const std::string& host) const {

@@ -449,7 +449,6 @@ TEST_F(ClusterTest, LoadBalancer_CachedDnsFailurePreservesDetails) {
   initialize(default_yaml_config_, false);
   auto host_info = std::make_shared<StrictMock<Common::DynamicForwardProxy::MockDnsHostInfo>>();
   const std::string details = "dns_resolution_failure{test_failure}";
-  EXPECT_CALL(*host_info, address()).WillOnce(Return(nullptr));
   EXPECT_CALL(*host_info, details()).WillOnce(Return(details));
   NiceMock<Upstream::MockBasicResourceLimit> resource_limit;
   EXPECT_CALL(*dns_cache_manager_->dns_cache_, canCreateDnsRequest_())
@@ -463,6 +462,54 @@ TEST_F(ClusterTest, LoadBalancer_CachedDnsFailurePreservesDetails) {
   EXPECT_EQ(nullptr, result.host);
   EXPECT_EQ(details, result.details);
   EXPECT_EQ(nullptr, result.cancelable);
+}
+
+TEST_F(ClusterTest, LoadBalancer_ProxiedHostWithNullAddressIsSelected) {
+  initialize(default_yaml_config_, false);
+  makeTestHost("host1:80", "1.2.3.4");
+  auto host_info = host_map_["host1:80"];
+  host_info->address_.reset();
+  EXPECT_CALL(*host_info, details()).WillRepeatedly(Return("proxy_resolve"));
+  NiceMock<Upstream::MockBasicResourceLimit> resource_limit;
+  Common::DynamicForwardProxy::DnsCache::LoadDnsCacheEntryCallbacks* callbacks = nullptr;
+  EXPECT_CALL(*dns_cache_manager_->dns_cache_, canCreateDnsRequest_())
+      .WillOnce(Return(new Upstream::ResourceAutoIncDec(resource_limit)))
+      .WillOnce(Return(new Upstream::ResourceAutoIncDec(resource_limit)));
+  EXPECT_CALL(*dns_cache_manager_->dns_cache_, loadDnsCacheEntry_("host1", 80, _, _))
+      .WillOnce(Invoke([&](auto, auto, auto, auto& cb) {
+        callbacks = &cb;
+        return Common::DynamicForwardProxy::MockDnsCache::MockLoadDnsCacheEntryResult{
+            Common::DynamicForwardProxy::DnsCache::LoadDnsCacheEntryStatus::Loading,
+            new NiceMock<Common::DynamicForwardProxy::MockLoadDnsCacheEntryHandle>(), std::nullopt};
+      }))
+      .WillOnce(Invoke([&](auto, auto, auto, auto&) {
+        // Publish after the initial host-map miss so the synchronous path must consult the cache.
+        EXPECT_OK(cluster_->onDnsHostAddOrUpdate("host1:80", host_info));
+        return Common::DynamicForwardProxy::MockDnsCache::MockLoadDnsCacheEntryResult{
+            Common::DynamicForwardProxy::DnsCache::LoadDnsCacheEntryStatus::InCache, nullptr,
+            host_info};
+      }));
+  EXPECT_CALL(*this, onMemberUpdateCb(SizeIs(1), SizeIs(0)));
+  EXPECT_CALL(*host_info, touch()).Times(2);
+
+  auto async_result = lb_->chooseHost(setHostAndReturnContext("host1"));
+  EXPECT_EQ(nullptr, async_result.host);
+  ASSERT_NE(nullptr, async_result.cancelable);
+  ASSERT_NE(nullptr, callbacks);
+  auto sync_result = lb_->chooseHost(setHostAndReturnContext("host1"));
+  ASSERT_NE(nullptr, sync_result.host);
+  EXPECT_EQ("host1:80", sync_result.host->hostname());
+  EXPECT_EQ(nullptr, sync_result.host->address());
+  EXPECT_EQ("proxy_resolve", sync_result.details);
+  EXPECT_EQ(nullptr, sync_result.cancelable);
+  EXPECT_CALL(lb_context_, onAsyncHostSelection(_, _))
+      .WillOnce([&](Upstream::HostConstSharedPtr&& host, std::string&& details) {
+        ASSERT_NE(nullptr, host);
+        EXPECT_EQ("host1:80", host->hostname());
+        EXPECT_EQ(sync_result.host, host);
+        EXPECT_EQ(host_info->details(), details);
+      });
+  callbacks->onLoadDnsCacheComplete(host_info);
 }
 
 TEST_F(ClusterTest, LoadBalancer_SyncAndAsyncResolvedEntryResultsMatch) {
