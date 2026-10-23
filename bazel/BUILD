@@ -1,7 +1,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@envoy_toolshed//:utils.bzl", "json_merge")
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_import", "cc_library")
 load("@rules_java//toolchains:default_java_toolchain.bzl", "default_java_toolchain")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@rules_shell//shell:sh_library.bzl", "sh_library")
@@ -155,10 +155,32 @@ genrule(
     tools = ["//tools/windows:gen_dynamic_modules_exports"],
 )
 
+config_setting(
+    name = "linux_asan_build",
+    constraint_values = ["@platforms//os:linux"],
+    values = {"define": "ENVOY_CONFIG_ASAN=1"},
+)
+
+# Shared LLVM unwinder for sanitizer builds (see .bazelrc asan notes). cc_import sets
+# the solib rpath and adds the .so to runfiles so it works under RBE.
+cc_import(
+    name = "libunwind_shared",
+    shared_library = select({
+        "@platforms//cpu:x86_64": "@llvm_toolchain_llvm//:lib/x86_64-unknown-linux-gnu/libunwind.so.1",
+        "@platforms//cpu:aarch64": "@llvm_toolchain_llvm//:lib/aarch64-unknown-linux-gnu/libunwind.so.1",
+    }),
+    target_compatible_with = ["@platforms//os:linux"],
+)
+
 cc_library(
     name = "static_stdlib",
     linkopts = select({
-        "//bazel:linux": ["-static-libgcc"],
+        ":linux_asan_build": ["-unwindlib=none"],
+        ":linux": ["-static-libgcc"],
+        "//conditions:default": [],
+    }),
+    deps = select({
+        ":linux_asan_build": ["@unwind_libs//:libunwind"],
         "//conditions:default": [],
     }),
 )

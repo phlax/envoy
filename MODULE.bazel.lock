@@ -1472,6 +1472,22 @@
         }
       }
     },
+    "@@envoy_toolshed+//compile:extensions.bzl%unwind_extension": {
+      "general": {
+        "bzlTransitiveDigest": "uRTDlu70Or2ppfdRo03pk5uJHM0SVBIGuUbOQ3hZjcY=",
+        "usagesDigest": "K2cr0rbZIMDONrdn5K9UUnnaT2vCrxZxGbzmNpFWbpI=",
+        "recordedInputs": [],
+        "generatedRepoSpecs": {
+          "unwind_libs": {
+            "repoRuleId": "@@envoy_toolshed+//compile:unwind_libs.bzl%unwind_libs",
+            "attributes": {
+              "version": "0.2.27",
+              "sha256": "f8f031cd252cdfd59308d2f50dd0e4cea8952e6769fb348d8293d33e19647bee"
+            }
+          }
+        }
+      }
+    },
     "@@envoy_toolshed+//coverage/grcov:extensions.bzl%grcov_extension": {
       "general": {
         "bzlTransitiveDigest": "QUP/WzigwonW/hjUKRYfJjp0K1WE0xufDbWc7EHFTVc=",
