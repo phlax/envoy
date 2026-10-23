@@ -164,25 +164,62 @@ single_version_override(
 #     strip_prefix = "bazel",
 # )
 
+# TODO: remove once toolshed with GCC `dwp`/hardening/`host(toolchains)` (envoyproxy/toolshed#5536)
+# is released.
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "f7dfbc5683e997b33bca8d58d1390a359f0a45ec",
+    remote = "https://github.com/phlax/toolshed",
+    strip_prefix = "bazel",
+)
+
+git_override(
+    module_name = "envoy_toolshed_jq",
+    commit = "f7dfbc5683e997b33bca8d58d1390a359f0a45ec",
+    remote = "https://github.com/phlax/toolshed",
+    strip_prefix = "jq",
+)
+
+
 ####################################################################################
 # setup: Compilers
 ####################################################################################
 
-# GCC toolchain configuration
-register_toolchains("@envoy//bazel/rbe/toolchains/configs/linux/gcc/config:cc-toolchain")
+# GCC is opt-in (`--config=gcc`): hermetic, linking with hermetic lld, unless the root module
+# sets `gcc.host(path = ..., toolchains = ["gcc_linux_x86_64"])`. Downstreams register their own
+# GCC toolchains.
+gcc = use_extension("@envoy_toolshed//toolchains/gcc:extensions.bzl", "gcc_extension", dev_dependency = True)
+gcc.toolchain(
+    name = "gcc_linux_x86_64",
+    arch = "x86_64",
+    dwp = "@llvm_minimal_linux_x64//:bin/llvm-dwp",
+    lld = "@llvm_minimal_linux_x64//:bin/lld",
+    sysroot = "@sysroot_linux_amd64//sysroot",
+)
+
+# Hermetic libstdc++ for //compat/openssl/prefixer, kept out of any host GCC override.
+gcc.toolchain(
+    name = "gcc_runtime_linux_x86_64",
+    arch = "x86_64",
+    dwp = "@llvm_minimal_linux_x64//:bin/llvm-dwp",
+    lld = "@llvm_minimal_linux_x64//:bin/lld",
+    sysroot = "@sysroot_linux_amd64//sysroot",
+)
+use_repo(gcc, "gcc_linux_x86_64", "gcc_runtime_linux_x86_64")
+
+register_toolchains(
+    "//bazel/gcc:linux_x86_64_toolchain",
+    "//bazel/gcc:unavailable_linux_toolchain",
+    "//bazel/gcc:unavailable_macos_toolchain",
+    "//bazel/gcc:unavailable_windows_toolchain",
+    dev_dependency = True,
+)
 
 # LLVM toolchain configuration
 sysroot_ext = use_extension("@envoy_toolshed//sysroot:extensions.bzl", "sysroot_extension")
 sysroot_ext.setup()
-
-# TODO(phlax): remove once the hermetic gcc toolchain provides libstdc++ for //compat/openssl/prefixer
-sysroot_ext.setup(
-    name_prefix = "libstdcxx",
-    stdcc_version = "13",
-)
 use_repo(
     sysroot_ext,
-    "libstdcxx_sysroot_linux_amd64",
     "sysroot_linux_amd64",
     "sysroot_linux_arm64",
 )
