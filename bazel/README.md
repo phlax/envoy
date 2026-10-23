@@ -119,13 +119,12 @@ for how to update or override dependencies.
 
     GCC 13.4.0 uses its bundled BFD linker (its archive contains neither LLD nor gold). BFD does not
     support `--start-lib`/`--end-lib`, so Bazel uses static archives instead; parameter files remain
-    enabled for long command lines. GCC currently also uses the archive's bundled glibc sysroot,
-    not the toolshed sysroot used by Clang.
-    `gcc_toolchain` 0.13.0 has no label-based sysroot input and hard-codes bundled header paths
-    with `-nostdinc`/`-nostdinc++`. Adding `--sysroot` in `extra_*flags` alone would mix those headers
-    with toolshed libraries; `%workspace%` refers to the GCC repository, not the sysroot repository.
-    Safe reuse requires upstream support for a sysroot label that replaces the bundled include
-    paths and adds the sysroot files to compile and link action inputs.
+    enabled for long command lines. GCC uses the same toolshed sysroot as Clang, standardising
+    the headers and libraries we build against and constraining both compilers to Envoy's intended
+    libc environment. Envoy's wrapper reuses upstream's archive metadata and compiler configuration,
+    but removes the archive's bundled sysroot entirely. The shared sysroot is an explicit compile/link
+    action input; GCC retains its own compiler headers, libstdc++ headers and static `libstdc++.a`,
+    ahead of any libstdc++ shipped in the shared sysroot.
 
     Note: The C++ standard library is derived from the compiler: clang (the default) and Apple builds use `libc++`, `--config=gcc` uses `libstdc++`. Other combinations such as clang with `libstdc++` are not supported or tested; if you need one, you will need to set up your own `cc_toolchain`.
 
@@ -268,21 +267,16 @@ major version. With `--config=gcc` (or `--@envoy//bazel:use_gcc=true` outside th
 host compiler takes precedence over prebuilt GCC. Without that flag, Clang remains the default.
 Host GCC uses host libc/headers and is not a hermetic or remote-execution configuration.
 
-The upstream `gcc_toolchains` extension processes only root-module tags. Downstream root modules
-that want prebuilt GCC instead of host GCC must declare and register it themselves:
+Envoy's `gcc_toolchains` extension processes only root-module tags. Downstream root modules
+that want prebuilt GCC instead of host GCC must declare and register it with the shared sysroot:
 
 ```starlark
 bazel_dep(name = "gcc_toolchain", version = "0.13.0")
-gcc_toolchains = use_extension("@gcc_toolchain//toolchain:module_extensions.bzl", "gcc_toolchains")
+gcc_toolchains = use_extension("@envoy//bazel:gcc_toolchain.bzl", "gcc_toolchains")
 gcc_toolchains.toolchain(
     name = "gcc_toolchain_x86_64",
-    enable_fortran = False,
-    extra_cxxflags = ["-std=c++20"],
-    extra_ldflags = ["-l:libstdc++.a", "-lm"],
-    extra_target_settings = ["@envoy//bazel:gcc_requested"],
     gcc_version = "13.4.0",
-    supports_param_files = True,
-    target_arch = "x86_64",
+    sysroot = "@sysroot_linux_amd64//sysroot",
 )
 use_repo(gcc_toolchains, "gcc_toolchain_x86_64")
 register_toolchains("@gcc_toolchain_x86_64//:all")

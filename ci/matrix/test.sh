@@ -23,7 +23,7 @@ if OUTPUT_NO_ARGS=$(bazel run --verbose_failures -s //tools/toolchain:detect 2>&
 fi
 
 echo "Testing --config=gcc"
-if OUTPUT_GCC=$(bazel run --verbose_failures -s  --config=gcc //tools/toolchain:detect 2>&1); then
+if OUTPUT_GCC=$(bazel run --verbose_failures -s --config=gcc //tools/toolchain:detect 2>&1); then
     COMPILER=$(echo "$OUTPUT_GCC" | grep "Compiler:" | awk '{print $2}' | tr -d '\r\n')
     LIBRARY=$(echo "$OUTPUT_GCC" | grep "Standard Library:" | awk '{print $3}' | tr -d '\r\n')
     if [[ -n "$COMPILER" && -n "$LIBRARY" ]]; then
@@ -126,6 +126,31 @@ check_resolution() {
 
 check_resolution clang hermetic
 check_resolution gcc hermetic --config=gcc
+
+check_gcc_sysroot() {
+    local output
+    echo "Testing hermetic GCC sysroot paths"
+    if ! output=$(bazel aquery --config=gcc \
+        'mnemonic("Cpp(Compile|Link)", //tools/toolchain:detect)' --output=text 2>&1); then
+        echo "$output"
+        FAILED=1
+        return
+    fi
+    if ! grep -q -- '--sysroot' <<< "$output" ||
+        ! grep -q 'sysroot_linux_amd64/sysroot' <<< "$output" ||
+        ! grep -q -- '-nostdinc++' <<< "$output" ||
+        ! grep -Eq -- '-isystemexternal/[^ /]*gcc_toolchain[^ /]*/include/c\+\+/' <<< "$output" ||
+        ! grep -q -- '-l:libstdc++.a' <<< "$output" ||
+        grep -Eq 'gcc_toolchain[^ /]*/sysroot|sysroot_linux_amd64/sysroot/usr/include/c\+\+' <<< "$output"; then
+        echo "❌ GCC must use the shared sysroot and its own libstdc++ only"
+        echo "$output"
+        FAILED=1
+    else
+        echo "✅ GCC uses the shared sysroot and its own libstdc++"
+    fi
+}
+
+check_gcc_sysroot
 
 check_host_gcc() (
     local root fixture output version entry name

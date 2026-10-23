@@ -1,7 +1,26 @@
 #include <iostream>
 
+#if defined(__linux__)
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#endif
+
 // NOLINT(namespace-envoy)
 int main() {
+#if defined(__linux__)
+  // Exercise libc APIs missing from the GCC archive's bundled sysroot.
+  const int fd = memfd_create("toolchain-detect", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+  if (fd < 0) {
+    return 1;
+  }
+  const int result = fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK);
+  close(fd);
+  if (result < 0) {
+    return 1;
+  }
+#endif
+
 #if defined(__clang__)
   std::cout << "Compiler: clang\n";
   std::cout << "Compiler version: " << __clang_major__ << "." << __clang_minor__ << "."
