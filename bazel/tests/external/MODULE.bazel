@@ -28,6 +28,20 @@ local_path_override(
     path = "../../../docs",
 )
 
+# TODO(phlax): remove once toolshed with https://github.com/envoyproxy/toolshed/pull/5453 is released
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "145965877fc73c9771d1c7f4529ffb4309a04461",
+    remote = "https://github.com/envoyproxy/toolshed",
+    strip_prefix = "bazel",
+)
+git_override(
+    module_name = "envoy_toolshed_jq",
+    commit = "145965877fc73c9771d1c7f4529ffb4309a04461",
+    remote = "https://github.com/envoyproxy/toolshed",
+    strip_prefix = "jq",
+)
+
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     is_default = True,
