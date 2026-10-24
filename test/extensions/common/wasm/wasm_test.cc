@@ -570,6 +570,7 @@ TEST_P(WasmCommonTest, MemorySizeGaugeThreadLocalPlugin) {
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
   auto vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(runtime);
+  vm_config->set_allow_precompiled(true);
   Protobuf::StringValue vm_configuration_string;
   vm_configuration_string.set_value(vm_configuration);
   std::ignore = vm_config->mutable_configuration()->PackFrom(vm_configuration_string);
@@ -1967,6 +1968,7 @@ root_id: "panic during request processing"
 failure_policy: FAIL_RELOAD
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2086,6 +2088,7 @@ root_id: "panic during request processing"
 failure_policy: FAIL_CLOSED
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2164,6 +2167,7 @@ name: "{}_test_wasm_reload"
 root_id: "panic during request processing"
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2243,6 +2247,7 @@ root_id: "panic during request processing"
 failure_policy: FAIL_OPEN
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2312,6 +2317,7 @@ name: "{}"
 root_id: "panic during request processing"
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"

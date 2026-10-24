@@ -52,6 +52,7 @@ public:
 
   void setupWasmFilter(const std::string& config, const std::string& root_id = "") {
     bool downstream = std::get<2>(GetParam());
+    const std::string module = root_id.empty() ? "headers" : root_id;
     const std::string yaml = TestEnvironment::substitute(absl::StrCat(
         R"EOF(
           name: envoy.filters.http.wasm
@@ -65,13 +66,15 @@ public:
                 vm_id: "vm_id"
                 runtime: envoy.wasm.runtime.)EOF",
         std::get<0>(GetParam()), R"EOF(
+                allow_precompiled: true
                 configuration:
                   "@type": type.googleapis.com/google.protobuf.StringValue
                   value: )EOF",
         config, R"EOF(
                 code:
                   local:
-                    filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/test_cpp.wasm"
+                    filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/)EOF",
+        module, R"EOF(_cpp.wasm"
         )EOF"));
     config_helper_.prependFilter(yaml, downstream);
 
@@ -441,6 +444,7 @@ typed_config:
         base_interval: 0.01s
     vm_config:
       runtime: envoy.wasm.runtime.v8
+      allow_precompiled: true
       code:
         local:
           filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/deferred_data_rust.wasm"
