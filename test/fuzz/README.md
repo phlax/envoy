@@ -170,6 +170,9 @@ bazel run @envoy_toolshed//coverage:run -- \
   --validate-config=fuzz-coverage-config \
   --validate-target=//tools/coverage:report.validate
 ```
+`test/run_envoy_bazel_coverage.sh` remains available as a compatibility wrapper and honours the
+`FUZZ_COVERAGE` and `VALIDATE_COVERAGE` environment variables.
+
 This generates a coverage report after running the fuzz targets for one minute against the fuzzing engine libfuzzer and using the checked-in corpus as an initial seed.
 
 Otherwise, you can generate reports from the

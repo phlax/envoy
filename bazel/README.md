@@ -736,6 +736,9 @@ bazel run @envoy_toolshed//coverage:run -- \
     --validate-target=//tools/coverage:report.validate
 ```
 
+`test/run_envoy_bazel_coverage.sh` remains available as a compatibility wrapper and honours the
+`FUZZ_COVERAGE` and `VALIDATE_COVERAGE` environment variables.
+
 **Note** that it is important to ensure that the versions of `clang`, `llvm-cov` and `llvm-profdata`
 are consistent and that they match the most recent Clang/LLVM toolchain version in use by Envoy (see
 the [build container

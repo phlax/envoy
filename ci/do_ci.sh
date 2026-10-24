@@ -605,17 +605,12 @@ case $CI_TARGET in
 
     coverage|fuzz_coverage)
         echo "${CI_TARGET} build with tests ${COVERAGE_TEST_TARGETS[*]}"
-        COVERAGE_ARGS=(
-            --validate-target=@envoy//tools/coverage:report.validate
-            --grpc-log="${ENVOY_BUILD_DIR}/grpc.log"
-        )
         if [[ "$CI_TARGET" == "fuzz_coverage" ]]; then
-            COVERAGE_ARGS+=(--fuzz --config=fuzz-coverage --validate-config=fuzz-coverage-config)
-        else
-            COVERAGE_ARGS+=(--config=test-coverage)
+            export FUZZ_COVERAGE=true
         fi
-        bazel run "${BAZEL_BUILD_OPTIONS[@]}" @envoy_toolshed//coverage:run -- \
-            "${COVERAGE_ARGS[@]}" -- "${COVERAGE_TEST_TARGETS[@]}"
+        export BAZEL_GRPC_LOG="${ENVOY_BUILD_DIR}/grpc.log"
+        "${ENVOY_SRCDIR}/test/run_envoy_bazel_coverage.sh" \
+            "${COVERAGE_TEST_TARGETS[@]}"
         collect_build_profile coverage
         ;;
 
