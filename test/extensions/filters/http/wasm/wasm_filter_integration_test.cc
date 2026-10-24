@@ -52,6 +52,7 @@ public:
 
   void setupWasmFilter(const std::string& config, const std::string& root_id = "") {
     bool downstream = std::get<2>(GetParam());
+    const std::string module = root_id.empty() ? "headers" : root_id;
     const std::string yaml = TestEnvironment::substitute(absl::StrCat(
         R"EOF(
           name: envoy.filters.http.wasm
@@ -71,7 +72,8 @@ public:
         config, R"EOF(
                 code:
                   local:
-                    filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/test_cpp.wasm"
+                    filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/)EOF",
+        module, R"EOF(_cpp.wasm"
         )EOF"));
     config_helper_.prependFilter(yaml, downstream);
 
