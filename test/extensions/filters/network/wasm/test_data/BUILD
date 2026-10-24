@@ -3,6 +3,7 @@ load(
     "envoy_cc_test_library",
     "envoy_package",
 )
+load("//bazel:envoy_select.bzl", "envoy_select_wasm_v8_bool")
 load("//bazel/wasm:wasm.bzl", "envoy_wasm_cc_binary", "wasm_rust_binary")
 
 licenses(["notice"])  # Apache 2
@@ -12,6 +13,7 @@ envoy_package()
 wasm_rust_binary(
     name = "close_stream_rust.wasm",
     srcs = ["close_stream_rust.rs"],
+    precompile = envoy_select_wasm_v8_bool(),
     deps = [
         "@proxy-wasm-rust-sdk//:proxy_wasm",
         "@proxy-wasm-rust-sdk//bazel/cargo/remote:log",
@@ -21,6 +23,7 @@ wasm_rust_binary(
 wasm_rust_binary(
     name = "logging_rust.wasm",
     srcs = ["logging_rust.rs"],
+    precompile = envoy_select_wasm_v8_bool(),
     deps = [
         "@proxy-wasm-rust-sdk//:proxy_wasm",
         "@proxy-wasm-rust-sdk//bazel/cargo/remote:log",
@@ -30,6 +33,7 @@ wasm_rust_binary(
 wasm_rust_binary(
     name = "panic_rust.wasm",
     srcs = ["panic_rust.rs"],
+    precompile = envoy_select_wasm_v8_bool(),
     deps = [
         "@proxy-wasm-rust-sdk//:proxy_wasm",
         "@proxy-wasm-rust-sdk//bazel/cargo/remote:log",
@@ -39,6 +43,7 @@ wasm_rust_binary(
 wasm_rust_binary(
     name = "resume_call_rust.wasm",
     srcs = ["resume_call_rust.rs"],
+    precompile = envoy_select_wasm_v8_bool(),
     deps = [
         "@proxy-wasm-rust-sdk//:proxy_wasm",
         "@proxy-wasm-rust-sdk//bazel/cargo/remote:log",
@@ -65,6 +70,7 @@ envoy_cc_test_library(
 
 envoy_wasm_cc_binary(
     name = "test_cpp.wasm",
+    precompile = envoy_select_wasm_v8_bool(),
     srcs = [
         "test_close_stream_cpp.cc",
         "test_cpp.cc",
