@@ -26,6 +26,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "include/proxy-wasm/bytecode_util.h"
 #include "openssl/bytestring.h"
 #include "openssl/hmac.h"
 #include "openssl/sha.h"
@@ -83,6 +84,34 @@ public:
     scope_ = stats_store_.createScope("wasm.");
   }
 
+  void loadTestModule(absl::string_view module, std::optional<bool> allow_precompiled) {
+    envoy::extensions::wasm::v3::PluginConfig plugin_config;
+    auto* vm_config = plugin_config.mutable_vm_config();
+    vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+    vm_config->mutable_configuration()->set_value("source-canary");
+    if (allow_precompiled.has_value()) {
+      vm_config->set_allow_precompiled(*allow_precompiled);
+    }
+    const auto code = TestEnvironment::readFileToStringForTest(TestEnvironment::substitute(
+        absl::StrCat("{{ test_rundir }}/test/extensions/common/wasm/test_data/", module)));
+    ASSERT_FALSE(code.empty());
+    auto plugin = std::make_shared<Plugin>(plugin_config, local_info_);
+    auto wasm = std::make_shared<Wasm>(plugin->wasmConfig(), "", scope_, *api_, cluster_manager_,
+                                       *dispatcher_);
+    if (allow_precompiled.value_or(false)) {
+      std::string_view precompiled;
+      ASSERT_TRUE(proxy_wasm::BytecodeUtil::getCustomSection(
+          code, wasm->wasm_vm()->getPrecompiledSectionName(), precompiled));
+      ASSERT_FALSE(precompiled.empty());
+      // V8::load exclusively deserializes when given a nonempty precompiled section;
+      // it returns false on rejection rather than falling back to compiling the source.
+    }
+    ASSERT_TRUE(wasm->load(code, vm_config->allow_precompiled()));
+    ASSERT_TRUE(wasm->initialize());
+    EXPECT_LOG_CONTAINS("info", "on_vm_start source-canary",
+                        ASSERT_NE(wasm->start(plugin), nullptr));
+  }
+
   Upstream::MockClusterManager cluster_manager_;
   Stats::IsolatedStoreImpl stats_store_;
   Api::ApiPtr api_;
@@ -93,9 +122,32 @@ public:
   RemoteAsyncDataProviderPtr remote_data_provider_;
 };
 
+// Intentionally retain the full matrix: this is the primary cross-runtime coverage after
+// other suites were trimmed to the first sandbox runtime.
 INSTANTIATE_TEST_SUITE_P(Runtimes, WasmCommonTest,
                          Envoy::Extensions::Common::Wasm::runtime_and_cpp_values,
                          Envoy::Extensions::Common::Wasm::wasmTestParamsToString);
+
+TEST_P(WasmCommonTest, LoadFromSourceWithoutPrecompiled) {
+  if (std::get<0>(GetParam()) == "null") {
+    GTEST_SKIP() << "Requires a sandbox runtime";
+  }
+  loadTestModule("test_cpp_source.wasm", std::nullopt);
+}
+
+TEST_P(WasmCommonTest, PrecompiledSectionStrippedWhenNotAllowed) {
+  if (std::get<0>(GetParam()) == "null") {
+    GTEST_SKIP() << "Requires a sandbox runtime";
+  }
+  loadTestModule("test_cpp.wasm", false);
+}
+
+TEST_P(WasmCommonTest, PrecompiledModuleIsUsedWhenAllowed) {
+  if (std::get<0>(GetParam()) != "v8") {
+    GTEST_SKIP() << "Requires V8 precompiled modules";
+  }
+  loadTestModule("test_cpp.wasm", true);
+}
 
 TEST_P(WasmCommonTest, WasmFailState) {
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
@@ -570,6 +622,7 @@ TEST_P(WasmCommonTest, MemorySizeGaugeThreadLocalPlugin) {
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
   auto vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(runtime);
+  vm_config->set_allow_precompiled(true);
   Protobuf::StringValue vm_configuration_string;
   vm_configuration_string.set_value(vm_configuration);
   std::ignore = vm_config->mutable_configuration()->PackFrom(vm_configuration_string);
@@ -1967,6 +2020,7 @@ root_id: "panic during request processing"
 failure_policy: FAIL_RELOAD
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2086,6 +2140,7 @@ root_id: "panic during request processing"
 failure_policy: FAIL_CLOSED
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2164,6 +2219,7 @@ name: "{}_test_wasm_reload"
 root_id: "panic during request processing"
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2243,6 +2299,7 @@ root_id: "panic during request processing"
 failure_policy: FAIL_OPEN
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"
@@ -2312,6 +2369,7 @@ name: "{}"
 root_id: "panic during request processing"
 vm_config:
   runtime: "envoy.wasm.runtime.{}"
+  allow_precompiled: true
   configuration:
       "@type": "type.googleapis.com/google.protobuf.StringValue"
       value: "some configuration"

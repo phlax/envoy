@@ -52,6 +52,7 @@ public:
 
   void setupWasmFilter(const std::string& config, const std::string& root_id = "") {
     bool downstream = std::get<2>(GetParam());
+    const std::string module = root_id.empty() ? "headers" : root_id;
     const std::string yaml = TestEnvironment::substitute(absl::StrCat(
         R"EOF(
           name: envoy.filters.http.wasm
@@ -65,13 +66,15 @@ public:
                 vm_id: "vm_id"
                 runtime: envoy.wasm.runtime.)EOF",
         std::get<0>(GetParam()), R"EOF(
+                allow_precompiled: true
                 configuration:
                   "@type": type.googleapis.com/google.protobuf.StringValue
                   value: )EOF",
         config, R"EOF(
                 code:
                   local:
-                    filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/test_cpp.wasm"
+                    filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/)EOF",
+        module, R"EOF(_cpp.wasm"
         )EOF"));
     config_helper_.prependFilter(yaml, downstream);
 
@@ -154,6 +157,34 @@ INSTANTIATE_TEST_SUITE_P(Runtimes, WasmFilterIntegrationTest,
                          Common::Wasm::dual_filter_with_codecs_sandbox_runtime_and_cpp_values,
                          Common::Wasm::wasmDualFilterWithCodecsTestParamsToString);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WasmFilterIntegrationTest);
+
+TEST_P(WasmFilterIntegrationTest, LoadFromSourceWithoutPrecompiled) {
+  if (std::get<0>(GetParam()) != "v8" || !std::get<2>(GetParam()) ||
+      std::get<3>(GetParam()) != Http::CodecType::HTTP1) {
+    GTEST_SKIP() << "A single V8 downstream HTTP1 source-loading canary";
+  }
+  config_helper_.prependFilter(TestEnvironment::substitute(R"EOF(
+name: envoy.filters.http.wasm
+typed_config:
+  "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+  config:
+    name: source_canary
+    vm_config:
+      runtime: envoy.wasm.runtime.v8
+      code:
+        local:
+          filename: "{{ test_rundir }}/test/extensions/common/wasm/test_data/test_cpp_source.wasm"
+)EOF"));
+  HttpIntegrationTest::initialize();
+
+  const Http::TestRequestHeaderMapImpl request_headers{
+      {":scheme", "http"}, {":method", "GET"}, {":path", "/"}, {":authority", "host"}};
+  const Http::TestRequestHeaderMapImpl expected_request_headers{
+      {":method", "GET"}, {":path", "/"}, {":authority", "host"}};
+  const Http::TestResponseHeaderMapImpl response_headers{{":status", "200"}};
+  runTest(request_headers, {}, expected_request_headers, "", response_headers, {}, response_headers,
+          "");
+}
 
 TEST_P(WasmFilterIntegrationTest, HeadersManipulation) {
   setupWasmFilter("headers");
@@ -441,6 +472,7 @@ typed_config:
         base_interval: 0.01s
     vm_config:
       runtime: envoy.wasm.runtime.v8
+      allow_precompiled: true
       code:
         local:
           filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/deferred_data_rust.wasm"
