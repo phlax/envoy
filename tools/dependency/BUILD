@@ -66,6 +66,7 @@ json_merge(
 
 # Metadata-only repositories absent from the resolved module graph have no
 # version to check.
+# TODO: Skip nested archive tags until envoy.dependency.check can parse nested tag names.
 json_merge(
     name = "check-dependencies",
     srcs = [":filtered-dependencies"],
@@ -75,9 +76,17 @@ json_merge(
         select(.value.version != null)
         | .value |= (
             .source as $source
-            | if $source.url then .urls = ([$source.url] + ($source.mirror_urls // [])) else . end
+            | if $source.url then
+                .urls = ([
+                    $source.url
+                    | sub("^(?<archive>https://github.com/[^/]+/[^/]+/archive/)refs/tags/(?<tag>.+[.](tar[.]gz|zip))$";
+                          "\\(.archive)\\(.tag)")
+                ] + ($source.mirror_urls // []))
+              else . end
             | .sha256 = ($source.integrity // "")
         )
+        | select((.value.urls[0] // ""
+                  | test("^https://github.com/[^/]+/[^/]+/archive/.*/.*[.](tar[.]gz|zip)$")) | not)
       )
     """,
     visibility = ["//visibility:public"],
