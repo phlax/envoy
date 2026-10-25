@@ -76,8 +76,8 @@ wasm_rust_binary(
 wasm_rust_binary(
     name = "headers_rust.wasm",
     srcs = ["headers_rust.rs"],
-    wasi = True,
     precompile = envoy_select_wasm_v8_bool(),
+    wasi = True,
     deps = [
         "@proxy-wasm-rust-sdk//:proxy_wasm",
         "@proxy-wasm-rust-sdk//bazel/cargo/remote:log",
@@ -165,9 +165,17 @@ envoy_cc_test_library(
 envoy_wasm_cc_binary(
     name = "headers_cpp.wasm",
     srcs = ["test_cpp.cc"],
+    copts = ["-DWASM_TEST_CPP_HEADERS_ONLY=1"],
     precompile = envoy_select_wasm_v8_bool(),
+    deps = ["@proxy-wasm-cpp-sdk//contrib:contrib_lib"],
+)
+
+envoy_wasm_cc_binary(
+    name = "headers_cpp_source.wasm",
+    srcs = ["test_cpp.cc"],
     copts = ["-DWASM_TEST_CPP_HEADERS_ONLY=1"],
     deps = ["@proxy-wasm-cpp-sdk//contrib:contrib_lib"],
+    # Deliberately NOT precompiled: from-source V8 canary.
 )
 
 envoy_wasm_cc_binary(
