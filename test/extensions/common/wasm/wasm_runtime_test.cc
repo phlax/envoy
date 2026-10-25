@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "test/extensions/common/wasm/wasm_runtime.h"
 
 #include "gtest/gtest.h"
@@ -7,13 +9,13 @@ namespace Extensions {
 namespace Common {
 namespace Wasm {
 
-#if defined(PROXY_WASM_HAS_RUNTIME_V8)
-TEST(WasmRuntimeTest, V8IsFirstSandboxRuntime) {
+TEST(WasmRuntimeTest, V8IsFirstSandboxRuntimeWhenAvailable) {
   const auto runtimes = sandboxRuntimes();
-  ASSERT_FALSE(runtimes.empty());
+  if (std::find(runtimes.begin(), runtimes.end(), "v8") == runtimes.end()) {
+    GTEST_SKIP() << "V8 not compiled in";
+  }
   EXPECT_EQ(runtimes.front(), "v8");
 }
-#endif
 
 TEST(WasmRuntimeTest, HostTestMatrixUsesFirstAvailableSandbox) {
   std::vector<std::tuple<std::string, std::string>> expected;
