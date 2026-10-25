@@ -22,6 +22,7 @@ protected:
   WasmFactoryTest() {
     config_.mutable_config()->mutable_vm_config()->set_runtime(
         absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+    config_.mutable_config()->mutable_vm_config()->set_allow_precompiled(true);
     if (std::get<0>(GetParam()) != "null") {
       config_.mutable_config()->mutable_vm_config()->mutable_code()->mutable_local()->set_filename(
           TestEnvironment::substitute(

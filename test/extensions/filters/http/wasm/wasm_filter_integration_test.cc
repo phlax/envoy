@@ -66,6 +66,7 @@ public:
                 vm_id: "vm_id"
                 runtime: envoy.wasm.runtime.)EOF",
         std::get<0>(GetParam()), R"EOF(
+                allow_precompiled: true
                 configuration:
                   "@type": type.googleapis.com/google.protobuf.StringValue
                   value: )EOF",
@@ -443,6 +444,7 @@ typed_config:
         base_interval: 0.01s
     vm_config:
       runtime: envoy.wasm.runtime.v8
+      allow_precompiled: true
       code:
         local:
           filename: "{{ test_rundir }}/test/extensions/filters/http/wasm/test_data/deferred_data_rust.wasm"

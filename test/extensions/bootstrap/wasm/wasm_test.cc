@@ -49,6 +49,7 @@ public:
     *plugin_config.mutable_vm_config()->mutable_runtime() =
         absl::StrCat("envoy.wasm.runtime.", runtime);
     *plugin_config.mutable_vm_config()->mutable_vm_id() = vm_id_;
+    plugin_config.mutable_vm_config()->set_allow_precompiled(true);
     plugin_config.mutable_vm_config()->mutable_configuration()->set_value(vm_configuration_);
     plugin_config.mutable_configuration()->set_value(plugin_configuration_);
     plugin_ = std::make_shared<Extensions::Common::Wasm::Plugin>(plugin_config, local_info_);
