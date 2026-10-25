@@ -7,6 +7,14 @@ namespace Extensions {
 namespace Common {
 namespace Wasm {
 
+#if defined(PROXY_WASM_HAS_RUNTIME_V8)
+TEST(WasmRuntimeTest, V8IsFirstSandboxRuntime) {
+  const auto runtimes = sandboxRuntimes();
+  ASSERT_FALSE(runtimes.empty());
+  EXPECT_EQ(runtimes.front(), "v8");
+}
+#endif
+
 TEST(WasmRuntimeTest, HostTestMatrixUsesFirstAvailableSandbox) {
   std::vector<std::tuple<std::string, std::string>> expected;
   const auto runtimes = sandboxRuntimes();

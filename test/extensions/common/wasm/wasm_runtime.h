@@ -10,6 +10,8 @@ namespace Common {
 namespace Wasm {
 
 // Sandbox runtimes compiled into this build (e.g. v8, wamr, wasmtime).
+// Ordering is load-bearing: single_sandbox_*, first_sandbox_*, and host_test_* suites
+// exercise only the first sandbox runtime.
 std::vector<std::string> sandboxRuntimes();
 
 // Testable runtime and language combinations.
