@@ -40,6 +40,7 @@ envoy_cc_test(
         "//test/extensions/common/wasm/test_data:bad_signature_cpp.wasm",
         "//test/extensions/common/wasm/test_data:test_context_cpp.wasm",
         "//test/extensions/common/wasm/test_data:test_cpp.wasm",
+        "//test/extensions/common/wasm/test_data:test_cpp_source.wasm",
         "//test/extensions/common/wasm/test_data:test_restriction_cpp.wasm",
     ]),
     rbe_pool = "linux_x64_large",
@@ -65,6 +66,7 @@ envoy_cc_test(
         "//test/test_common:simulated_time_system_lib",
         "//test/test_common:test_runtime_lib",
         "//test/test_common:wasm_lib",
+        "@proxy-wasm-cpp-host//:headers",
     ],
 )
 

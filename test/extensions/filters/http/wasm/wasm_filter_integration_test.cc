@@ -158,6 +158,34 @@ INSTANTIATE_TEST_SUITE_P(Runtimes, WasmFilterIntegrationTest,
                          Common::Wasm::wasmDualFilterWithCodecsTestParamsToString);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WasmFilterIntegrationTest);
 
+TEST_P(WasmFilterIntegrationTest, LoadFromSourceWithoutPrecompiled) {
+  if (std::get<0>(GetParam()) != "v8" || !std::get<2>(GetParam()) ||
+      std::get<3>(GetParam()) != Http::CodecType::HTTP1) {
+    GTEST_SKIP() << "A single V8 downstream HTTP1 source-loading canary";
+  }
+  config_helper_.prependFilter(TestEnvironment::substitute(R"EOF(
+name: envoy.filters.http.wasm
+typed_config:
+  "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+  config:
+    name: source_canary
+    vm_config:
+      runtime: envoy.wasm.runtime.v8
+      code:
+        local:
+          filename: "{{ test_rundir }}/test/extensions/common/wasm/test_data/test_cpp_source.wasm"
+)EOF"));
+  HttpIntegrationTest::initialize();
+
+  const Http::TestRequestHeaderMapImpl request_headers{
+      {":scheme", "http"}, {":method", "GET"}, {":path", "/"}, {":authority", "host"}};
+  const Http::TestRequestHeaderMapImpl expected_request_headers{
+      {":method", "GET"}, {":path", "/"}, {":authority", "host"}};
+  const Http::TestResponseHeaderMapImpl response_headers{{":status", "200"}};
+  runTest(request_headers, {}, expected_request_headers, "", response_headers, {}, response_headers,
+          "");
+}
+
 TEST_P(WasmFilterIntegrationTest, HeadersManipulation) {
   setupWasmFilter("headers");
   HttpIntegrationTest::initialize();

@@ -74,6 +74,11 @@ envoy_wasm_cc_binary(
 )
 
 envoy_wasm_cc_binary(
+    name = "test_cpp_source.wasm",
+    srcs = ["test_cpp.cc"],
+)
+
+envoy_wasm_cc_binary(
     name = "test_context_cpp.wasm",
     srcs = ["test_context_cpp.cc"],
     precompile = envoy_select_wasm_v8_bool(),

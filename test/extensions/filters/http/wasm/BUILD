@@ -181,6 +181,7 @@ envoy_extension_cc_test(
     size = "enormous",
     srcs = ["wasm_filter_integration_test.cc"],
     data = envoy_select_wasm_cpp_tests([
+        "//test/extensions/common/wasm/test_data:test_cpp_source.wasm",
         "//test/extensions/filters/http/wasm/test_data:body_cpp.wasm",
         "//test/extensions/filters/http/wasm/test_data:headers_cpp.wasm",
         "//test/extensions/filters/http/wasm/test_data:panic_cpp.wasm",
