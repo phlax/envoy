@@ -796,6 +796,7 @@ TEST_P(WasmCommonTest, VmCache) {
 
   auto vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+  vm_config->set_allow_precompiled(true);
   Protobuf::StringValue vm_configuration_string;
   vm_configuration_string.set_value(vm_configuration);
   std::ignore = vm_config->mutable_configuration()->PackFrom(vm_configuration_string);
@@ -870,6 +871,7 @@ TEST_P(WasmCommonTest, VmCacheEnvVarChange) {
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
   auto* vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+  vm_config->set_allow_precompiled(true);
   const std::string code = TestEnvironment::readFileToStringForTest(TestEnvironment::substitute(
       "{{ test_rundir }}/test/extensions/common/wasm/test_data/test_cpp.wasm"));
   EXPECT_FALSE(code.empty());
@@ -947,6 +949,7 @@ TEST_P(WasmCommonTest, VmCacheVmConfigChange) {
   // would have returned `base_handle` itself.
   {
     auto config = plugin_config;
+    config.mutable_vm_config()->set_allow_precompiled(true);
     config.mutable_vm_config()
         ->mutable_capability_restriction_config()
         ->mutable_allowed_capabilities()
@@ -973,6 +976,7 @@ TEST_P(WasmCommonTest, DEPRECATED_FEATURE_TEST(VmCacheDeprecatedCapabilityRestri
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
   auto* base_vm_config = plugin_config.mutable_vm_config();
   base_vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+  base_vm_config->set_allow_precompiled(true);
   base_vm_config->mutable_code()->mutable_local()->set_inline_bytes(code);
 
   auto create = [&](const envoy::extensions::wasm::v3::PluginConfig& config) {
@@ -1021,6 +1025,7 @@ TEST_P(WasmCommonTest, RemoteCode) {
 
     auto vm_config = plugin_config.mutable_vm_config();
     vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+    vm_config->set_allow_precompiled(true);
     Protobuf::BytesValue vm_configuration_bytes;
     vm_configuration_bytes.set_value(vm_configuration);
     std::ignore = vm_config->mutable_configuration()->PackFrom(vm_configuration_bytes);
@@ -1122,6 +1127,7 @@ TEST_P(WasmCommonTest, RemoteCodeMultipleRetry) {
 
   auto vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+  vm_config->set_allow_precompiled(true);
   Protobuf::StringValue vm_configuration_string;
   vm_configuration_string.set_value(vm_configuration);
   std::ignore = vm_config->mutable_configuration()->PackFrom(vm_configuration_string);
@@ -1231,6 +1237,7 @@ TEST_P(WasmCommonTest, RemoteCodeInProgressRace) {
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
   auto vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
+  vm_config->set_allow_precompiled(true);
   Protobuf::BytesValue vm_configuration_bytes;
   vm_configuration_bytes.set_value("vm_cache");
   std::ignore = vm_config->mutable_configuration()->PackFrom(vm_configuration_bytes);

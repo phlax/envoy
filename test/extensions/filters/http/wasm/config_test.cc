@@ -231,6 +231,7 @@ TEST_P(WasmFilterConfigTest, JsonLoadFromFileWasm) {
   {
   "config" : {
   "vm_config": {
+    "allow_precompiled": true,
     "runtime": "envoy.wasm.runtime.)EOF",
                                                std::get<0>(GetParam()), R"EOF(",
     "configuration": {
@@ -558,6 +559,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteWasmFailOnUncachedThenSucceed) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       nack_on_code_cache_miss: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
@@ -624,6 +626,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteWasmFailCachedThenSucceed) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       nack_on_code_cache_miss: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
@@ -747,6 +750,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteWasmFailCachedThenSucceed) {
       TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       nack_on_code_cache_miss: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                std::get<0>(GetParam()), R"EOF("
