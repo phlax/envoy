@@ -92,6 +92,7 @@ def envoy_wasm_cc_binary(name, additional_linker_inputs = [], linkopts = [], tag
         "precompile": precompile,
         "tags": tags + ["manual"],
     }
+
     # Only consumer-relevant common attributes are propagated to the wrapper target.
     for key in ["visibility", "testonly", "compatible_with", "target_compatible_with"]:
         if key in kwargs:

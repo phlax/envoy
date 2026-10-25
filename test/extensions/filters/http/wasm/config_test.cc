@@ -60,9 +60,7 @@ protected:
     }
   }
 
-  void SetUp() override {
-    Envoy::Extensions::Common::Wasm::clearCodeCacheForTesting();
-  }
+  void SetUp() override { Envoy::Extensions::Common::Wasm::clearCodeCacheForTesting(); }
 
   void initializeForRemote() {
     retry_timer_ = new Event::MockTimer();

@@ -912,7 +912,8 @@ TEST_P(WasmCommonTest, VmCacheVmConfigChange) {
   EXPECT_FALSE(code.empty());
 
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
-  // Keep the base source-loaded so the allow_precompiled variant proves it does not split the cache.
+  // Keep the base source-loaded so the allow_precompiled variant proves it does not split the
+  // cache.
   auto* base_vm_config = plugin_config.mutable_vm_config();
   base_vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
   base_vm_config->mutable_code()->mutable_local()->set_inline_bytes(code);

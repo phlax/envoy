@@ -26,8 +26,7 @@ wasmDualFilterWithCodecsTestMatrix(bool include_nullvm, bool cpp_only,
                                    std::vector<Http::CodecType> codecs_type);
 
 inline auto runtime_and_cpp_values = testing::ValuesIn(wasmTestMatrix(true, true));
-inline auto host_test_runtime_and_cpp_values =
-    testing::ValuesIn(wasmTestMatrix(true, true, true));
+inline auto host_test_runtime_and_cpp_values = testing::ValuesIn(wasmTestMatrix(true, true, true));
 inline auto first_sandbox_runtime_and_cpp_values =
     testing::ValuesIn(wasmTestMatrix(false, true, true));
 inline auto sandbox_runtime_and_cpp_values = testing::ValuesIn(wasmTestMatrix(false, true));
