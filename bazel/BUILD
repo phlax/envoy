@@ -1,7 +1,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@envoy_toolshed//:utils.bzl", "json_merge")
-load("@rules_cc//cc:defs.bzl", "cc_import", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_java//toolchains:default_java_toolchain.bzl", "default_java_toolchain")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@rules_shell//shell:sh_library.bzl", "sh_library")
@@ -161,17 +161,14 @@ config_setting(
     values = {"define": "ENVOY_CONFIG_ASAN=1"},
 )
 
-# Shared LLVM unwinder for sanitizer builds (see .bazelrc asan notes). cc_import sets
-# the solib rpath and adds the .so to runfiles so it works under RBE.
-cc_import(
-    name = "libunwind_shared",
-    shared_library = select({
-        "@platforms//cpu:x86_64": "@llvm_toolchain_llvm//:lib/x86_64-unknown-linux-gnu/libunwind.so.1",
-        "@platforms//cpu:aarch64": "@llvm_toolchain_llvm//:lib/aarch64-unknown-linux-gnu/libunwind.so.1",
-    }),
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
+# Non-ASAN Linux builds use the toolchain's libunwind.a, selected by -unwindlib=libunwind
+# in MODULE.bazel's extra_link_flags. Clang reuses -static-libgcc to link the unwinder
+# statically even when it is LLVM libunwind, not libgcc; the misleading name is intentional.
+# ASAN disables that unwinder with -unwindlib=none and uses @unwind_libs//:libunwind from
+# envoy_toolshed's unwind_extension instead. ASAN's dlsym(RTLD_NEXT) lookup cannot see a
+# static unwinder, risking mixed LLVM/libgcc_s unwinders and broken Rust dynamic-module panics.
+# The toolshed build supports our sysroot's older glibc; LLVM's shipped .so requires newer glibc.
+# See https://github.com/envoyproxy/toolshed/blob/bazel-v0.5.6/bazel/compile/README.md#L88-L99
 cc_library(
     name = "static_stdlib",
     linkopts = select({
