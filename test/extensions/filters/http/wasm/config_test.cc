@@ -139,6 +139,7 @@ protected:
     name: ")EOF",
                                                  name, R"EOF("
     vm_config:
+      allow_precompiled: true
       vm_id: ")EOF",
                                                  name, R"EOF("
       runtime: "envoy.wasm.runtime.)EOF",
@@ -183,6 +184,7 @@ TEST_P(WasmFilterConfigTest, CreateFilterFactoryFromProtoWithServerContext) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -260,6 +262,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromFileWasm) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -346,6 +349,7 @@ TEST_P(WasmFilterConfigTest, DEPRECATED_FEATURE_TEST(YamlLoadFromFileWasmFailOpe
   config:
     fail_open: true
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -374,6 +378,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromFileWasmFailOpenPolicyOk) {
   config:
     failure_policy: FAIL_OPEN
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -402,6 +407,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromFileWasmInvalidConfig) {
       TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -424,6 +430,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromFileWasmInvalidConfig) {
       TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -454,6 +461,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadInlineWasm) {
   const std::string yaml = absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                         std::get<0>(GetParam()), R"EOF("
       code:
@@ -477,6 +485,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadInlineBadCode) {
   const std::string yaml = absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                         std::get<0>(GetParam()), R"EOF("
       code:
@@ -499,6 +508,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteWasm) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -805,6 +815,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteConnectionReset) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -847,6 +858,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteSuccessWith503) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -892,6 +904,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteSuccessIncorrectSha256) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -938,6 +951,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteMultipleRetries) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -1009,6 +1023,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteSuccessBadcode) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -1079,6 +1094,7 @@ TEST_P(WasmFilterConfigTest, DEPRECATED_FEATURE_TEST(YamlLoadFromRemoteSuccessBa
   config:
     fail_open: true
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -1126,6 +1142,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteSuccessBadcodeFailOpenPolicy) {
   config:
     failure_policy: FAIL_OPEN
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -1173,6 +1190,7 @@ TEST_P(WasmFilterConfigTest, YamlLoadFromRemoteWasmcreateContext) {
   const std::string yaml = TestEnvironment::substitute(absl::StrCat(R"EOF(
   config:
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       code:
@@ -1224,6 +1242,7 @@ TEST_P(WasmFilterConfigTest, DEPRECATED_FEATURE_TEST(FailedToGetThreadLocalPlugi
   config:
     fail_open: true
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       configuration:
@@ -1254,6 +1273,7 @@ TEST_P(WasmFilterConfigTest, FailedToGetThreadLocalPluginOpenPolicy) {
   config:
     failure_policy: FAIL_OPEN
     vm_config:
+      allow_precompiled: true
       runtime: "envoy.wasm.runtime.)EOF",
                                                                     std::get<0>(GetParam()), R"EOF("
       configuration:
