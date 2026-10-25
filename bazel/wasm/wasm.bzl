@@ -92,8 +92,10 @@ def envoy_wasm_cc_binary(name, additional_linker_inputs = [], linkopts = [], tag
         "precompile": precompile,
         "tags": tags + ["manual"],
     }
-    if "visibility" in kwargs:
-        wasm_kwargs["visibility"] = kwargs["visibility"]
+    # Only consumer-relevant common attributes are propagated to the wrapper target.
+    for key in ["visibility", "testonly", "compatible_with", "target_compatible_with"]:
+        if key in kwargs:
+            wasm_kwargs[key] = kwargs[key]
     wasm_cc_binary_rule(**wasm_kwargs)
 
 def wasm_rust_binary(name, tags = [], wasi = False, precompile = False, **kwargs):

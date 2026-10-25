@@ -76,6 +76,7 @@ envoy_wasm_cc_binary(
 envoy_wasm_cc_binary(
     name = "test_cpp_source.wasm",
     srcs = ["test_cpp.cc"],
+    # Deliberately NOT precompiled: from-source V8 canary.
 )
 
 envoy_wasm_cc_binary(

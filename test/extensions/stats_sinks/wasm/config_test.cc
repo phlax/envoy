@@ -67,7 +67,7 @@ protected:
 };
 
 INSTANTIATE_TEST_SUITE_P(Runtimes, WasmStatSinkConfigTest,
-                         Envoy::Extensions::Common::Wasm::single_sandbox_runtime_and_cpp_values,
+                         Envoy::Extensions::Common::Wasm::host_test_runtime_and_cpp_values,
                          Envoy::Extensions::Common::Wasm::wasmTestParamsToString);
 
 TEST_P(WasmStatSinkConfigTest, CreateWasmFromEmpty) {

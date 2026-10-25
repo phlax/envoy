@@ -912,6 +912,7 @@ TEST_P(WasmCommonTest, VmCacheVmConfigChange) {
   EXPECT_FALSE(code.empty());
 
   envoy::extensions::wasm::v3::PluginConfig plugin_config;
+  // Keep the base source-loaded so the allow_precompiled variant proves it does not split the cache.
   auto* base_vm_config = plugin_config.mutable_vm_config();
   base_vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
   base_vm_config->mutable_code()->mutable_local()->set_inline_bytes(code);
@@ -1344,6 +1345,7 @@ TEST_P(WasmCommonTest, RemoteCodeInProgressNackOnCacheMiss) {
   auto vm_config = plugin_config.mutable_vm_config();
   vm_config->set_runtime(absl::StrCat("envoy.wasm.runtime.", std::get<0>(GetParam())));
   vm_config->set_nack_on_code_cache_miss(true);
+  // allow_precompiled is irrelevant because this test never loads a module.
   // A sha256 not used by any other test so that the static code cache starts empty.
   vm_config->mutable_code()->mutable_remote()->set_sha256(std::string(64, 'a'));
   vm_config->mutable_code()->mutable_remote()->mutable_http_uri()->set_uri(

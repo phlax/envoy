@@ -61,9 +61,6 @@ protected:
   }
 
   void SetUp() override {
-    if (std::get<0>(GetParam()) == "null") {
-      GTEST_SKIP() << "Configuration tests require a sandbox Wasm module";
-    }
     Envoy::Extensions::Common::Wasm::clearCodeCacheForTesting();
   }
 
@@ -176,7 +173,7 @@ protected:
 
 INSTANTIATE_TEST_SUITE_P(
     Runtimes, WasmFilterConfigTest,
-    Envoy::Extensions::Common::Wasm::dual_filter_single_sandbox_runtime_and_cpp_values,
+    Envoy::Extensions::Common::Wasm::dual_filter_first_sandbox_runtime_and_cpp_values,
     Envoy::Extensions::Common::Wasm::wasmDualFilterTestParamsToString);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WasmFilterConfigTest);
 

@@ -113,7 +113,7 @@ public:
 };
 
 INSTANTIATE_TEST_SUITE_P(Runtimes, WasmNullTest,
-                         Envoy::Extensions::Common::Wasm::single_sandbox_runtime_and_cpp_values);
+                         Envoy::Extensions::Common::Wasm::host_test_runtime_and_cpp_values);
 
 class WasmTestMatrix : public WasmTestBase,
                        public testing::TestWithParam<std::tuple<std::string, std::string>> {
@@ -135,7 +135,7 @@ protected:
 
 INSTANTIATE_TEST_SUITE_P(
     RuntimesAndLanguages, WasmTestMatrix,
-    Envoy::Extensions::Common::Wasm::single_sandbox_runtime_and_language_values);
+    Envoy::Extensions::Common::Wasm::first_sandbox_runtime_and_language_values);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WasmTestMatrix);
 
 TEST_P(WasmTestMatrix, LoggingWithEnvVars) {
