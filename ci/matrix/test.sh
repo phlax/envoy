@@ -139,9 +139,9 @@ check_gcc_sysroot() {
     if ! grep -q -- '--sysroot' <<< "$output" ||
         ! grep -q 'sysroot_linux_amd64/sysroot' <<< "$output" ||
         ! grep -q -- '-nostdinc++' <<< "$output" ||
-        ! grep -Eq -- '-isystemexternal/[^ /]*gcc_toolchain[^ /]*/include/c\+\+/' <<< "$output" ||
+        ! grep -Eq -- '-isystemexternal/[^ /]*gcc_linux_x86_64/include/c\+\+/' <<< "$output" ||
         ! grep -q -- '-l:libstdc++.a' <<< "$output" ||
-        grep -Eq 'gcc_toolchain[^ /]*/sysroot|sysroot_linux_amd64/sysroot/usr/include/c\+\+' <<< "$output"; then
+        grep -Eq 'gcc_linux_x86_64/sysroot|sysroot_linux_amd64/sysroot/usr/include/c\+\+' <<< "$output"; then
         echo "❌ GCC must use the shared sysroot and its own libstdc++ only"
         echo "$output"
         FAILED=1
@@ -197,16 +197,8 @@ check_host_gcc() (
         FAILED=1
     fi
 
-    sed -i '/^envoy_gcc_ext.host(/d; s/gcc_version = "13.4.0"/gcc_version = "14.3.0"/' MODULE.bazel
+    sed -i '/^envoy_gcc_ext.host(/d' MODULE.bazel
     check_resolution gcc hermetic --@envoy//bazel:use_gcc
-    if ! output=$(bazel run --@envoy//bazel:use_gcc //tools/toolchain:detect 2>&1) ||
-        ! grep -qx 'Compiler: gcc' <<< "$output" ||
-        ! grep -qx 'Compiler version: 14.3.0' <<< "$output" ||
-        ! grep -qx 'GCC build: true' <<< "$output"; then
-        echo "❌ Alternate hermetic GCC version build failed"
-        echo "$output"
-        FAILED=1
-    fi
     [[ "$FAILED" -eq 0 ]]
 )
 
