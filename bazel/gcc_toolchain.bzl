@@ -64,6 +64,9 @@ def configure_gcc_toolchain(version, sysroot):
             "--sysroot",
             sysroot_path,
             "-B" + root + "/bin/",
+            # bfd OOMs on large static links (eg config_fuzz_test); use hermetic lld.
+            "-fuse-ld=lld",
+            "-Wl,-z,noexecstack",
         ] + ["-B" + d + "/" for d in lib_dirs] + ["-L" + d for d in lib_dirs] + [
             "-l:libstdc++.a",
             "-lm",
@@ -117,6 +120,9 @@ def _gcc_archive_impl(ctx):
     # (`realpath`, `dirname`) found via the inherited PATH, which breaks under
     # actions that clear the environment (eg `rust_doc_test`).
     ctx.delete("sysroot")
+
+    # Give the multicall lld binary its GNU driver name; `bin/**` stages it as an input.
+    ctx.symlink(ctx.path(ctx.attr.lld), "bin/ld.lld")
     ctx.file("BUILD.bazel", """
 load(%r, "configure_gcc_toolchain")
 
@@ -133,6 +139,7 @@ _gcc_archive = repository_rule(
     attrs = {
         "version": attr.string(mandatory = True),
         "sysroot": attr.label(mandatory = True),
+        "lld": attr.label(mandatory = True, allow_single_file = True),
         "_config": attr.label(default = Label("//bazel:gcc_toolchain.bzl")),
     },
 )
@@ -180,7 +187,7 @@ def _gcc_toolchains_impl(ctx):
             repos = {}
             for version in AVAILABLE_GCC_VERSIONS:
                 name = tag.name + "_" + version.replace(".", "_")
-                _gcc_archive(name = name, version = version, sysroot = tag.sysroot)
+                _gcc_archive(name = name, version = version, sysroot = tag.sysroot, lld = tag.lld)
                 repos[version] = name
             _gcc_hub(name = tag.name, version = tag.gcc_version, repos = repos)
     return ctx.extension_metadata(reproducible = True)
@@ -192,6 +199,7 @@ gcc_toolchains = module_extension(
             "name": attr.string(mandatory = True),
             "gcc_version": attr.string(default = "13.4.0"),
             "sysroot": attr.label(mandatory = True),
+            "lld": attr.label(mandatory = True),
         }),
     },
 )

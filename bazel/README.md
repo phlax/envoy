@@ -117,9 +117,9 @@ for how to update or override dependencies.
     bazel build --config=gcc --@gcc_toolchain//toolchain:gcc_version=14.3.0 //source/exe:envoy-static
     ```
 
-    GCC 13.4.0 uses its bundled BFD linker (its archive contains neither LLD nor gold). BFD does not
-    support `--start-lib`/`--end-lib`, so Bazel uses static archives instead; parameter files remain
-    enabled for long command lines. GCC uses the same toolshed sysroot as Clang, standardising
+    GCC links with the same hermetic LLD as Clang: its archive contains no gold, and BFD runs out of
+    memory on Envoy's large static links. Parameter files remain enabled for long command lines.
+    GCC uses the same toolshed sysroot as Clang, standardising
     the headers and libraries we build against and constraining both compilers to Envoy's intended
     libc environment. Envoy's wrapper reuses upstream's archive metadata and compiler configuration,
     but removes the archive's bundled sysroot entirely. The shared sysroot is an explicit compile/link
