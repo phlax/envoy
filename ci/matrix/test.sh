@@ -113,7 +113,7 @@ check_resolution() {
         echo "❌ Expected a hermetic compiler path, got: $identity"
         FAILED=1
     elif [[ "$expected_origin" == host &&
-            ( "$executable" != /usr/bin/gcc || "$identifier" != envoy-host-gcc-* ) ]]; then
+            ( "$executable" != /usr/bin/gcc || "$identifier" != linux-x86_64-host-gcc-* ) ]]; then
         echo "❌ Expected the explicit host GCC override, got: $identity"
         FAILED=1
     elif [[ "$expected_compiler" == clang && "$executable" != *llvm_toolchain* ]]; then
@@ -170,7 +170,7 @@ check_host_gcc() (
         esac
         ln -s "$entry" "$fixture/$name"
     done
-    echo 'envoy_gcc_ext.host(path = "/usr")' >> "$fixture/MODULE.bazel"
+    echo 'gcc.host(path = "/usr")' >> "$fixture/MODULE.bazel"
     version=$(/usr/bin/gcc -dumpfullversion)
     cd "$fixture"
 
@@ -185,10 +185,10 @@ check_host_gcc() (
         FAILED=1
     fi
 
-    sed -i "s/envoy_gcc_ext.host(path = \"\\/usr\")/envoy_gcc_ext.host(path = \"\\/usr\", gcc_version = \"$version\")/" MODULE.bazel
+    sed -i "s/gcc.host(path = \"\\/usr\")/gcc.host(path = \"\\/usr\", gcc_version = \"$version\")/" MODULE.bazel
     check_resolution gcc host --@envoy//bazel:use_gcc
-    sed -i "/^envoy_gcc_ext.host(/s/gcc_version = \"$version\"/gcc_version = \"0.0.0\"/" MODULE.bazel
-    if output=$(bazel cquery --@envoy//bazel:use_gcc @envoy_gcc_host//:cc_toolchain 2>&1); then
+    sed -i "/^gcc.host(/s/gcc_version = \"$version\"/gcc_version = \"0.0.0\"/" MODULE.bazel
+    if output=$(bazel cquery --@envoy//bazel:use_gcc @gcc_linux_x86_64//:cc_toolchain 2>&1); then
         echo "❌ Mismatched host gcc_version unexpectedly succeeded"
         FAILED=1
     elif ! grep -q 'does not match the installed GCC version' <<< "$output"; then
@@ -197,7 +197,7 @@ check_host_gcc() (
         FAILED=1
     fi
 
-    sed -i '/^envoy_gcc_ext.host(/d' MODULE.bazel
+    sed -i '/^gcc.host(/d' MODULE.bazel
     check_resolution gcc hermetic --@envoy//bazel:use_gcc
     [[ "$FAILED" -eq 0 ]]
 )

@@ -252,35 +252,29 @@ The `llvm_toolchain_alias_extension.host(path = ...)` tag detects the installed 
 major version. This mechanism supports host LLVM versions other than 22; the separate
 `toolchains_llvm` toolchain's `llvm_version` must also match the installed host version.
 
-For host GCC, add the following to the root module's `MODULE.bazel`:
+Envoy's GCC toolchain comes from toolshed's `gcc_extension`, registered as a dev dependency.
+Downstream root modules that want GCC must declare it with the shared sysroot and hermetic lld,
+and register a toolchain for it (see `//bazel/gcc:linux_x86_64_toolchain`). For host GCC, add the
+extension's `host` tag:
 
 ```starlark
-envoy_gcc = use_extension("@envoy//bazel:extensions.bzl", "envoy_gcc_extension")
-envoy_gcc.host(path = "/usr")
-use_repo(envoy_gcc, "envoy_gcc_host")
-register_toolchains("@envoy_gcc_host//:all")
+gcc = use_extension("@envoy_toolshed//toolchains/gcc:extensions.bzl", "gcc_extension")
+gcc.toolchain(
+    name = "gcc_linux_x86_64",
+    arch = "x86_64",
+    lld = "@llvm_minimal_linux_x64//:bin/lld",
+    sysroot = "@sysroot_linux_amd64//sysroot",
+)
+gcc.host(path = "/usr")  # Optional
+use_repo(gcc, "gcc_linux_x86_64")
 ```
 
 The prefix must contain `bin/gcc`, `bin/g++`, binutils, C/C++ headers and a static `libstdc++`.
-The extension detects the installed GCC version; optional `gcc_version = "13"` cross-checks its
-major version. With `--config=gcc` (or `--//bazel:use_gcc=true` outside this workspace), the
-host compiler takes precedence over prebuilt GCC. Without that flag, Clang remains the default.
-Host GCC uses host libc/headers and is not a hermetic or remote-execution configuration.
-
-Envoy's `gcc_toolchains` extension processes only root-module tags. Downstream root modules
-that want prebuilt GCC instead of host GCC must declare and register it with the shared sysroot:
-
-```starlark
-bazel_dep(name = "gcc_toolchain", version = "0.13.0")
-gcc_toolchains = use_extension("@envoy//bazel:gcc_toolchain.bzl", "gcc_toolchains")
-gcc_toolchains.toolchain(
-    name = "gcc_toolchain_x86_64",
-    gcc_version = "13.4.0",
-    sysroot = "@sysroot_linux_amd64//sysroot",
-)
-use_repo(gcc_toolchains, "gcc_toolchain_x86_64")
-register_toolchains("@gcc_toolchain_x86_64//:all")
-```
+The optional `gcc_version = "13"` cross-checks the installed major version. With `--config=gcc`
+(or `--@envoy//bazel:use_gcc=true` outside this workspace), the host compiler replaces the
+prebuilt GCC. Without that flag, Clang remains the default. Host GCC uses host libc/headers and is
+not a hermetic or remote-execution configuration. Without the `host` tag nothing falls back to
+host tools, headers or libraries.
 
 
 ### Migrating from `envoy_llvm_extension`

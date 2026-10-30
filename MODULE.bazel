@@ -164,17 +164,27 @@ single_version_override(
 #     strip_prefix = "bazel",
 # )
 
+# TODO: remove once toolshed with `gcc_extension.host` (envoyproxy/toolshed#5534) is released.
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "4c78e40ec82f752a13cb37b9412d83c537a4ccc1",
+    remote = "https://github.com/phlax/toolshed",
+    strip_prefix = "bazel",
+)
+
+git_override(
+    module_name = "envoy_toolshed_jq",
+    commit = "4c78e40ec82f752a13cb37b9412d83c537a4ccc1",
+    remote = "https://github.com/phlax/toolshed",
+    strip_prefix = "jq",
+)
+
 ####################################################################################
 # setup: Compilers
 ####################################################################################
 
-# GCC is opt-in; the host override, when present, takes precedence over the prebuilts.
-envoy_gcc_ext = use_extension("//bazel:extensions.bzl", "envoy_gcc_extension")
-use_repo(envoy_gcc_ext, "envoy_gcc_host")
-
-register_toolchains("@envoy_gcc_host//:all")
-
-# Hermetic GCC, linking with hermetic lld. Downstreams register their own GCC toolchains.
+# GCC is opt-in (`--config=gcc`): hermetic, linking with hermetic lld, unless the root module
+# sets `gcc.host(path = ...)`. Downstreams register their own GCC toolchains.
 gcc = use_extension("@envoy_toolshed//toolchains/gcc:extensions.bzl", "gcc_extension", dev_dependency = True)
 gcc.toolchain(
     name = "gcc_linux_x86_64",
