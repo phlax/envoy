@@ -673,11 +673,11 @@ case $CI_TARGET in
         ;;
 
     deps.update)
-        if [[ ${#DEPENDENCY_ARGS[@]} -ne 1 ]]; then
-            echo "Usage: ci/do_ci.sh deps.update <name[=version]>" >&2
+        if [[ ${#DEPENDENCY_ARGS[@]} -lt 1 ]]; then
+            echo "Usage: ci/do_ci.sh deps.update <name[=version]>..." >&2
             exit 1
         fi
-        deps_update "${DEPENDENCY_ARGS[0]}"
+        deps_update "${DEPENDENCY_ARGS[@]}"
         ;;
 
     dev)

@@ -290,8 +290,13 @@ _deps_report_mod() {
     echo
 }
 
+# Update the given `name[=version]` modules in every nested MODULE.bazel that declares them.
 deps_update() {
-    run_in_nested_mods _deps_update_mod "$1"
+    local dep
+
+    for dep in "$@"; do
+        run_in_nested_mods _deps_update_mod "$dep"
+    done
     lockfiles_generate
 }
 
