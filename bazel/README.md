@@ -265,8 +265,9 @@ use_repo(gcc, "gcc_linux_x86_64")
 
 The prefix must contain `bin/gcc`, `bin/g++`, binutils, C/C++ headers and a static `libstdc++`.
 The optional `gcc_version = "13"` cross-checks the installed major version. With `--config=gcc`
-(or `--@envoy//bazel:use_gcc=true` outside this workspace), the host compiler replaces the
-prebuilt GCC. Without that flag, Clang remains the default. Host GCC uses host libc/headers and is
+(or, outside this workspace,
+`--@envoy//bazel:use_gcc=true --cxxopt=-std=c++20 --host_cxxopt=-std=c++20`), the host compiler
+replaces the prebuilt GCC. Without that flag, Clang remains the default. Host GCC uses host libc/headers and is
 not a hermetic or remote-execution configuration. Without the `host` tag nothing falls back to
 host tools, headers or libraries. `toolchains = ["gcc_linux_x86_64"]` keeps Envoy's separate
 `gcc_runtime_linux_x86_64` repository, which supplies libstdc++ to the OpenSSL prefixer, hermetic.
