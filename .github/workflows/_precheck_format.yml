@@ -36,8 +36,9 @@ jobs:
       cache-build-image: ${{ fromJSON(inputs.request).request.build-image.default }}
       concurrency-suffix: -${{ matrix.target }}
       request: ${{ inputs.request }}
-      # format needs aspell, and format-api requires git
+      # format needs aspell, and format-api requires git (on branches without hermetic git)
       docker-ci: false
+      devtools: ${{ matrix.target == 'format' }}
       error-match: |
         ERROR
         error:
