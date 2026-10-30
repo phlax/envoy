@@ -24,9 +24,6 @@ case $ENVOY_BUILD_VARIANT in
     docker)
         BUILD_SHA="$BUILD_SHA_DOCKER"
         ;;
-    gcc)
-        BUILD_SHA="$BUILD_SHA_WORKER"
-        ;;
     mobile)
         BUILD_SHA="$BUILD_SHA_MOBILE"
         ;;
