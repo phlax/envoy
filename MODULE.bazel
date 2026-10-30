@@ -202,15 +202,8 @@ register_toolchains(
 # LLVM toolchain configuration
 sysroot_ext = use_extension("@envoy_toolshed//sysroot:extensions.bzl", "sysroot_extension")
 sysroot_ext.setup()
-
-# TODO(phlax): remove once the hermetic gcc toolchain provides libstdc++ for //compat/openssl/prefixer
-sysroot_ext.setup(
-    name_prefix = "libstdcxx",
-    stdcc_version = "13",
-)
 use_repo(
     sysroot_ext,
-    "libstdcxx_sysroot_linux_amd64",
     "sysroot_linux_amd64",
     "sysroot_linux_arm64",
 )
