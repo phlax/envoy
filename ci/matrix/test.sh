@@ -170,7 +170,7 @@ check_host_gcc() (
         esac
         ln -s "$entry" "$fixture/$name"
     done
-    echo 'gcc.host(path = "/usr")' >> "$fixture/MODULE.bazel"
+    echo 'gcc.host(path = "/usr", toolchains = ["gcc_linux_x86_64"])' >> "$fixture/MODULE.bazel"
     version=$(/usr/bin/gcc -dumpfullversion)
     cd "$fixture"
 
@@ -185,7 +185,7 @@ check_host_gcc() (
         FAILED=1
     fi
 
-    sed -i "s/gcc.host(path = \"\\/usr\")/gcc.host(path = \"\\/usr\", gcc_version = \"$version\")/" MODULE.bazel
+    sed -i "s/gcc.host(path = \"\\/usr\",/gcc.host(path = \"\\/usr\", gcc_version = \"$version\",/" MODULE.bazel
     check_resolution gcc host --@envoy//bazel:use_gcc
     sed -i "/^gcc.host(/s/gcc_version = \"$version\"/gcc_version = \"0.0.0\"/" MODULE.bazel
     if output=$(bazel cquery --@envoy//bazel:use_gcc @gcc_linux_x86_64//:cc_toolchain 2>&1); then

@@ -255,10 +255,11 @@ gcc = use_extension("@envoy_toolshed//toolchains/gcc:extensions.bzl", "gcc_exten
 gcc.toolchain(
     name = "gcc_linux_x86_64",
     arch = "x86_64",
+    dwp = "@llvm_minimal_linux_x64//:bin/llvm-dwp",
     lld = "@llvm_minimal_linux_x64//:bin/lld",
     sysroot = "@sysroot_linux_amd64//sysroot",
 )
-gcc.host(path = "/usr")  # Optional
+gcc.host(path = "/usr", toolchains = ["gcc_linux_x86_64"])  # Optional
 use_repo(gcc, "gcc_linux_x86_64")
 ```
 
@@ -267,7 +268,8 @@ The optional `gcc_version = "13"` cross-checks the installed major version. With
 (or `--@envoy//bazel:use_gcc=true` outside this workspace), the host compiler replaces the
 prebuilt GCC. Without that flag, Clang remains the default. Host GCC uses host libc/headers and is
 not a hermetic or remote-execution configuration. Without the `host` tag nothing falls back to
-host tools, headers or libraries.
+host tools, headers or libraries. `toolchains = ["gcc_linux_x86_64"]` keeps Envoy's separate
+`gcc_runtime_linux_x86_64` repository, which supplies libstdc++ to the OpenSSL prefixer, hermetic.
 
 
 ### Migrating from `envoy_llvm_extension`

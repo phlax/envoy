@@ -20,12 +20,20 @@ toolchain(
 
 gcc_unavailable(name = "unavailable")
 
-# Registered after the real GCC toolchains: when GCC is requested for a Linux target that no GCC
-# toolchain supports (eg aarch64), fail instead of silently falling through to Clang.
-toolchain(
-    name = "unavailable_toolchain",
-    target_compatible_with = ["@platforms//os:linux"],
-    target_settings = ["//bazel:gcc_requested"],
-    toolchain = ":unavailable",
-    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
-)
+# Registered after the real GCC toolchains: when GCC is requested for a target that no GCC
+# toolchain supports (eg Linux aarch64, macOS), fail instead of silently falling through to Clang.
+# Limited to real OSes, as `use_gcc` propagates to eg wasm builds, which use their own toolchains.
+[
+    toolchain(
+        name = "unavailable_%s_toolchain" % os,
+        target_compatible_with = ["@platforms//os:%s" % os],
+        target_settings = ["//bazel:gcc_requested"],
+        toolchain = ":unavailable",
+        toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    )
+    for os in [
+        "linux",
+        "macos",
+        "windows",
+    ]
+]

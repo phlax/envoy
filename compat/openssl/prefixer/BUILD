@@ -3,12 +3,13 @@ load("//bazel:toolchains.bzl", "LIBCLANG_CPP", "LIBLLVM")
 
 licenses(["notice"])  # Apache 2
 
-# GCC's libstdc++ for the prefixer. Envoy's GCC repository is a dev dependency, so downstream
-# modules building the prefixer point this at their own, eg
+# GCC's libstdc++ for the prefixer, from a GCC repository that a host GCC override does not
+# replace. Envoy's GCC repositories are dev dependencies, so downstream modules building the
+# prefixer point this at their own, eg
 # `--@envoy//compat/openssl/prefixer:libstdcxx=@gcc_linux_x86_64//:libstdcxx`.
 label_flag(
     name = "libstdcxx",
-    build_setting_default = "@gcc_linux_x86_64//:libstdcxx",
+    build_setting_default = "@gcc_runtime_linux_x86_64//:libstdcxx",
 )
 
 cc_binary(
