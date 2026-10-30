@@ -207,12 +207,22 @@ hermetic_strip() {
 }
 
 # Resolve the hermetic git toolchain as `GIT_BIN`, for CI scripts and Bazel's workspace status.
-# CI must not depend on a `git` installed in the build image.
+# CI must not depend on a `git` installed in the build image. There is no prebuilt git for macOS,
+# where `do_ci.sh` only runs locally (CI uses `ci/mac_ci_steps.sh`), so use the host's git there
+# rather than resolving through Bazel.
 hermetic_git() {
-    if [[ -z "${GIT_BIN:-}" ]]; then
-        GIT_BIN="$(bazel_tool_path //tools/git:bin)"
-        export GIT_BIN
+    if [[ -n "${GIT_BIN:-}" ]]; then
+        return
     fi
+    if [[ "${OSTYPE}" == darwin* ]]; then
+        GIT_BIN="$(command -v git)" || {
+            echo "FAIL: git not found on PATH" >&2
+            return 1
+        }
+    else
+        GIT_BIN="$(bazel_tool_path //tools/git:bin)"
+    fi
+    export GIT_BIN
 }
 
 hermetic_jq() {
