@@ -7,12 +7,12 @@ import multiprocessing
 import os
 import pathlib
 import re
-import subprocess
-import stat
 import shlex
+import shutil
+import stat
+import subprocess
 import sys
 import traceback
-import shutil
 from functools import cached_property
 from typing import Callable, Dict, Iterator, List, Pattern, Tuple, Union
 
