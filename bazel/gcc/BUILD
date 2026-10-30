@@ -18,7 +18,11 @@ toolchain(
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
-gcc_unavailable(name = "unavailable")
+# `manual`: only analysed via toolchain resolution, never by wildcard builds (eg `//bazel/...`).
+gcc_unavailable(
+    name = "unavailable",
+    tags = ["manual"],
+)
 
 # Registered after the real GCC toolchains: when GCC is requested for a target that no GCC
 # toolchain supports (eg Linux aarch64, macOS), fail instead of silently falling through to Clang.
