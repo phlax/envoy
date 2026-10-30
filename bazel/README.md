@@ -110,6 +110,8 @@ for how to update or override dependencies.
     - `--config=gcc`: Uses toolshed's hermetic GCC 13.4.0 with static `libstdc++` (GNU standard
       library). No host GCC or binutils installation is needed. It builds Linux x86_64 targets on
       Linux x86_64 only; on other platforms `--config=gcc` fails rather than falling back to Clang.
+      With remote execution from an aarch64 host, also pass
+      `--host_platform=//bazel/platforms/rbe:linux_x64` so GCC actions run on x86_64 workers.
 
     GCC links with the same hermetic LLD as Clang: its archive contains no gold, and BFD runs out of
     memory on Envoy's large static links. GCC uses the same toolshed sysroot as Clang, standardising
