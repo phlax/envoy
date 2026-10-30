@@ -20,9 +20,10 @@ cc_binary(
     copts = [
         "-fno-rtti",  # Required by libclang-cpp
         # Use the hermetic GCC toolchain's libstdc++ (headers via :libstdcxx) for ABI
-        # compatibility with libclang-cpp.
+        # compatibility with libclang-cpp, not the toolchain's libc++. With -nostdinc++
+        # the toolchain's -stdlib=libc++ has no effect, so silence its warning.
         "-nostdinc++",
-        "-stdlib=libstdc++",
+        "-Wno-unused-command-line-argument",
     ],
     linkopts = [
         "$(location " + LIBCLANG_CPP + ")",
