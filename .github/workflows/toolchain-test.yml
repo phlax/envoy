@@ -10,6 +10,7 @@ on:
     - .github/workflows/toolchain-test.yml
     - bazel/BUILD
     - bazel/extensions.bzl
+    - bazel/gcc/**
     - ci/matrix/**
     - tools/toolchain/**
 concurrency:

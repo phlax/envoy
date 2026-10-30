@@ -905,7 +905,7 @@
   "moduleExtensions": {
     "//bazel:extensions.bzl%envoy_build_config_ext": {
       "general": {
-        "bzlTransitiveDigest": "hDAksVSQSsPzF12brAWBAsehKq913PZOvJ3blnhp3ss=",
+        "bzlTransitiveDigest": "N2qj0w5+6hCGMUCvAl3wqQHaQgBPktJbDqeuH6+y2ss=",
         "usagesDigest": "eA9F7Sp3VWzMPr64I4OqdYTS7aJ/vD1NCUzz0/uIPRU=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_skylib bazel_skylib+",
@@ -947,7 +947,7 @@
     },
     "//bazel:extensions.bzl%envoy_repo_extension": {
       "general": {
-        "bzlTransitiveDigest": "hDAksVSQSsPzF12brAWBAsehKq913PZOvJ3blnhp3ss=",
+        "bzlTransitiveDigest": "N2qj0w5+6hCGMUCvAl3wqQHaQgBPktJbDqeuH6+y2ss=",
         "usagesDigest": "qNXh2UFb6L5FDqCDmXlJCEwkQwnTEu3pouMvLd9F+7c=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_skylib bazel_skylib+",

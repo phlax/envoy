@@ -107,24 +107,15 @@ for how to update or override dependencies.
     Envoy supports the following compiler toolchains:
 
     - No config flag (recommended): Uses the hermetic `clang` compiler with `libc++` (LLVM standard library)
-    - `--config=gcc`: Uses hermetic GCC 13.4.0 with static `libstdc++` (GNU standard library).
-      No host GCC or binutils installation is needed. The prebuilt compiler executes on Linux
-      x86_64; native aarch64 GCC builds require a host-toolchain override.
-
-    GCC versions provided by [gcc_toolchain](https://github.com/f0rmiga/gcc-toolchain) can be selected
-    without changing the default in `MODULE.bazel`:
-    ```console
-    bazel build --config=gcc --@gcc_toolchain//toolchain:gcc_version=14.3.0 //source/exe:envoy-static
-    ```
+    - `--config=gcc`: Uses toolshed's hermetic GCC 13.4.0 with static `libstdc++` (GNU standard
+      library). No host GCC or binutils installation is needed. It builds Linux x86_64 targets on
+      Linux x86_64 only; on other platforms `--config=gcc` fails rather than falling back to Clang.
 
     GCC links with the same hermetic LLD as Clang: its archive contains no gold, and BFD runs out of
-    memory on Envoy's large static links. Parameter files remain enabled for long command lines.
-    GCC uses the same toolshed sysroot as Clang, standardising
+    memory on Envoy's large static links. GCC uses the same toolshed sysroot as Clang, standardising
     the headers and libraries we build against and constraining both compilers to Envoy's intended
-    libc environment. Envoy's wrapper reuses upstream's archive metadata and compiler configuration,
-    but removes the archive's bundled sysroot entirely. The shared sysroot is an explicit compile/link
-    action input; GCC retains its own compiler headers, libstdc++ headers and static `libstdc++.a`,
-    ahead of any libstdc++ shipped in the shared sysroot.
+    libc environment. The archive's bundled sysroot is removed; GCC retains only its own compiler
+    headers, libstdc++ headers and static `libstdc++.a`.
 
     Note: The C++ standard library is derived from the compiler: clang (the default) and Apple builds use `libc++`, `--config=gcc` uses `libstdc++`. Other combinations such as clang with `libstdc++` are not supported or tested; if you need one, you will need to set up your own `cc_toolchain`.
 

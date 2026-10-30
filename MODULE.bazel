@@ -196,6 +196,7 @@ use_repo(gcc, "gcc_linux_x86_64")
 
 register_toolchains(
     "//bazel/gcc:linux_x86_64_toolchain",
+    "//bazel/gcc:unavailable_toolchain",
     dev_dependency = True,
 )
 

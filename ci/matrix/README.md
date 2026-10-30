@@ -16,8 +16,6 @@ The test suite validates toolchain behavior in the following scenarios:
 - **GCC configuration**: Checking that `//bazel:gcc_build` matches only with `--config=gcc`
 - **Host GCC override**: A module fixture opts into `/usr` explicitly, with and without
   `gcc_version`, and rejects a version that does not match the installed compiler
-- **Alternate GCC version**: The fixture also selects GCC 14.3.0 instead of the
-  main module's default, checking both resolution and the compiled compiler version
 
 The tests run against different Docker environments:
 - `gcc`: Host GCC installed
@@ -27,10 +25,10 @@ The tests run against different Docker environments:
 
 Every environment must use hermetic LLVM by default and hermetic GCC with `--config=gcc`.
 Setting `CC`/`CXX` does not change that selection.
-The `gcc` and `all` environments also test the explicit host override and alternate GCC
-version using a temporary module copy inside `ci/matrix`. Source directories are symlinked
-into the fixture, and it is removed when the test finishes. Envoy remains the root module
-because the upstream compiler extensions do not support being configured transitively.
+The `gcc` and `all` environments also test the explicit host override using a temporary module
+copy inside `ci/matrix`. Source directories are symlinked into the fixture, and it is removed when
+the test finishes. Envoy remains the root module because the upstream compiler extensions do not
+support being configured transitively.
 
 ## Running Tests Locally
 
