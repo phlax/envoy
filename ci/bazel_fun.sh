@@ -342,6 +342,11 @@ registry_update() {
     run_in_registry_mods _registry_update_mod "${registry_args[@]}"
     registry_current_hash > /dev/null
     if (( ${#updates[@]} )); then
+        # The module updater takes each dependency's current registry from MODULE.bazel.lock,
+        # which still names the old pin, so re-resolve the lockfiles against the new pin first.
+        # Otherwise nothing is "available" on the (old) current registry and updates fail or
+        # are skipped.
+        run_in_nested_mods _lockfiles_generate_mod
         registry_modules_update "${updates[@]}"
     fi
     lockfiles_generate
