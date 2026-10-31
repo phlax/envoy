@@ -53,6 +53,10 @@ METHOD_DOC = re.compile(r'@(param\s+\w+|return(\s+const)?\s+\w+)')
 # Camel Case splitter
 CAMEL_CASE = re.compile(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)')
 
+# A camel case identifier: letters with a case change after the first one (HeaderMapImpl,
+# HTTPServer, gRPC), as opposed to a capitalised or all-caps word.
+CAMEL_TOKEN = re.compile(r'\b[A-Za-z]*(?:[a-z][A-Z]|[A-Z][A-Z][a-z])[A-Za-z]*\b')
+
 # Base64: we assume base64 encoded data in tests is never mixed with
 # other comments on a single line.
 BASE64 = re.compile(r'^[\s*]+([A-Za-z0-9/+=]{16,})\s*$')
@@ -119,6 +123,10 @@ SMART_QUOTES = {
 
 DIGIT = re.compile(r'[0-9]')
 
+# Characters outside ASCII (CJK text, accented examples). aspell skipped words outside its
+# charset; masking them also keeps hunspell's byte offsets equal to character offsets.
+NON_ASCII = re.compile(r'[^\x00-\x7f]')
+
 # An apostrophe is only part of a word between letters (doesn't, o'clock). The dictionary lists it
 # as a word character, so quotes around symbols ('#', '\0') and possessives of identifiers
 # (head_'s) would otherwise be checked as words, as aspell never did.
@@ -165,6 +173,7 @@ class SpellChecker:
     def __init__(self, dictionary_file):
         self.dictionary_file = dictionary_file
         self.hunspell = None
+        self.words = set()
         self.prefixes = []
         self.suffixes = []
         self.prefix_re = None
@@ -173,6 +182,7 @@ class SpellChecker:
     def start(self):
         words, prefixes, suffixes = self.load_dictionary()
 
+        self.words = set(word.strip() for word in words)
         self.prefixes = prefixes
         self.suffixes = suffixes
 
@@ -475,8 +485,21 @@ def check_comment(checker, offset, comment):
     # dictionary declares them word characters.
     comment = DIGIT.sub(' ', comment)
     comment = STRAY_APOSTROPHE.sub(' ', comment)
+    comment = NON_ASCII.sub(' ', comment)
 
-    errors = checker.check(comment)
+    # Check camel case identifiers by their parts up front, rather than letting the whole
+    # identifier fail and splitting it afterwards: hunspell's suggestions for a long unknown word
+    # are expensive (tens of ms) and dominate the run time otherwise. Identifiers in the custom
+    # dictionary are accepted whole.
+    errors = []
+    for m in CAMEL_TOKEN.finditer(comment):
+        token = m.group(0)
+        if token in checker.words:
+            continue
+        errors += check_camel_case(checker, (token, m.start(), []))
+    comment, _ = mask_with_regex(comment, CAMEL_TOKEN, 0)
+
+    errors += checker.check(comment)
 
     # Fix up offsets relative to the start of the line vs start of the comment.
     errors = [(w, o + offset, s) for (w, o, s) in errors]
