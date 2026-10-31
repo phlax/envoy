@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 from functools import partial
 from itertools import chain
@@ -54,9 +55,10 @@ METHOD_DOC = re.compile(r'@(param\s+\w+|return(\s+const)?\s+\w+)')
 CAMEL_CASE = re.compile(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)')
 
 # A camel case identifier: letters with a case change after the first one (HeaderMapImpl,
-# HTTPServer, gRPC), as opposed to a capitalised or all-caps word.
-CAMEL_TOKEN = re.compile(r'\b[A-Za-z]*(?:[a-z][A-Z]|[A-Z][A-Z][a-z])[A-Za-z]*\b')
-SHORT_CAMEL = 8
+# HTTPServer, gRPC), as opposed to a capitalised or all-caps word. Bounded by non-letters rather
+# than \b, so the parts of Snake_CamelCase identifiers are found too.
+CAMEL_TOKEN = re.compile(r'(?<![A-Za-z])[A-Za-z]*(?:[a-z][A-Z]|[A-Z][A-Z][a-z])[A-Za-z]*(?![A-Za-z])')
+SHORT_CAMEL = 6
 
 # Base64: we assume base64 encoded data in tests is never mixed with
 # other comments on a single line.
@@ -175,6 +177,11 @@ class SpellChecker:
         self.dictionary_file = dictionary_file
         self.hunspell = None
         self.words = set()
+        # Timing, reported with --debug: startup, time spent in the pipe, and the slowest lines.
+        self.startup_seconds = 0.0
+        self.pipe_seconds = 0.0
+        self.pipe_calls = 0
+        self.slowest = []
         self.prefixes = []
         self.suffixes = []
         self.prefix_re = None
@@ -195,6 +202,7 @@ class SpellChecker:
         with open(pws, 'w') as f:
             f.write("".join(f"{word.strip()}\n" for word in words))
 
+        started = time.monotonic()
         hunspell = shutil.which(HUNSPELL)
         if not hunspell:
             print(f"hunspell not found: {HUNSPELL}")
@@ -215,6 +223,7 @@ class SpellChecker:
 
         # Read the version line that hunspell emits on startup.
         self.hunspell.stdout.readline()
+        self.startup_seconds += time.monotonic() - started
 
     def stop(self):
         if not self.hunspell:
@@ -238,6 +247,7 @@ class SpellChecker:
 
         debug1("HUNSPELL< %s" % (line))
 
+        started = time.monotonic()
         self.hunspell.stdin.write(line + os.linesep)
         self.hunspell.stdin.flush()
 
@@ -276,7 +286,18 @@ class SpellChecker:
                 print("hunspell produced unexpected output: %s" % (result))
                 sys.exit(2)
 
+        elapsed = time.monotonic() - started
+        self.pipe_seconds += elapsed
+        self.pipe_calls += 1
+        self.slowest = sorted(self.slowest + [(elapsed, line)], reverse=True)[:10]
+
         return errors
+
+    def report_timing(self, total_seconds):
+        print("Timing: %.1fs total, %.2fs hunspell startup, %.1fs in %d hunspell round trips" %
+              (total_seconds, self.startup_seconds, self.pipe_seconds, self.pipe_calls))
+        for (elapsed, line) in self.slowest:
+            print("  %6.0fms %s" % (elapsed * 1000, line.strip()[:100]))
 
     def load_dictionary(self):
         # Read the custom dictionary.
@@ -792,6 +813,7 @@ def check_file(checker, file, lines, error_handler):
 
 
 def execute(files, dictionary_file, fix):
+    started = time.monotonic()
     checker = SpellChecker(dictionary_file)
     checker.start()
 
@@ -815,6 +837,8 @@ def execute(files, dictionary_file, fix):
                 f.writelines(lines)
 
     checker.stop()
+    if DEBUG > 0:
+        checker.report_timing(time.monotonic() - started)
 
     print(
         "Checked %d file(s) and %d comment(s), found %d error(s)." %
