@@ -14,6 +14,8 @@ py_binary(
     name = "check_spelling_pedantic",
     srcs = ["check_spelling_pedantic.py"],
     data = [
+        ":hunspell_bin",
+        ":hunspell_dic",
         ":hunspell_runtime",
         ":spelling_dictionary.txt",
     ],
