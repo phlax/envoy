@@ -210,6 +210,13 @@ grcov_ext = use_extension("@envoy_toolshed//coverage/grcov:extensions.bzl", "grc
 grcov_ext.setup()
 use_repo(grcov_ext, "grcov")
 
+# Hermetic (prebuilt) hunspell spell checker, for //tools/spelling.
+hunspell_ext = use_extension("@envoy_toolshed//hunspell:extensions.bzl", "hunspell_prebuilt_extension")
+hunspell_ext.setup()
+use_repo(hunspell_ext, "hunspell_toolchains")
+
+register_toolchains("@hunspell_toolchains//:all")
+
 unwind_ext = use_extension("@envoy_toolshed//compile:extensions.bzl", "unwind_extension")
 unwind_ext.setup()
 use_repo(unwind_ext, "unwind_libs")
