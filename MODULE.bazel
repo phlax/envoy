@@ -164,6 +164,15 @@ single_version_override(
 #     strip_prefix = "bazel",
 # )
 
+# TODO(phlax): Replace with the envoy_toolshed release that includes the hunspell toolchain
+# (bazel-v0.5.15, with VERSIONS["hunspell_sha256"] filled).
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "7ffa94d10c23676dd306410d1c314fcf83a1d1f5",
+    remote = "https://github.com/envoyproxy/toolshed",
+    strip_prefix = "bazel",
+)
+
 ####################################################################################
 # setup: Compilers
 ####################################################################################
