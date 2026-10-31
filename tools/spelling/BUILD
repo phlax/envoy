@@ -37,6 +37,7 @@ py_binary(
     data = [
         ":en_US.aff",
         ":en_US.dic",
+        ":hunspell_bin",
         ":hunspell_runtime",
         ":spelling_dictionary.txt",
     ],
