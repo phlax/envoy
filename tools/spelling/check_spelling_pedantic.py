@@ -119,6 +119,11 @@ SMART_QUOTES = {
 
 DIGIT = re.compile(r'[0-9]')
 
+# An apostrophe is only part of a word between letters (doesn't, o'clock). The dictionary lists it
+# as a word character, so quotes around symbols ('#', '\0') and possessives of identifiers
+# (head_'s) would otherwise be checked as words, as aspell never did.
+STRAY_APOSTROPHE = re.compile(r"(?<![A-Za-z])'|'(?![A-Za-z])")
+
 # Anything that looks like a URL, host name, path or email address: aspell's URL filter skipped
 # these, hunspell has no equivalent.
 URL_LIKE = re.compile(r'\S*(?:://|@|/|\.\S)\S*')
@@ -474,6 +479,7 @@ def check_comment(checker, offset, comment):
     # Digits separate words (eg SHA256 checks "SHA"), as they did for aspell; hunspell's en_US
     # dictionary declares them word characters.
     comment = DIGIT.sub(' ', comment)
+    comment = STRAY_APOSTROPHE.sub(' ', comment)
 
     errors = checker.check(comment)
 
