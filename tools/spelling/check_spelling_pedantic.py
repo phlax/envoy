@@ -56,6 +56,7 @@ CAMEL_CASE = re.compile(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)')
 # A camel case identifier: letters with a case change after the first one (HeaderMapImpl,
 # HTTPServer, gRPC), as opposed to a capitalised or all-caps word.
 CAMEL_TOKEN = re.compile(r'\b[A-Za-z]*(?:[a-z][A-Z]|[A-Z][A-Z][a-z])[A-Za-z]*\b')
+SHORT_CAMEL = 8
 
 # Base64: we assume base64 encoded data in tests is never mixed with
 # other comments on a single line.
@@ -484,20 +485,25 @@ def check_comment(checker, offset, comment):
     # Digits separate words (eg SHA256 checks "SHA"), as they did for aspell; hunspell's en_US
     # dictionary declares them word characters.
     comment = DIGIT.sub(' ', comment)
-    comment = STRAY_APOSTROPHE.sub(' ', comment)
     comment = NON_ASCII.sub(' ', comment)
 
     # Check camel case identifiers by their parts up front, rather than letting the whole
     # identifier fail and splitting it afterwards: hunspell's suggestions for a long unknown word
     # are expensive (tens of ms) and dominate the run time otherwise. Identifiers in the custom
-    # dictionary are accepted whole.
+    # dictionary are accepted whole, and short ones (WiFi, VoIP, OSes) are still tried whole first,
+    # which is cheap.
     errors = []
     for m in CAMEL_TOKEN.finditer(comment):
         token = m.group(0)
         if token in checker.words:
             continue
+        if len(token) <= SHORT_CAMEL and not checker.check(token):
+            continue
         errors += check_camel_case(checker, (token, m.start(), []))
     comment, _ = mask_with_regex(comment, CAMEL_TOKEN, 0)
+
+    # After the identifiers are gone, their possessives (RouteAction's) are stray apostrophes.
+    comment = STRAY_APOSTROPHE.sub(' ', comment)
 
     errors += checker.check(comment)
 
