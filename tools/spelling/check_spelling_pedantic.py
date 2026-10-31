@@ -119,6 +119,14 @@ SMART_QUOTES = {
 
 DIGIT = re.compile(r'[0-9]')
 
+# Anything that looks like a URL, host name, path or email address: aspell's URL filter skipped
+# these, hunspell has no equivalent.
+URL_LIKE = re.compile(r'\S*(?:://|@|/|\.\S)\S*')
+
+# C escape sequences in string literals (eg "\r\ncontent-length"), which otherwise glue onto
+# the following word.
+ESCAPE = re.compile(r'\\[abfnrtv0]')
+
 # Valid dictionary words. Anything else is not a word to the spell checker.
 DICTIONARY_WORD = re.compile(r"^[A-Za-z']+$")
 
@@ -457,6 +465,11 @@ def check_comment(checker, offset, comment):
     # Mask leading punctuation.
     if not comment[0].isalnum():
         comment = ' ' + comment[1:]
+
+    # URLs, host names, paths and email addresses are skipped, and escape sequences removed, as
+    # aspell did for us.
+    comment, _ = mask_with_regex(comment, URL_LIKE, 0)
+    comment, _ = mask_with_regex(comment, ESCAPE, 0)
 
     # Digits separate words (eg SHA256 checks "SHA"), as they did for aspell; hunspell's en_US
     # dictionary declares them word characters.
