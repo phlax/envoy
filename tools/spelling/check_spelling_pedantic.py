@@ -8,6 +8,7 @@ import math
 import os
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 
@@ -69,7 +70,7 @@ BIT_FIELDS = re.compile(r'[01]+[XxYy]+')
 AB_FIELDS = re.compile(r'\W([AB]+)\W')
 
 # Matches e.g. FC00::/8 or 2001::abcd/64. Does not match ::1/128, but
-# aspell ignores that anyway.
+# the spell checker ignores that anyway.
 IPV6_ADDR = re.compile(r'(?:\W|^)([A-Fa-f0-9]+:[A-Fa-f0-9:]+/[0-9]{1,3})(?:\W|$)')
 
 # Quoted words: "word", 'word', or *word*.
@@ -116,8 +117,17 @@ SMART_QUOTES = {
     "\u201d": '"',
 }
 
-# Valid dictionary words. Anything else crashes aspell.
+DIGIT = re.compile(r'[0-9]')
+
+# Valid dictionary words. Anything else is not a word to the spell checker.
 DICTIONARY_WORD = re.compile(r"^[A-Za-z']+$")
+
+# The spell checker: hunspell speaking the ispell pipe protocol. Under bazel these point at the
+# hermetic toolchain's binary and dictionary (see tools/spelling/BUILD); otherwise `hunspell` on
+# PATH with its installed `en_US` dictionary. The dictionary is given to `hunspell -d`, which
+# takes the path without the `.dic` extension.
+HUNSPELL = os.environ.get("HUNSPELL", "hunspell")
+HUNSPELL_DICT = os.environ.get("HUNSPELL_DICT", "en_US").removesuffix(".dic")
 
 DEBUG = 0
 COLOR = True
@@ -141,11 +151,11 @@ def debug1(s):
 
 
 class SpellChecker:
-    """Aspell-based spell checker."""
+    """Hunspell-based spell checker."""
 
     def __init__(self, dictionary_file):
         self.dictionary_file = dictionary_file
-        self.aspell = None
+        self.hunspell = None
         self.prefixes = []
         self.suffixes = []
         self.prefix_re = None
@@ -160,51 +170,61 @@ class SpellChecker:
         self.prefix_re = re.compile(r"(?:\s|^)((%s)-)" % ("|".join(prefixes)), re.IGNORECASE)
         self.suffix_re = re.compile(r"(-(%s))(?:\s|$)" % ("|".join(suffixes)), re.IGNORECASE)
 
-        pws = os.path.realpath(".aspell.en.pws")
-        # Generate aspell personal dictionary.
+        # Generate the personal word list: one word per line.
+        pws = os.path.realpath(".hunspell.en.pws")
         with open(pws, 'w') as f:
-            f.write("personal_ws-1.1 en %d\n" % (len(words)))
-            f.writelines(words)
+            f.write("".join(f"{word.strip()}\n" for word in words))
 
-        # Start an aspell process.
-        aspell_args = ["aspell", "pipe", "--lang=en_US", "--encoding=utf-8", f"--personal={pws}"]
-        self.aspell = subprocess.Popen(
-            aspell_args,
+        hunspell = shutil.which(HUNSPELL)
+        if not hunspell:
+            print(f"hunspell not found: {HUNSPELL}")
+            sys.exit(2)
+
+        # Start a hunspell process speaking the ispell pipe protocol. The environment is
+        # cleared: hunspell also reads DICTIONARY, DICPATH, WORDLIST and $HOME/.hunspell_* if set.
+        hunspell_args = [
+            hunspell, "-a", "-i", "utf-8", "-d", HUNSPELL_DICT, "-p", pws]
+        self.hunspell = subprocess.Popen(
+            hunspell_args,
             bufsize=4096,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            universal_newlines=True,
+            env={})
 
-        # Read the version line that aspell emits on startup.
-        self.aspell.stdout.readline()
+        # Read the version line that hunspell emits on startup.
+        self.hunspell.stdout.readline()
 
     def stop(self):
-        if not self.aspell:
+        if not self.hunspell:
             return
 
-        self.aspell.stdin.close()
-        self.aspell.wait()
-        self.aspell = None
+        self.hunspell.stdin.close()
+        self.hunspell.wait()
+        self.hunspell = None
 
     def check(self, line):
+        # Block comment text keeps its newline; a second, empty line would get its own (empty)
+        # response from hunspell and shift the results for everything after it.
+        line = line.rstrip("\r\n")
         if line.strip() == '':
             return []
 
-        self.aspell.poll()
-        if self.aspell.returncode is not None:
-            print("aspell quit unexpectedly: return code %d" % (self.aspell.returncode))
+        self.hunspell.poll()
+        if self.hunspell.returncode is not None:
+            print("hunspell quit unexpectedly: return code %d" % (self.hunspell.returncode))
             sys.exit(2)
 
-        debug1("ASPELL< %s" % (line))
+        debug1("HUNSPELL< %s" % (line))
 
-        self.aspell.stdin.write(line + os.linesep)
-        self.aspell.stdin.flush()
+        self.hunspell.stdin.write(line + os.linesep)
+        self.hunspell.stdin.flush()
 
         errors = []
         while True:
-            result = self.aspell.stdout.readline().strip()
-            debug1("ASPELL> %s" % (result))
+            result = self.hunspell.stdout.readline().strip()
+            debug1("HUNSPELL> %s" % (result))
 
             # Check for end of results.
             if result == "":
@@ -233,7 +253,7 @@ class SpellChecker:
 
                 errors.append((original, int(o), suggestions))
             else:
-                print("aspell produced unexpected output: %s" % (result))
+                print("hunspell produced unexpected output: %s" % (result))
                 sys.exit(2)
 
         return errors
@@ -253,9 +273,9 @@ class SpellChecker:
         # Allow acronyms and abbreviations to be spelled in lowercase.
         # (e.g. Convert "HTTP" into "HTTP" and "http" which also matches
         # "Http").
-        for word in words:
+        for word in list(words):
             if word.isupper():
-                words += word.lower()
+                words.append(word.lower())
 
         return (words, prefixes, suffixes)
 
@@ -437,6 +457,10 @@ def check_comment(checker, offset, comment):
     # Mask leading punctuation.
     if not comment[0].isalnum():
         comment = ' ' + comment[1:]
+
+    # Digits separate words (eg SHA256 checks "SHA"), as they did for aspell; hunspell's en_US
+    # dictionary declares them word characters.
+    comment = DIGIT.sub(' ', comment)
 
     errors = checker.check(comment)
 
@@ -764,7 +788,9 @@ if __name__ == "__main__":
     except:
         locale.setlocale(locale.LC_ALL, 'C.UTF-8')
 
-    default_dictionary = os.environ["ASPELL_DICT"]
+    default_dictionary = os.environ.get(
+        "SPELLING_DICTIONARY",
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), "spelling_dictionary.txt"))
 
     parser = argparse.ArgumentParser(description="Check comment spelling.")
     parser.add_argument(
