@@ -24,6 +24,15 @@ hunspell_bin = rule(
     toolchains = [HUNSPELL_TOOLCHAIN_TYPE],
 )
 
+def _hunspell_aff_impl(ctx):
+    return [DefaultInfo(files = depset([ctx.toolchains[HUNSPELL_TOOLCHAIN_TYPE].hunspell.affix]))]
+
+hunspell_aff = rule(
+    implementation = _hunspell_aff_impl,
+    doc = "Just the resolved dictionary's `.aff` file.",
+    toolchains = [HUNSPELL_TOOLCHAIN_TYPE],
+)
+
 def _hunspell_dic_impl(ctx):
     return [DefaultInfo(files = depset([ctx.toolchains[HUNSPELL_TOOLCHAIN_TYPE].hunspell.dictionary]))]
 

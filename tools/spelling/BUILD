@@ -1,5 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_binary")
-load(":defs.bzl", "hunspell_bin", "hunspell_dic", "hunspell_runtime")
+load(":defs.bzl", "hunspell_aff", "hunspell_bin", "hunspell_dic", "hunspell_runtime")
 
 licenses(["notice"])  # Apache 2
 
@@ -10,16 +10,39 @@ hunspell_bin(name = "hunspell_bin")
 
 hunspell_dic(name = "hunspell_dic")
 
+hunspell_aff(name = "hunspell_aff")
+
+# WIP: SCOWL's affix file does not list the apostrophe in WORDCHARS, so hunspell checks
+# "doesn't" as "doesn" and "t". Fixed in envoy_toolshed (hunspell-wordchars); drop this once a
+# bins release carries it.
+genrule(
+    name = "en_US_dict",
+    srcs = [
+        ":hunspell_aff",
+        ":hunspell_dic",
+    ],
+    outs = [
+        "en_US.aff",
+        "en_US.dic",
+    ],
+    cmd = """
+    sed "s/^WORDCHARS 0123456789$$/WORDCHARS 0123456789'/" $(execpath :hunspell_aff) > $(execpath en_US.aff) \
+    && cp $(execpath :hunspell_dic) $(execpath en_US.dic)
+    """,
+)
+
 py_binary(
     name = "check_spelling_pedantic",
     srcs = ["check_spelling_pedantic.py"],
     data = [
+        ":en_US.aff",
+        ":en_US.dic",
         ":hunspell_runtime",
         ":spelling_dictionary.txt",
     ],
     env = {
         "HUNSPELL": "$(rootpath :hunspell_bin)",
-        "HUNSPELL_DICT": "$(rootpath :hunspell_dic)",
+        "HUNSPELL_DICT": "$(rootpath :en_US.dic)",
         "SPELLING_DICTIONARY": "$(rootpath :spelling_dictionary.txt)",
     },
 )
