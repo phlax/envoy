@@ -172,6 +172,12 @@ git_override(
     remote = "https://github.com/envoyproxy/toolshed",
     strip_prefix = "bazel",
 )
+git_override(
+    module_name = "envoy_toolshed_jq",
+    commit = "7ffa94d10c23676dd306410d1c314fcf83a1d1f5",
+    remote = "https://github.com/envoyproxy/toolshed",
+    strip_prefix = "jq",
+)
 
 ####################################################################################
 # setup: Compilers
