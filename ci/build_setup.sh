@@ -97,6 +97,12 @@ BAZEL_STARTUP_OPTIONS=(
     "--output_user_root=${BUILD_DIR}/bazel_root"
     "--output_base=${BUILD_DIR}/bazel_root/${ENVOY_OUTPUT_BASE_DIR}")
 
+# With RBE nothing compiles locally, so give the Bazel server more of the machine's memory
+# for analysis than the .bazelrc default.
+if [[ -n "${ENVOY_RBE:-}" ]]; then
+    BAZEL_STARTUP_OPTIONS+=("--host_jvm_args=-XX:MaxRAMPercentage=60")
+fi
+
 bazel () {
     local startup_options
     read -ra startup_options <<< "${BAZEL_STARTUP_OPTION_LIST:-}"

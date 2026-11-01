@@ -2,16 +2,13 @@
 # startup
 #############################################################################
 
-# Bazel doesn't need more than 200MB of memory for local build based on memory profiling:
-# https://docs.bazel.build/versions/master/skylark/performance.html#memory-profiling
-# The default JVM max heapsize is 1/4 of physical memory up to 32GB which could be large
-# enough to consume all memory constrained by cgroup in large host.
-# Limiting JVM heapsize here to let it do GC more when approaching the limit to
-# leave room for compiler/linker.
-# The number 3G is chosen heuristically to both support large VM and small VM with RBE.
-# Startup options cannot be selected via config.
-# TODO: Adding just to test android
-startup --host_jvm_args=-Xmx3g
+# Cap the JVM heap at a share of the memory available to it (respecting cgroup limits), leaving
+# the rest for local compiles and links. Analysis of the full test set needs well over a fixed
+# 3G, so a percentage scales with the machine instead.
+# Startup options cannot be selected via config: CI raises this for RBE in ci/build_setup.sh, and
+# local RBE users can do the same in user.bazelrc. Keep overrides on MaxRAMPercentage, as -Xmx
+# takes precedence over it regardless of order.
+startup --host_jvm_args=-XX:MaxRAMPercentage=25
 startup --host_jvm_args="-DBAZEL_TRACK_SOURCE_DIRECTORIES=1"
 
 
