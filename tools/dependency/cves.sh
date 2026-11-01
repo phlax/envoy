@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 JQ="$(realpath "$JQ_BIN")"
 CPE_DEPS="$(realpath "$CPE_DEPS")"
 JQ_CVE_UTILS="$(realpath "$JQ_CVE_UTILS")"

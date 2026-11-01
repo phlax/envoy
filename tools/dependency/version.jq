@@ -58,8 +58,8 @@ def parse(v):
             else
               $m
               | .main |= (split(".") | map(tonumber) + [0,0,0])[0:3]
-              | .pre |= (if .pre == null then [] else split(".") end)
-              | .build |= (if .build == null then [] else split(".") end)
+              | .pre |= (if . == null then [] else split(".") end)
+              | .build |= (if . == null then [] else split(".") end)
               | .string = $v
             end
         end

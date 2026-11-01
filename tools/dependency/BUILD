@@ -223,7 +223,7 @@ genrule(
         exit 1
     fi
     $(location :cves) \
-      > $@ || :
+      > $@
     """,
     tags = ["no-remote-exec"],
     toolchains = ["@jq_toolchains//:resolved_toolchain"],
