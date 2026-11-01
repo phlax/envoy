@@ -37,7 +37,6 @@ jobs:
       concurrency-suffix: -${{ matrix.target }}
       request: ${{ inputs.request }}
       docker-ci: false
-      devtools: ${{ matrix.target == 'format' }}
       error-match: |
         ERROR
         error:
