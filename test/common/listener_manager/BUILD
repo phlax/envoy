@@ -116,9 +116,12 @@ envoy_cc_test(
     deps = [":listener_manager_impl_test_suites"],
 )
 
+# The suites' compile needs about 8GB with GCC, so it keeps the pool the single test target
+# had (an envoy_cc_test's pool also applies to its compiles).
 envoy_cc_test_library(
     name = "listener_manager_impl_test_suites",
     srcs = ["listener_manager_impl_test.cc"],
+    rbe_pool = "linux_x64_small",
     deps = [
         ":listener_manager_impl_test_lib",
         "//envoy/network:socket_interface",
