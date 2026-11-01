@@ -44,7 +44,7 @@ if [[ -n "$ENVOY_DOCKER_IN_DOCKER" ]]; then
 elif [[ -n "$ENVOY_DOCKER_DEVTOOLS" ]]; then
     ENVOY_BUILD_VARIANT=devtools
 elif [[ -n "$ENVOY_DOCKER_CI" || -n "$GITHUB_ACTIONS" ]]; then
-    # CI uses the minimal image; jobs that need devtools set `ENVOY_DOCKER_DEVTOOLS`.
+    # CI uses the minimal image (`ENVOY_DOCKER_DEVTOOLS` can still select devtools).
     ENVOY_BUILD_VARIANT=ci
 else
     ENVOY_BUILD_VARIANT=devtools
