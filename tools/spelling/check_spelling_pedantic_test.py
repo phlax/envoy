@@ -87,6 +87,7 @@ def run_checks():
     errors += check_file_expecting_errors("on_off", ["speelinga", "speelingb"])
     errors += check_file_expecting_errors("rst_code_block", ["speelinga", "speelingb"])
     errors += check_file_expecting_errors("word_splitting", ["Speeled", "Korrectly"])
+    errors += check_file_expecting_errors("punctuation", ["mistaek", "mistaak"])
 
     return errors
 

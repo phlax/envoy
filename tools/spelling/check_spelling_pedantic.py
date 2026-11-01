@@ -136,8 +136,10 @@ NON_ASCII = re.compile(r'[^\x00-\x7f]')
 STRAY_APOSTROPHE = re.compile(r"(?<![A-Za-z])'|'(?![A-Za-z])")
 
 # Anything that looks like a URL, host name, path, email address or string literal with escape
-# sequences: aspell's URL filter skipped these, hunspell has no equivalent.
-URL_LIKE = re.compile(r'\S*(?:://|@|/|\\|\.\S)\S*')
+# sequences: aspell's URL filter skipped these, hunspell has no equivalent. A dot only counts
+# between name parts (example.com, stat name templates like vhost.<name>.vcluster.[<cluster>.]),
+# so sentence punctuation (`woork.)`, `woork...`) does not hide a word from the check.
+URL_LIKE = re.compile(r'\S*(?:://|@|/|\\|[A-Za-z0-9_\-\]>)*]\.[A-Za-z0-9_\[<(*])\S*')
 
 # Valid dictionary words. Anything else is not a word to the spell checker.
 DICTIONARY_WORD = re.compile(r"^[A-Za-z']+$")
@@ -536,7 +538,9 @@ def check_comment(checker, offset, comment):
 
     errors = [*chain.from_iterable(map(lambda err: check_affix(checker, err), errors))]
 
-    return errors
+    # The identifiers were checked first, so restore source order: printing and fixing errors
+    # assume ascending offsets.
+    return sorted(errors, key=lambda err: err[1])
 
 
 def print_error(file, line_offset, lines, errors):
