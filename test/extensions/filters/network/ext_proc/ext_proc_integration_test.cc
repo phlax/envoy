@@ -161,23 +161,28 @@ public:
           Envoy::ConfigHelper::setHttp2WithMaxConcurrentStreams(
               *(bootstrap.mutable_static_resources()->mutable_clusters()->Mutable(1)), 2);
 
-          // Apply config modifier if provided
-          if (config_modifier) {
-            // Find the network filter
-            auto* listeners = bootstrap.mutable_static_resources()->mutable_listeners(0);
-            auto* filter_chain = listeners->mutable_filter_chains(0);
-            auto* filters = filter_chain->mutable_filters();
-            for (auto& filter : *filters) {
-              if (filter.name() == "envoy.network_ext_proc.ext_proc_filter") {
-                envoy::extensions::filters::network::ext_proc::v3::NetworkExternalProcessor config;
-                std::ignore = filter.mutable_typed_config()->UnpackTo(&config);
+          // Find the network filter
+          auto* listeners = bootstrap.mutable_static_resources()->mutable_listeners(0);
+          auto* filter_chain = listeners->mutable_filter_chains(0);
+          auto* filters = filter_chain->mutable_filters();
+          for (auto& filter : *filters) {
+            if (filter.name() == "envoy.network_ext_proc.ext_proc_filter") {
+              envoy::extensions::filters::network::ext_proc::v3::NetworkExternalProcessor config;
+              std::ignore = filter.mutable_typed_config()->UnpackTo(&config);
 
-                // Apply the provided modifier function
+              // The 200ms default message timeout is shorter than a round trip through the
+              // fake gRPC server can take under the sanitizers, and a timeout closes the
+              // connection, failing whatever the test waits for next. Tests of the timeout
+              // itself set their own.
+              config.mutable_message_timeout()->set_seconds(5);
+
+              // Apply the provided modifier function
+              if (config_modifier) {
                 config_modifier(config);
-
-                std::ignore = filter.mutable_typed_config()->PackFrom(config);
-                break;
               }
+
+              std::ignore = filter.mutable_typed_config()->PackFrom(config);
+              break;
             }
           }
         });
@@ -406,9 +411,12 @@ TEST_P(NetworkExtProcFilterIntegrationTest, TcpProxyDownstreamClose) {
   tcp_client->close();
 }
 
-// Test default message timeout (200ms) handling for TCP proxy
+// Test message timeout handling for TCP proxy, at the filter's default of 200ms.
 TEST_P(NetworkExtProcFilterIntegrationTest, TcpProxyDefaultMessageTimeout) {
-  initialize();
+  initializeWithModifier([](auto& config) {
+    config.mutable_message_timeout()->set_seconds(0);
+    config.mutable_message_timeout()->set_nanos(200000000);
+  });
 
   Envoy::IntegrationTcpClientPtr tcp_client =
       makeTcpConnection(lookupPort("network_ext_proc_filter"));
