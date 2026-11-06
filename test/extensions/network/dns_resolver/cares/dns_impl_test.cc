@@ -1567,6 +1567,7 @@ TEST_P(DnsImplTest, RecordTtlLookup) {
 // Validate that the resolution timeout timer is enabled if we don't resolve
 // immediately.
 TEST_P(DnsImplTest, PendingTimerEnable) {
+  InSequence s;
   const envoy::extensions::network::dns_resolver::cares::v3::CaresDnsResolverConfig config;
   Event::MockDispatcher dispatcher;
   Event::MockTimer* timer = new NiceMock<Event::MockTimer>();
@@ -1574,11 +1575,12 @@ TEST_P(DnsImplTest, PendingTimerEnable) {
   resolver_ = std::make_shared<DnsResolverImpl>(config, dispatcher, "127.0.0.1:53",
                                                 *stats_store_.rootScope());
   Event::FileEvent* file_event = new NiceMock<Event::MockFileEvent>();
-  EXPECT_CALL(dispatcher, createFileEvent_(_, _, _, _)).WillOnce(Return(file_event));
   // c-ares (>= 1.34.9) delivers the socket state callback when ares_getaddrinfo() returns, with
-  // the query already pending, so the timer is armed from the callback (before the file event is
-  // created) and again once the resolution has started.
-  EXPECT_CALL(*timer, enableTimer(_, _)).Times(testing::AtLeast(1));
+  // the query already pending: onAresSocketStateChange() arms the timer before it creates the
+  // file event, and resolve() arms it again once the resolution has started.
+  EXPECT_CALL(*timer, enableTimer(_, _));
+  EXPECT_CALL(dispatcher, createFileEvent_(_, _, _, _)).WillOnce(Return(file_event));
+  EXPECT_CALL(*timer, enableTimer(_, _));
   EXPECT_NE(nullptr, resolveWithUnreferencedParameters("some.bad.domain.invalid",
                                                        DnsLookupFamily::V4Only, true));
   checkStats(0 /*resolve_total*/, 1 /*pending_resolutions*/, 0 /*not_found*/,
