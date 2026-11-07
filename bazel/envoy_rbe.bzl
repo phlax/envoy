@@ -2,10 +2,13 @@
 
 _ENGFLOW_RBE_X86_64 = Label("//bazel:engflow_rbe_x86_64")
 
-# Configurations a pool can be chosen for, each paired with the setting that matches an EngFlow
-# x86_64 build in that configuration. Listed in order of increasing precedence: each configuration
-# gets its own select() so that configurations which can be enabled together (fuzz coverage turns on
-# both coverage and asan) never meet in one select(), and the later entry's pool wins.
+# The instrumentations a pool can be chosen for, each paired with the setting that matches an
+# EngFlow x86_64 build with it. The names are those of the `//bazel:<name>_build` settings, i.e.
+# of `--define ENVOY_CONFIG_<NAME>=1`, which every `--config` enabling that instrumentation sets
+# (`asan`, `clang-asan`, `asan-fuzzer` and `fuzz-coverage` are all "asan" here); they are not CI
+# job names. Listed in order of increasing precedence: each gets its own select() so that two that
+# can be enabled together (fuzz coverage turns on both coverage and asan) never meet in one
+# select(), and the later entry's pool wins.
 _CONFIGS = [
     ("coverage", Label("//bazel:engflow_rbe_x86_64_coverage")),
     ("tsan", Label("//bazel:engflow_rbe_x86_64_tsan")),
@@ -26,11 +29,12 @@ DEFAULT_RBE_POOLS = {
 def envoy_exec_properties(rbe_pool = None, exec_properties = {}, defaults = DEFAULT_RBE_POOLS):
     """Returns `exec_properties` with the RBE pool set for EngFlow x86_64 builds.
 
-    `rbe_pool` is either a pool name, used in every configuration, or a dict mapping
-    configurations ("default", "asan", "msan", "tsan", "coverage") to pool names; a configuration
-    the dict does not name uses its "default" entry. A pin applies to every action of the target,
-    as it always has. A configuration with no pin, on a target that supplies no `Pool` of its own,
-    runs its test action on the `defaults` entry for that configuration, if any.
+    `rbe_pool` is either a pool name, used for every build, or a dict mapping the build's
+    instrumentation ("asan", "msan", "tsan", "coverage": the `//bazel:<name>_build` settings) or
+    "default" (any other build) to a pool name; an instrumentation the dict does not name uses its
+    "default" entry. A pin applies to every action of the target, as it always has. An
+    instrumentation with no pin, on a target that supplies no `Pool` of its own, runs its test
+    action on the `defaults` entry for it, if any.
 
     Memory-heavy sanitizer builds are the reason to pin a pool, so prefer naming the configuration
     that needs it, e.g. `rbe_pool = {"msan": "linux_x64_large"}`, over pinning every configuration.
@@ -43,7 +47,7 @@ def envoy_exec_properties(rbe_pool = None, exec_properties = {}, defaults = DEFA
     elif type(rbe_pool) == type({}):
         for config in rbe_pool:
             if config != "default" and config not in configs:
-                fail("rbe_pool: unknown configuration %r (expected one of default, %s)" % (config, ", ".join(configs)))
+                fail("rbe_pool: unknown instrumentation %r (expected one of default, %s)" % (config, ", ".join(configs)))
         pools = dict(rbe_pool)
     else:
         fail("rbe_pool must be a pool name or a dict of configuration to pool name, got %r" % rbe_pool)
