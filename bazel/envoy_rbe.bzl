@@ -52,7 +52,9 @@ def envoy_exec_properties(rbe_pool = None, exec_properties = {}, defaults = DEFA
     else:
         fail("rbe_pool must be a pool name or a dict of configuration to pool name, got %r" % rbe_pool)
     default = pools.get("default")
-    supplied = type(exec_properties) == type({}) and ("Pool" in exec_properties or "test.Pool" in exec_properties)
+    # A select()-valued exec_properties is opaque here: treat it as supplying a pool so that no
+    # automatic default can override one of its branches.
+    supplied = type(exec_properties) != type({}) or "Pool" in exec_properties or "test.Pool" in exec_properties
     props = exec_properties
     if default:
         props = props | select({
