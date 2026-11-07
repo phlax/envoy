@@ -56,9 +56,12 @@ def envoy_exec_properties(rbe_pool = None, exec_properties = {}, defaults = DEFA
             "//conditions:default": {},
         })
     for config, setting in _CONFIGS:
-        pool = pools.get(config)
-        if pool and pool != default:
+        # The configuration's effective pool: its own entry, else the target-wide one. Emitted even
+        # when it equals the target-wide pool, so that where two configurations are enabled at once
+        # the later one in _CONFIGS wins regardless of which entries were spelled out.
+        pool = pools.get(config, default)
+        if pool:
             props = props | select({setting: {"Pool": pool}, "//conditions:default": {}})
-        elif not pool and not default and not supplied and defaults.get(config):
+        elif not supplied and defaults.get(config):
             props = props | select({setting: {"test.Pool": defaults[config]}, "//conditions:default": {}})
     return props
