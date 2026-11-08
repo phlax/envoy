@@ -91,7 +91,10 @@ envoy_cc_test(
         "//test/common/tls/test_data:certs",
     ],
     external_deps = ["ssl"],
-    rbe_pool = {"asan": "linux_x64_small", "msan": "linux_x64_large"},
+    rbe_pool = {
+        "asan": "linux_x64_small",
+        "msan": "linux_x64_large",
+    },
     shard_count = 10,
     deps = [
         ":ssl_certs_test_lib",

@@ -1712,7 +1712,10 @@ envoy_cc_test(
     name = "integration_test",
     size = "large",
     srcs = ["integration_test.cc"],
-    rbe_pool = {"asan": "linux_x64_small", "msan": "linux_x64_large"},
+    rbe_pool = {
+        "asan": "linux_x64_small",
+        "msan": "linux_x64_large",
+    },
     shard_count = 2,
     tags = [
         "cpu:3",

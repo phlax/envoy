@@ -96,7 +96,10 @@ envoy_cc_test(
 envoy_cc_test(
     name = "stats_handler_test",
     srcs = envoy_select_admin_functionality(["stats_handler_test.cc"]),
-    rbe_pool = {"asan": "linux_x64_small", "msan": "linux_x64_large"},
+    rbe_pool = {
+        "asan": "linux_x64_small",
+        "msan": "linux_x64_large",
+    },
     deps = [
         ":admin_instance_lib",
         "//source/common/common:regex_lib",

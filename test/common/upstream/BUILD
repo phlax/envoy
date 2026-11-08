@@ -330,7 +330,10 @@ envoy_cc_test(
     srcs = [
         "health_checker_impl_test.cc",
     ],
-    rbe_pool = {"asan": "linux_x64_small", "msan": "linux_x64_large"},
+    rbe_pool = {
+        "asan": "linux_x64_small",
+        "msan": "linux_x64_large",
+    },
     deps = [
         ":health_checker_test_base_lib",
         ":utility_lib",
