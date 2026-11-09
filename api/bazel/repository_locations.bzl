@@ -75,8 +75,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
     ),
     envoy_toolshed = dict(
         # TEST ONLY: unreleased WORKSPACE CVE scanner, https://github.com/envoyproxy/toolshed/pull/5573
-        version = "7cd84024a354221a392bd39a73c1cae98290b28c",
-        sha256 = "54ae4a869f928076e4f4df823166f26f21d0d70026957c341c0242dbf6f00ea8",
+        version = "de6308333e95f8cf77fd317db933fe145a74e8fb",
+        sha256 = "72a0a154e778609021e5a8a6fe64261d9002740f9d623362b8ed322c78bb6382",
         strip_prefix = "toolshed-{version}/bazel",
         urls = ["https://github.com/envoyproxy/toolshed/archive/{version}.tar.gz"],
     ),
