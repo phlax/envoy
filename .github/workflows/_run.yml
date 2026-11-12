@@ -435,6 +435,9 @@ jobs:
           ${{ inputs.rbe == true && format('--jobs={0}', inputs.bazel-rbe-jobs) || '' }}
           ${{ github.event_name == 'schedule' && '--nocache_test_results' || '' }}
           ${{ inputs.rbe == true && inputs.trusted && '--remote_execution_priority=1' || '' }}
+          --bes_keywords=github_run=${{ github.run_id }}
+          --bes_keywords=github_run_attempt=${{ github.run_attempt }}
+          --bes_keywords=github_job=${{ job.check_run_id }}
         CI_BRANCH: >-
           ${{ inputs.trusted
               && format('refs/heads/{0}', fromJSON(inputs.request).request.target-branch)
