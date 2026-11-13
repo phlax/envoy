@@ -71,6 +71,10 @@ def envoy_exec_properties(
     actions that need it, e.g. `rbe_pool = {"msan": {"test": "linux_x64_large"}}` or
     `rbe_pool = {"gcc": {"build": "linux_x64_medium"}}`, over pinning everything.
     """
+
+    # MEASUREMENT: every action goes to the platform pool.
+    return exec_properties
+
     configs = [c for c, _ in _CONFIGS]
     if rbe_pool == None:
         pools = {}

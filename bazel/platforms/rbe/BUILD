@@ -15,6 +15,7 @@ platform(
 platform(
     name = "linux_x64",
     exec_properties = {
+        "Pool": "linux_x64_large",
         "container-image": "docker://%s" % image_worker(),
         "dockerAddCapabilities": "SYS_PTRACE,NET_RAW,NET_ADMIN",
         "dockerNetwork": "standard",

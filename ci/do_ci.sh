@@ -604,10 +604,11 @@ case $CI_TARGET in
         _BAZEL_ARGS=(
             "$ENVOY_DEFLAKE_TARGET"
             "${BAZEL_BUILD_OPTIONS[@]}"
-            --test_arg=--gtest_filter="$ENVOY_DEFLAKE_TEST"
             --runs_per_test="${ENVOY_DEFLAKE_RUNS}"
-            --test_arg="-l trace"
             --cache_test_results=no)
+        if [[ "$ENVOY_DEFLAKE_TEST" != "*" ]]; then
+            _BAZEL_ARGS+=(--test_arg=--gtest_filter="$ENVOY_DEFLAKE_TEST" --test_arg="-l trace")
+        fi
         if [[ -n "$ENVOY_DEFLAKE_JOBS" ]]; then
             _BAZEL_ARGS+=(--jobs="$ENVOY_DEFLAKE_JOBS")
         fi

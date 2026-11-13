@@ -103,7 +103,7 @@ corpus_from_test_binary(
     name = "corpus_from_config_impl_dir",
     testonly = 1,
     exec_properties = select({
-        "//bazel:engflow_rbe_x86_64": {"Pool": "linux_x64_small"},
+        "//bazel:engflow_rbe_x86_64": {},
         "//conditions:default": {},
     }),
     script = ":corpus_from_config_impl_sh",
