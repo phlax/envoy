@@ -601,20 +601,22 @@ case $CI_TARGET in
             echo "Both ENVOY_DEFLAKE_TARGET and ENVOY_DEFLAKE_TEST must be set to use deflake" >&2
             exit 1
         fi
+        # The target may be several patterns, including negative ones.
+        read -ra _DEFLAKE_TARGETS <<< "$ENVOY_DEFLAKE_TARGET"
         _BAZEL_ARGS=(
-            "$ENVOY_DEFLAKE_TARGET"
             "${BAZEL_BUILD_OPTIONS[@]}"
-            --test_arg=--gtest_filter="$ENVOY_DEFLAKE_TEST"
             --runs_per_test="${ENVOY_DEFLAKE_RUNS}"
-            --test_arg="-l trace"
             --cache_test_results=no)
+        if [[ "$ENVOY_DEFLAKE_TEST" != "*" ]]; then
+            _BAZEL_ARGS+=(--test_arg=--gtest_filter="$ENVOY_DEFLAKE_TEST" --test_arg="-l trace")
+        fi
         if [[ -n "$ENVOY_DEFLAKE_JOBS" ]]; then
             _BAZEL_ARGS+=(--jobs="$ENVOY_DEFLAKE_JOBS")
         fi
         echo "Deflake args: " >&2
-        echo "  ${_BAZEL_ARGS[*]}" >&2
+        echo "  ${_BAZEL_ARGS[*]} -- ${_DEFLAKE_TARGETS[*]}" >&2
         echo "" >&2
-        bazel test "${_BAZEL_ARGS[@]}"
+        bazel test "${_BAZEL_ARGS[@]}" -- "${_DEFLAKE_TARGETS[@]}"
         ;;
 
     format-api|check_and_fix_proto_format)
