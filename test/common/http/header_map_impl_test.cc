@@ -750,15 +750,19 @@ TEST(HeaderMapImplTest, TestAppendHeader) {
 }
 
 TEST(TestHeaderMapImplDeathTest, TestHeaderLengthChecks) {
+  // The length check aborts before anything is copied. The pointer is volatile so that GCC, which
+  // inlines append() down to memmove() with optimization, cannot see that it is null and fail the
+  // build with -Werror=nonnull.
+  const char* volatile data = nullptr;
   HeaderString value;
   value.setCopy("some;");
-  EXPECT_DEATH(value.append(nullptr, std::numeric_limits<uint32_t>::max()),
+  EXPECT_DEATH(value.append(data, std::numeric_limits<uint32_t>::max()),
                "Trying to allocate overly large headers.");
 
   std::string source("hello");
   HeaderString reference;
   reference.setReference(source);
-  EXPECT_DEATH(reference.append(nullptr, std::numeric_limits<uint32_t>::max()),
+  EXPECT_DEATH(reference.append(data, std::numeric_limits<uint32_t>::max()),
                "Trying to allocate overly large headers.");
 }
 
