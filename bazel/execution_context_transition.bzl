@@ -62,7 +62,7 @@ def execution_context_enabled_test(name, test, rbe_pool = None, exec_properties 
     _execution_context_enabled_test(
         name = name,
         test = test,
-        exec_properties = envoy_exec_properties(rbe_pool, exec_properties),
+        exec_properties = envoy_exec_properties(rbe_pool, exec_properties, link = False),
         args = args,
         env = envoy_test_env(env),
         tags = tags,

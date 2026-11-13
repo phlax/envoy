@@ -375,7 +375,7 @@ def envoy_benchmark_test(
         tags = [],
         repository = "",
         **kargs):
-    exec_properties = envoy_exec_properties(rbe_pool, exec_properties)
+    exec_properties = envoy_exec_properties(rbe_pool, exec_properties, link = False)
     sh_test(
         name = name,
         srcs = [Label("//bazel:test_for_benchmark_wrapper.sh")],
