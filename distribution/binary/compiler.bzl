@@ -55,19 +55,32 @@
 # ```
 #
 
+# The RBE execution platform to compile the bundled binaries on (`//distribution:rbe_exec_platform`),
+# eg the arm64 workers for arm64 binaries built by an x64 host: the rest of the build (eg the local
+# packaging) keeps the host's execution platform.
+_RBE_EXEC_PLATFORM = str(Label("//distribution:rbe_exec_platform"))
+_EXTRA_EXECUTION_PLATFORMS = "//command_line_option:extra_execution_platforms"
+
 def _compilation_config_impl(settings, attr):
-    _ignore = settings
+    exec_platform = settings[_RBE_EXEC_PLATFORM]
     return {
         "//command_line_option:compilation_mode": attr.mode,
         "//command_line_option:stripopt": attr.stripopts,
+        _EXTRA_EXECUTION_PLATFORMS: (
+            [exec_platform] if exec_platform else settings[_EXTRA_EXECUTION_PLATFORMS]
+        ),
     }
 
 compilation_config = transition(
     implementation = _compilation_config_impl,
-    inputs = [],
+    inputs = [
+        _EXTRA_EXECUTION_PLATFORMS,
+        _RBE_EXEC_PLATFORM,
+    ],
     outputs = [
         "//command_line_option:compilation_mode",
         "//command_line_option:stripopt",
+        _EXTRA_EXECUTION_PLATFORMS,
     ],
 )
 

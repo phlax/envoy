@@ -1080,8 +1080,9 @@ case $CI_TARGET in
         ;;
 
     # `release.server`: the release binaries and tools (`release.server_only` is the same).
-    # `release.publish`: as `release.server`, and the container images.
-    release|release.server|release.server_only|release.publish|release.test_only)
+    # `release.publish`: as `release.server`, and the container images and distro packages.
+    # `release.publish.all`: as `release.publish`, for each arch (x64 and arm64), from any host.
+    release|release.server|release.server_only|release.publish|release.publish.all|release.test_only)
         if [[ "$CI_TARGET" == "release" || "$CI_TARGET" == "release.test_only" ]]; then
             # When testing memory consumption, we want to test against exact byte-counts
             # where possible. As these differ between platforms and compile options, we
@@ -1129,48 +1130,51 @@ case $CI_TARGET in
         echo "  release options:  ${BAZEL_RELEASE_OPTIONS[*]}"
         echo "  binary dir:  ${ENVOY_BINARY_DIR}"
 
-        if [[ "$CI_TARGET" == "release.publish" ]]; then
-            # Everything published for this platform, in one invocation (`//distribution/publish`):
+        if [[ "$CI_TARGET" == "release.publish" || "$CI_TARGET" == "release.publish.all" ]]; then
+            # Everything published for an arch, in one invocation (`//distribution/publish:publish_<arch>`):
             # the release binaries and tools (as `release.server`), the container images (named as
-            # `docker` names them), and the distro packages (as `distribution` builds them).
-            ENVOY_OCI_DIR="${ENVOY_BUILD_DIR}/build_images"
-            ENVOY_PACKAGES_DIR="${ENVOY_BUILD_DIR}/packages"
-            for dir in "$ENVOY_OCI_DIR" "$ENVOY_PACKAGES_DIR"; do
-                if [[ -e "${dir}" ]]; then
-                    rm -rf "${dir}"
-                fi
-                mkdir -p "$dir"
+            # `docker` names them), and the distro packages (as `distribution` builds them), to
+            # `<build dir>/envoy/<arch>/{bin,build_images,packages}`. On RBE, each arch's binaries are
+            # compiled on its workers, and the packaging runs on this host.
+            if [[ "$CI_TARGET" == "release.publish.all" ]]; then
+                PUBLISH_ARCHES=(x64 arm64)
+            elif [[ "${ENVOY_BUILD_ARCH}" == "x86_64" ]]; then
+                PUBLISH_ARCHES=(x64)
+            else
+                PUBLISH_ARCHES=(arm64)
+            fi
+            PUBLISH_TARGETS=()
+            for arch in "${PUBLISH_ARCHES[@]}"; do
+                for dir in bin build_images packages; do
+                    rm -rf "${BUILD_DIR}/envoy/${arch}/${dir}"
+                    mkdir -p "${BUILD_DIR}/envoy/${arch}/${dir}"
+                done
+                PUBLISH_TARGETS+=("//distribution/publish:publish_${arch}")
             done
             bazel build "${BAZEL_BUILD_OPTIONS[@]}" "${BAZEL_RELEASE_OPTIONS[@]}" \
                   --remote_download_toplevel \
-                  //distribution/publish
+                  "${PUBLISH_TARGETS[@]}"
             # The outputs are large (several GB): hardlink them where they are on the same filesystem
             # (bazel replaces its outputs rather than writing to them), else copy them.
             publish_file () {
                 ln -fL "$1" "$2" 2> /dev/null || cp -a "$1" "$2"
             }
-            publish_file \
-               bazel-bin/distribution/binary/release.tar.zst \
-               "${ENVOY_BINARY_DIR}/release.tar.zst"
-            for tool in config_load_check router_check schema_validator; do
-                publish_file \
-                   "bazel-bin/test/tools/${tool}/${tool}_tool.stripped" \
-                   "${ENVOY_BINARY_DIR}/${tool}_tool"
+            for arch in "${PUBLISH_ARCHES[@]}"; do
+                outputs="bazel-bin/distribution/publish/publish_${arch}"
+                arch_dir="${BUILD_DIR}/envoy/${arch}"
+                publish_file "${outputs}/release.tar.zst" "${arch_dir}/bin/release.tar.zst"
+                for tool in config_load_check router_check schema_validator; do
+                    publish_file "${outputs}/${tool}_tool" "${arch_dir}/bin/${tool}_tool"
+                done
+                oci_arch="${arch/x64/amd64}"
+                for image in \
+                        envoy envoy-contrib envoy-contrib-debug envoy-contrib-distroless \
+                        envoy-debug envoy-distroless envoy-tools; do
+                    publish_file "${outputs}/${image}.tar" "${arch_dir}/build_images/${image}.${oci_arch}.tar"
+                done
+                publish_file "${outputs}/packages.tar.gz" "${arch_dir}/packages/packages.${arch}.tar.gz"
+                echo "Published ${arch} in ${arch_dir}"
             done
-            OCI_ARCH="$(echo "${ENVOY_BUILD_ARCH}" | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')"
-            for image in \
-                    envoy envoy-contrib envoy-contrib-debug envoy-contrib-distroless \
-                    envoy-debug envoy-distroless envoy-tools; do
-                publish_file \
-                   "bazel-bin/distribution/docker/${image}.tar" \
-                   "${ENVOY_OCI_DIR}/${image}.${OCI_ARCH}.tar"
-            done
-            PACKAGES_ARCH="$(echo "${ENVOY_BUILD_ARCH}" | sed -e 's/x86_64/x64/' -e 's/aarch64/arm64/')"
-            publish_file \
-               bazel-bin/distribution/publish/packages.tar.gz \
-               "${ENVOY_PACKAGES_DIR}/packages.${PACKAGES_ARCH}.tar.gz"
-            echo "Container images created in ${ENVOY_OCI_DIR}"
-            echo "Packages created in ${ENVOY_PACKAGES_DIR}"
         else
             # Build release binaries
             bazel build "${BAZEL_BUILD_OPTIONS[@]}" \

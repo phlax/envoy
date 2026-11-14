@@ -10,6 +10,15 @@ load(":packages.bzl", "MAINTAINER", "envoy_pkg_distros", "release_version_for")
 
 licenses(["notice"])  # Apache 2
 
+# The RBE execution platform for the binaries `bundled` compiles (see
+# `//distribution/binary:compiler.bzl`), set per arch by `//distribution/publish:publish_<arch>`.
+# Empty: the build's execution platforms.
+string_flag(
+    name = "rbe_exec_platform",
+    build_setting_default = "",
+    visibility = ["//visibility:public"],
+)
+
 # IMPORTANT: SECRET-HANDLING TARGETS
 #
 # The `pgp_sign_*` targets in this file process release-signing material via

@@ -2,6 +2,7 @@ load("@envoy_repo//:version.bzl", "VERSION")
 load("//bazel:envoy_build_system.bzl", "envoy_package")
 load("//distribution:packages.bzl", "MAINTAINER", "PUBLISH_PACKAGING_TAGS", "envoy_pkg_distros")
 load("//distribution/binary:compiler.bzl", "bundled")
+load(":arch.bzl", "arch_files")
 
 licenses(["notice"])  # Apache 2
 
@@ -46,14 +47,43 @@ envoy_pkg_distros(
     version = VERSION,
 )
 
+# The tools, built as the release binaries (and as the container images' tools).
+bundled(
+    name = "tools",
+    mode = "opt",
+    stripopts = ["--strip-all"],
+    targets = {
+        "//test/tools/config_load_check:config_load_check_tool.stripped": "config_load_check_tool",
+        "//test/tools/router_check:router_check_tool.stripped": "router_check_tool",
+        "//test/tools/schema_validator:schema_validator_tool.stripped": "schema_validator_tool",
+    },
+)
+
 filegroup(
     name = "publish",
     srcs = [
         ":packages",
+        ":tools",
         "//distribution/binary:release",
         "//distribution/docker:images",
-        "//test/tools/config_load_check:config_load_check_tool.stripped",
-        "//test/tools/router_check:router_check_tool.stripped",
-        "//test/tools/schema_validator:schema_validator_tool.stripped",
     ],
 )
+
+# Everything published for each arch, at `publish_<arch>/<basename>`, from any host: on EngFlow
+# RBE the binaries are compiled on the arch's workers (eg arm64 from an x64 host), and the
+# packaging runs on the host.
+[
+    arch_files(
+        name = "publish_%s" % arch,
+        srcs = [":publish"],
+        platform = "//bazel/platforms/rbe:linux_%s" % arch,
+        rbe_exec_platform = select({
+            "//bazel:engflow_rbe": "//bazel/platforms/rbe:linux_%s" % arch,
+            "//conditions:default": "",
+        }),
+    )
+    for arch in [
+        "arm64",
+        "x64",
+    ]
+]
