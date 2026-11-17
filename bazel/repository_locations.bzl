@@ -46,10 +46,12 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/bazelbuild/buildtools/archive/v{version}.tar.gz"],
     ),
     envoy_toolshed = dict(
-        version = "0.4.13.post3",
-        sha256 = "b502cb9a88cba42be907b98c6d8068e348225aaebbf59363ffefd0b505db461d",
-        strip_prefix = "toolshed-bazel-v{version}/bazel",
-        urls = ["https://github.com/envoyproxy/toolshed/archive/bazel-v{version}.tar.gz"],
+        # TEST ONLY: the 0.4.13.post4 candidate: envoyproxy/toolshed#5616, the libcxx `llvm_version`
+        # option, and the pigz hashes set.
+        version = "e6424cb3aec325751b1e98f9f4f14527fbc58bcd",
+        sha256 = "4655c383443707034f2c04134a7af0264b632b7dc9d22140aa6862c7f18f4c8b",
+        strip_prefix = "toolshed-{version}/bazel",
+        urls = ["https://github.com/phlax/toolshed/archive/{version}.tar.gz"],
     ),
     sq_linux_arm64 = dict(
         version = "1.4.0",
