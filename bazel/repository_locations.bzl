@@ -46,10 +46,10 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/bazelbuild/buildtools/archive/v{version}.tar.gz"],
     ),
     envoy_toolshed = dict(
-        version = "0.4.13.post4",
-        sha256 = "ea0ea27525630b96933f3aae05c9e7f95df26f6a4bc85b9cd1340525932f9392",
-        strip_prefix = "toolshed-bazel-v{version}/bazel",
-        urls = ["https://github.com/envoyproxy/toolshed/archive/bazel-v{version}.tar.gz"],
+        version = "51740dc0a438ac7c4e45b3940621abcfe373c0e9",
+        sha256 = "a66b3a7878500f873e9d26d8576abaedb088b4415e4eb0114b02b95e1d79fa08",
+        strip_prefix = "toolshed-{version}/bazel",
+        urls = ["https://github.com/phlax/toolshed/archive/{version}.tar.gz"],
     ),
     rules_fuzzing = dict(
         # Patch contains workaround for https://github.com/bazelbuild/rules_python/issues/1221
@@ -484,8 +484,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
         urls = ["https://github.com/opencomputeproject/ocp-diag-core/archive/{version}.zip"],
     ),
     io_bazel_rules_go = dict(
-        version = "0.60.0",
-        sha256 = "86d3dc8f59d253524f933aaf2f3c05896cb0b605fc35b460c0b4b039996124c6",
+        version = "0.63.0",
+        sha256 = "c3e253237109ab2e2a8d3cb075688b98a6e6fce43d849849648e8e3a84f20d6f",
         urls = ["https://github.com/bazelbuild/rules_go/releases/download/v{version}/rules_go-v{version}.zip"],
     ),
     rules_cc = dict(
@@ -669,8 +669,8 @@ REPOSITORY_LOCATIONS_SPEC = dict(
     # May be removable once Envoy upgrades to Bazel 8.0+ which includes this by default.
     # See: https://github.com/envoyproxy/envoy/pull/41172#issuecomment-2365923085
     platforms = dict(
-        version = "1.0.0",
-        sha256 = "852b71bfa15712cec124e4a57179b6bc95d59fdf5052945f5d550e072501a769",
+        version = "1.1.0",
+        sha256 = "324f5381753a610e472f79563d44e2026438195042aae4dc660b8c021f7de7f5",
         strip_prefix = "platforms-{version}",
         urls = [
             "https://github.com/bazelbuild/platforms/archive/{version}.tar.gz",
