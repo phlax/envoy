@@ -37,6 +37,21 @@ local_path_override(
     path = "../api",
 )
 
+local_path_override(
+    module_name = "envoy-examples",
+    path = "../../examples",
+)
+
+local_path_override(
+    module_name = "envoy-example-filter-cc",
+    path = "../../examples/filter-cc",
+)
+
+local_path_override(
+    module_name = "envoy-example-wasm-cc",
+    path = "../../examples/wasm-cc",
+)
+
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     is_default = True,
